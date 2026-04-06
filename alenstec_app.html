@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alenstec — Gestión de Costos de Proyecto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#111110;--surface:#1A1917;--surface2:#242320;
+  --border:#2E2C28;--border2:#3D3B36;
+  --text:#F0EDE8;--text2:#A8A49E;--text3:#6B6863;
+  --green:#2E9E5A;--green-lt:#0F2A1A;--green-md:#38B86A;
+  --amber:#D4820A;--amber-lt:#2A1A05;
+  --red:#E05252;--red-lt:#2A0F0F;
+  --blue:#5B8FD4;--blue-lt:#0F1E35;
+  --sw:230px;--th:52px;
+}
+html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:13px}
+.app{display:flex;height:100vh;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{width:var(--sw);min-width:var(--sw);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.s-logo{padding:15px 15px 13px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.s-mark{width:33px;height:33px;border-radius:9px;background:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.s-mark svg{width:17px;height:17px;fill:#fff}
+.s-name{font-size:12px;font-weight:600;letter-spacing:-.2px}
+.s-sub{font-size:10px;color:var(--text3);margin-top:1px}
+.s-nav{flex:1;overflow-y:auto;padding:6px 7px;scrollbar-width:none}
+.s-nav::-webkit-scrollbar{display:none}
+.s-sec{font-size:9px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--text3);padding:10px 8px 4px;margin-top:2px}
+.ni{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:7px;cursor:pointer;color:var(--text2);font-size:12.5px;line-height:1.3;transition:background .12s,color .12s;margin-bottom:1px}
+.ni:hover{background:var(--surface2);color:var(--text)}
+.ni.active{background:var(--green-lt);color:var(--green);font-weight:500}
+.ni svg{width:15px;height:15px;flex-shrink:0;opacity:.7}
+.ni.active svg{opacity:1}
+.ni-badge{margin-left:auto;background:var(--green);color:#fff;font-size:10px;font-weight:600;padding:1px 6px;border-radius:30px}
+.s-foot{padding:11px 13px;border-top:1px solid var(--border);display:flex;align-items:center;gap:9px}
+.av{width:28px;height:28px;border-radius:50%;background:var(--green);color:#fff;font-size:10.5px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.av.sm{width:24px;height:24px;font-size:9.5px}
+.u-name{font-size:12px;font-weight:500}
+.u-role{font-size:10px;color:var(--text3)}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.topbar{height:var(--th);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0}
+.tb-title{font-size:14.5px;font-weight:600;flex:1}
+.tb-crumb{font-size:11.5px;color:var(--text3)}
+.tb-right{display:flex;align-items:center;gap:8px}
+.pill-tabs{display:flex;gap:2px;background:var(--surface2);border-radius:7px;padding:3px}
+.pill-tab{padding:4px 12px;border-radius:5px;font-size:11.5px;cursor:pointer;color:var(--text2);transition:all .12s}
+.pill-tab.active{background:var(--surface);color:var(--text);font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.btn{padding:6px 13px;border-radius:7px;font-size:12px;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:500;transition:background .12s;white-space:nowrap}
+.btn:hover{background:var(--surface2)}
+.btn.p{background:var(--green);color:#fff;border-color:var(--green)}
+.btn.p:hover{background:var(--green-md)}
+.btn.sm{padding:4px 10px;font-size:11.5px}
+
+/* CONTENT */
+.content{flex:1;overflow-y:auto;padding:20px;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.content::-webkit-scrollbar{width:5px}
+.content::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.mod{display:none}
+.mod.active{display:block;animation:fi .18s ease}
+@keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+
+/* KPI */
+.kg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:18px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:14px 16px}
+.kl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);margin-bottom:5px}
+.kv{font-size:22px;font-weight:600;letter-spacing:-.5px;line-height:1}
+.ks{font-size:11px;color:var(--text3);margin-top:3px}
+.kb{display:inline-block;margin-top:5px;padding:2px 8px;border-radius:30px;font-size:10.5px;font-weight:600}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:11px;overflow:hidden;margin-bottom:14px}
+.ch{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.ct{font-size:13px;font-weight:600}
+.cs{font-size:11px;color:var(--text3);margin-top:1px}
+.cb{padding:14px 16px}
+
+/* GRID */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px}
+.g3f{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+
+/* TABLE */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:var(--surface2);padding:8px 13px;text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);white-space:nowrap;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:1}
+td{padding:9px 13px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle;white-space:nowrap}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--bg)}
+.mono{font-family:'DM Mono',monospace;font-size:11.5px}
+
+/* BADGES */
+.badge{display:inline-block;padding:2px 8px;border-radius:30px;font-size:10.5px;font-weight:600}
+.bg{background:var(--green-lt);color:var(--green)}
+.ba{background:var(--amber-lt);color:var(--amber)}
+.br{background:var(--red-lt);color:var(--red)}
+.bb{background:var(--blue-lt);color:var(--blue)}
+.bn{background:var(--surface2);color:var(--text2)}
+
+/* BARS */
+.bar-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)}
+.bar-row:last-child{border-bottom:none}
+.bar-lbl{font-size:11.5px;min-width:105px}
+.bar-track{flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px}
+.bar-val{font-size:11.5px;font-weight:600;min-width:70px;text-align:right;font-family:'DM Mono',monospace}
+
+/* TIMELINE */
+.tl-row{display:flex;gap:12px;padding:9px 0;border-bottom:1px solid var(--border)}
+.tl-row:last-child{border-bottom:none}
+.tl-dot{width:8px;height:8px;border-radius:50%;margin-top:4px;flex-shrink:0}
+.tl-title{font-size:12.5px;font-weight:500}
+.tl-sub{font-size:11px;color:var(--text3);margin-top:1px}
+
+/* FORM */
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.fgg{display:flex;flex-direction:column;gap:4px}
+.fl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2)}
+.fi{padding:8px 10px;border:1px solid var(--border);border-radius:7px;font-size:12.5px;background:var(--surface);color:var(--text);font-family:'DM Sans',sans-serif;outline:none;transition:border-color .12s;width:100%}
+.fi:focus{border-color:var(--green)}
+select.fi{cursor:pointer}
+
+/* OT */
+.ot-banner{background:var(--green);border-radius:11px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;color:#fff}
+.ot-num{font-family:'DM Mono',monospace;font-size:22px;font-weight:500;letter-spacing:-.5px}
+.ot-desc{font-size:12px;opacity:.85;margin-top:3px;max-width:480px}
+.ot-acts{display:flex;gap:7px;flex-shrink:0}
+.ot-btn{padding:6px 13px;border-radius:7px;font-size:12px;cursor:pointer;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.15);color:#fff;font-family:'DM Sans',sans-serif;font-weight:500;transition:background .12s}
+.ot-btn:hover{background:rgba(255,255,255,.25)}
+.ot-tabs{display:flex;gap:3px;padding:0 0 14px;overflow-x:auto;scrollbar-width:none}
+.ot-tabs::-webkit-scrollbar{display:none}
+.ot-tab{padding:5px 12px;border-radius:6px;border:1px solid var(--border);font-family:'DM Mono',monospace;font-size:11.5px;cursor:pointer;background:var(--surface);color:var(--text2);white-space:nowrap;transition:all .12s}
+.ot-tab.active{background:var(--green);color:#fff;border-color:var(--green);font-weight:500}
+.ot-tab:hover:not(.active){background:var(--surface2)}
+
+/* PROG BAR */
+.prog{height:5px;background:var(--surface2);border-radius:3px;overflow:hidden;margin-top:4px}
+.prog-fill{height:100%;border-radius:3px}
+
+/* SECTION ROW */
+.sec-row td{background:var(--green-lt);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--green);border-bottom:1px solid var(--border2)}
+
+/* ACT TAG */
+.atag{display:inline-block;padding:1px 7px;border-radius:4px;font-size:10.5px;font-weight:600}
+
+/* SUBNAV */
+.subnav{display:flex;gap:3px;margin-bottom:18px;border-bottom:1px solid var(--border);padding-bottom:0}
+.sntab{padding:8px 14px;font-size:12.5px;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .12s,border-color .12s;white-space:nowrap}
+.sntab:hover{color:var(--text)}
+.sntab.active{color:var(--green);font-weight:500;border-bottom-color:var(--green)}
+.submod{display:none}.submod.active{display:block;animation:fi .15s ease}
+
+/* DATE FILTER */
+.date-filter{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--surface2);border-bottom:1px solid var(--border)}
+.date-filter label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3)}
+.date-filter input{padding:5px 9px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--surface);color:var(--text);font-family:'DM Sans',sans-serif;outline:none;width:150px}
+.date-filter input:focus{border-color:var(--green)}
+.date-filter .hint{font-size:10px;color:var(--text3);font-style:italic}
+.date-filter .btn{margin-left:4px}
+
+/* RESPONSIVE */
+@media(max-width:1100px){.kg{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1fr 1fr}}
+@media(max-width:800px){:root{--sw:52px}.s-name,.s-sub,.ni span,.u-name,.u-role{display:none}.ni{justify-content:center;padding:9px}.ni-badge{display:none}.g2{grid-template-columns:1fr}}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="s-logo">
+    <div class="s-mark"><svg viewBox="0 0 20 20"><path d="M3 4h14v1.5H3V4zm0 4.5h10V10H3V8.5zm0 4.5h7v1.5H3V13z"/></svg></div>
+    <div><div class="s-name">Alenstec SA de CV</div><div class="s-sub">Gestión de Costos</div></div>
+  </div>
+  <div class="s-nav">
+    <div class="s-sec">Principal</div>
+    <div class="ni active" data-mod="dashboard">
+      <svg viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="3" width="6" height="6" rx="1.5"/><rect x="11" y="3" width="6" height="6" rx="1.5"/><rect x="3" y="11" width="6" height="6" rx="1.5"/><rect x="11" y="11" width="6" height="6" rx="1.5"/></svg>
+      <span>Dashboard</span>
+    </div>
+    <div class="ni" data-mod="ot">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path d="M4 3h12a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V4a1 1 0 011-1zm1 3v2h10V6H5zm0 4v2h10v-2H5zm0 4v1h6v-1H5z"/></svg>
+      <span>Orden de Trabajo</span><span class="ni-badge">18</span>
+    </div>
+    <div class="s-sec">Comercial</div>
+    <div class="ni" data-mod="cotizaciones">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path d="M6 2h8l4 4v12H2V2h4zm7 1.5V7h3.5L13 3.5zM4 4v14h12V9h-5V4H4zm2 6h8v1.5H6V10zm0 3h5v1.5H6V13z"/></svg>
+      <span>Cotizaciones y Ventas</span>
+    </div>
+    <div class="s-sec">Costos</div>
+    <div class="ni" data-mod="pronostico">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 16.5l3.5-5.5 3 3.5 3.5-6 4 8H3z"/></svg>
+      <span>Pronóstico del Costo</span>
+    </div>
+    <div class="ni" data-mod="material">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2L2 6v4l8 4 8-4V6L10 2zm0 2.24L15.48 7 10 9.76 4.52 7 10 4.24zM4 8.62l5 2.5v5.26L4 13.88V8.62zm6 7.76v-5.26l5-2.5v5.26l-5 2.5z"/></svg>
+      <span>Costo de Material</span>
+    </div>
+    <div class="ni" data-mod="entregas">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path d="M2 6l8-4 8 4v2l-8 4-8-4V6zm0 4.5v5l8 4 8-4v-5l-8 4-8-4z"/></svg>
+      <span>Entregas de Material</span>
+    </div>
+    <div class="ni" data-mod="horas">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="7"/><path d="M10 6v4l2.5 2.5" stroke-linecap="round"/></svg>
+      <span>Horas de Mano de Obra</span>
+    </div>
+    <div class="ni" data-mod="costomo">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a4 4 0 110 8A4 4 0 0110 2zm0 9c4.42 0 8 1.79 8 4v2H2v-2c0-2.21 3.58-4 8-4z"/></svg>
+      <span>Costo de Mano de Obra</span>
+    </div>
+  </div>
+  <div class="s-foot">
+    <div class="av">JL</div>
+    <div><div class="u-name">Jesús Lara</div><div class="u-role">Manufactura · Autorización</div></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:baseline;gap:8px;flex:1;min-width:0">
+      <div class="tb-title" id="ttitle">Dashboard</div>
+      <div class="tb-crumb" id="tcrumb">· Todas las Órdenes de Trabajo · 2026</div>
+    </div>
+    <div class="tb-right">
+      <!-- OT selector: shown on OT module -->
+      <div id="ctrl-ot-sel" style="display:none;align-items:center;gap:8px">
+        <label style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);white-space:nowrap">Seleccione OT</label>
+        <select class="fi" style="max-width:180px;font-family:'DM Mono',monospace" onchange="updateOTBanner(this.value)">
+          <option>OT-AL-1948</option><option>OT-AL-1947</option><option>OT-AL-1946</option><option>OT-AL-1945</option><option>OT-AL-1944</option><option>OT-AL-1943</option><option>OT-AL-1942</option><option>OT-AL-1941</option><option>OT-AL-1940</option><option>OT-AL-1939</option><option>OT-AL-1938</option><option>OT-AL-1937</option><option>OT-AL-1936</option>
+        </select>
+      </div>
+      <!-- Date filter + download: shown on all modules except dashboard & OT -->
+      <div id="ctrl-dates" style="display:none;align-items:center;gap:8px">
+        <label style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3)">Desde:</label>
+        <input type="date" id="g-desde" class="fi" style="padding:4px 8px;font-size:11.5px;width:140px" oninput="checkGlobalDates()">
+        <label style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3)">Hasta:</label>
+        <input type="date" id="g-hasta" class="fi" style="padding:4px 8px;font-size:11.5px;width:140px" oninput="checkGlobalDates()">
+        <button class="btn sm" id="btn-dl-global" disabled style="opacity:.45">⬇ Descargar XLSX</button>
+      </div>
+      <div class="pill-tabs" id="ctrl-tabs">
+        <div class="pill-tab active">Todas</div>
+        <div class="pill-tab">Activas</div>
+        <div class="pill-tab">Cerradas</div>
+      </div>
+      <button class="btn p" id="ctrl-new">+ Nueva OT</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+<!-- DASHBOARD -->
+<div class="mod active" id="mod-dashboard">
+  <div class="kg">
+    <div class="kpi"><div class="kl">OTs Activas</div><div class="kv" style="color:var(--green)">18</div><div class="ks">En proceso · 2026</div><div class="kb bg">↑ 5 nuevas en marzo</div></div>
+    <div class="kpi"><div class="kl">Costo Total Cotizado</div><div class="kv">$218K</div><div class="ks">USD · acumulado 2026</div><div class="kb bb">T/C ref. $17.34</div></div>
+    <div class="kpi"><div class="kl">Material en Tránsito</div><div class="kv" style="color:var(--amber)">$36K</div><div class="ks">MXN · OCs pendientes</div><div class="kb ba">3 entregas pendientes</div></div>
+    <div class="kpi"><div class="kl">Cotizaciones Abiertas</div><div class="kv" style="color:var(--blue)">11</div><div class="ks">Pendientes de aprobación</div><div class="kb bb">Vigentes 2026</div></div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="ch"><div><div class="ct">Órdenes de Trabajo Recientes</div><div class="cs">Datos reales · ERP Alenstec</div></div><button class="btn sm" onclick="goMod('ot')">Ver todas →</button></div>
+      <div class="tw"><table>
+        <thead><tr><th>No. OT</th><th>Cliente</th><th>Descripción</th><th>Tipo</th><th>Avance</th><th>Estado</th></tr></thead>
+        <tbody>
+          <tr><td class="mono" style="font-weight:500">OT-AL-1948</td><td>Adient Lerma</td><td>Camb. botón vestidura Rivian/Toyota</td><td><span class="badge ba">Refurbish</span></td><td style="min-width:90px"><div style="font-size:10px;color:var(--text3);margin-bottom:2px">15%</div><div class="prog"><div class="prog-fill" style="width:15%;background:var(--amber)"></div></div></td><td><span class="badge bg">En ejecución</span></td></tr>
+          <tr><td class="mono" style="font-weight:500">OT-AL-1947</td><td>Adient Lerma</td><td>Fab. 10 pzas. punch T226038E</td><td><span class="badge bb">Nuevo</span></td><td style="min-width:90px"><div style="font-size:10px;color:var(--text3);margin-bottom:2px">40%</div><div class="prog"><div class="prog-fill" style="width:40%;background:var(--green)"></div></div></td><td><span class="badge bg">En ejecución</span></td></tr>
+          <tr><td class="mono" style="font-weight:500">OT-AL-1946</td><td>Autoliv AMX</td><td>Manuf. 2 Hand to Hand Tacoma 736D</td><td><span class="badge bb">Nuevo</span></td><td style="min-width:90px"><div style="font-size:10px;color:var(--text3);margin-bottom:2px">60%</div><div class="prog"><div class="prog-fill" style="width:60%;background:var(--green)"></div></div></td><td><span class="badge bg">En ejecución</span></td></tr>
+          <tr><td class="mono" style="font-weight:500">OT-AL-1945</td><td>Avanzar</td><td>Refurbish e integración</td><td><span class="badge ba">Refurbish</span></td><td style="min-width:90px"><div style="font-size:10px;color:var(--text3);margin-bottom:2px">100%</div><div class="prog"><div class="prog-fill" style="width:100%;background:var(--text3)"></div></div></td><td><span class="badge bn">Liberada</span></td></tr>
+          <tr><td class="mono" style="font-weight:500">OT-AL-1944</td><td>Avanzar</td><td>Corte láser y programación</td><td><span class="badge bn">Servicio</span></td><td style="min-width:90px"><div style="font-size:10px;color:var(--text3);margin-bottom:2px">78%</div><div class="prog"><div class="prog-fill" style="width:78%;background:var(--amber)"></div></div></td><td><span class="badge ba">En revisión</span></td></tr>
+          <tr><td class="mono" style="font-weight:500">OT-AL-1936</td><td>Adient/Toyota</td><td>Manuf. 2 Brazos Neumáticos Tacoma</td><td><span class="badge bb">Nuevo</span></td><td style="min-width:90px"><div style="font-size:10px;color:var(--text3);margin-bottom:2px">100%</div><div class="prog"><div class="prog-fill" style="width:100%;background:var(--text3)"></div></div></td><td><span class="badge bn">Cerrada</span></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ct">Costo Cotizado por OT</div><div class="cs">USD · 2026</div></div>
+      <div class="cb">
+        <div class="bar-row"><span class="bar-lbl">OT-AL-1943</span><div class="bar-track"><div class="bar-fill" style="width:100%;background:var(--amber)"></div></div><span class="bar-val" style="color:var(--amber)">$22,855</span></div>
+        <div class="bar-row"><span class="bar-lbl">OT-AL-1946</span><div class="bar-track"><div class="bar-fill" style="width:70%;background:var(--green)"></div></div><span class="bar-val" style="color:var(--green)">$16,020</span></div>
+        <div class="bar-row"><span class="bar-lbl">OT-AL-1934</span><div class="bar-track"><div class="bar-fill" style="width:69%;background:var(--green)"></div></div><span class="bar-val" style="color:var(--green)">$15,782</span></div>
+        <div class="bar-row"><span class="bar-lbl">OT-AL-1951</span><div class="bar-track"><div class="bar-fill" style="width:37%;background:var(--blue)"></div></div><span class="bar-val" style="color:var(--blue)">$8,407</span></div>
+        <div class="bar-row"><span class="bar-lbl">OT-AL-1947</span><div class="bar-track"><div class="bar-fill" style="width:39%;background:var(--blue)"></div></div><span class="bar-val" style="color:var(--blue)">$8,990</span></div>
+        <div class="bar-row"><span class="bar-lbl">OT-AL-1936</span><div class="bar-track"><div class="bar-fill" style="width:37%;background:var(--text3)"></div></div><span class="bar-val" style="color:var(--text3)">$8,520</span></div>
+        <div class="bar-row"><span class="bar-lbl">OT-AL-1948</span><div class="bar-track"><div class="bar-fill" style="width:30%;background:var(--amber)"></div></div><span class="bar-val" style="color:var(--amber)">$6,789</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="g3">
+    <div class="card">
+      <div class="ch"><div class="ct">Proveedores Activos</div></div>
+      <div class="cb" style="padding:10px 16px">
+        <div class="tl-row"><div class="tl-dot" style="background:var(--green)"></div><div><div class="tl-title">Ecosy Engineering</div><div class="tl-sub">Conectores, pinzas, detectores · OT-1928</div></div></div>
+        <div class="tl-row"><div class="tl-dot" style="background:var(--green)"></div><div><div class="tl-title">Misumi Mexico</div><div class="tl-sub">Tornillos, perfiles · OT-1928/1934</div></div></div>
+        <div class="tl-row"><div class="tl-dot" style="background:var(--green)"></div><div><div class="tl-title">CORTELASER (A.U. Ceballos)</div><div class="tl-sub">Corte y mantenimiento · OT-1904/1934</div></div></div>
+        <div class="tl-row"><div class="tl-dot" style="background:var(--amber)"></div><div><div class="tl-title">Servicio Industrial</div><div class="tl-sub">Placas acero, corte · OT-1928</div></div></div>
+        <div class="tl-row"><div class="tl-dot" style="background:var(--blue)"></div><div><div class="tl-title">Aceros Argenis / Pláfene</div><div class="tl-sub">Placas aluminio · OT-1937</div></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ct">OCs Abiertas</div></div>
+      <div class="cb" style="padding:10px 16px">
+        <div class="tl-row"><div class="tl-dot" style="background:var(--red)"></div><div><div class="tl-title">OC 2301498137</div><div class="tl-sub">Adient · OT-1948 · T/C $17.34</div></div></div>
+        <div class="tl-row"><div class="tl-dot" style="background:var(--amber)"></div><div><div class="tl-title">OC 2301504802</div><div class="tl-sub">Adient · OT-1951 · $8,407 USD</div></div></div>
+        <div class="tl-row"><div class="tl-dot" style="background:var(--green)"></div><div><div class="tl-title">OC 2301492124</div><div class="tl-sub">Adient · OT-1946 · $16,020 USD</div></div></div>
+        <div class="tl-row"><div class="tl-dot" style="background:var(--green)"></div><div><div class="tl-title">OC 2310481395</div><div class="tl-sub">Avanzar · OT-1934 · $15,782 USD</div></div></div>
+        <div class="tl-row"><div class="tl-dot" style="background:var(--blue)"></div><div><div class="tl-title">GIPU 0817</div><div class="tl-sub">Autoliv · OT-1941/1942 · $1,048 USD</div></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ct">Empleados en Campo</div></div>
+      <div class="cb" style="padding:10px 16px">
+        <div class="tl-row"><div class="av sm" style="flex-shrink:0">MA</div><div><div class="tl-title">Magarito Álvarez Piña</div><div class="tl-sub">Maquinado · Ensamble · ID 24</div></div></div>
+        <div class="tl-row"><div class="av sm" style="flex-shrink:0">CD</div><div><div class="tl-title">Cristian Saúl Durán Plata</div><div class="tl-sub">Des. y Preventa · Ctrl. Costo · ID 65</div></div></div>
+        <div class="tl-row"><div class="av sm" style="flex-shrink:0">DC</div><div><div class="tl-title">Diego Castillo Jiménez</div><div class="tl-sub">Corte · Ensamble · Cap. · ID 114</div></div></div>
+        <div class="tl-row"><div class="av sm" style="flex-shrink:0">ME</div><div><div class="tl-title">Miguel Á. Espinosa Martínez</div><div class="tl-sub">Maquinado · Almacén · ID 10</div></div></div>
+        <div class="tl-row"><div class="av sm" style="flex-shrink:0">LL</div><div><div class="tl-title">Luis A. López Prudente</div><div class="tl-sub">Mantenimiento · Maquinado · ID 138</div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ORDEN DE TRABAJO -->
+<div class="mod" id="mod-ot">
+  <div class="ot-banner">
+    <div>
+      <div class="ot-num">OT-AL-1948</div>
+      <div class="ot-desc">Adient Lerma · Trab. adic. por cambio de ubic. de botón en vestidura para maq. exis. del proy. Rivian y Toyota · Planta Adient Lerma</div>
+    </div>
+    <div class="ot-acts"><button class="ot-btn" onclick="generateOTPDF()">⬇ Imprimir PDF</button></div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="ch"><div class="ct">Datos Generales</div></div>
+      <div class="cb">
+        <div class="fg"><div class="fgg"><label class="fl">No. de OT</label><input class="fi" value="OT-AL-1948"></div><div class="fgg"><label class="fl">Fecha de liberación</label><input class="fi" value="3 de marzo de 2026"></div></div>
+        <div class="fg"><div class="fgg"><label class="fl">Cliente</label><input class="fi" value="ADIENT LERMA"></div><div class="fgg"><label class="fl">Área Requisitora</label><input class="fi" value="Coordinator Proyect"></div></div>
+        <div class="fg"><div class="fgg"><label class="fl">Requisitor</label><input class="fi" value="Ing. Alejandro García"></div><div class="fgg"><label class="fl">E-mail</label><input class="fi" value="j.garcia.calzada@adient.com"></div></div>
+        <div class="fg"><div class="fgg"><label class="fl"># OC Cliente</label><input class="fi" value="2301498137"></div><div class="fgg"><label class="fl">COT Ref. Alenstec</label><input class="fi" value="COT-AL-027ADL-26C"></div></div>
+        <div class="fg"><div class="fgg"><label class="fl">Fecha de emisión</label><input class="fi" value="10 de marzo de 2026"></div><div class="fgg"><label class="fl">F. Entrega Compromiso</label><input class="fi" value="7 de abril de 2026"></div></div>
+        <div class="fg" style="margin-bottom:10px"><div class="fgg"><label class="fl">Tipo de proyecto</label><select class="fi"><option>Refurbish</option><option>Nuevo</option><option>MECR</option></select></div><div class="fgg"><label class="fl">Cantidad</label><input class="fi" value="1"></div></div>
+        <div style="background:var(--surface2);border-radius:7px;padding:10px 12px">
+          <div class="fl" style="margin-bottom:5px">Descripción del trabajo</div>
+          <div style="font-size:12.5px;font-weight:500;line-height:1.5">TRAB. ADIC. POR CAMBIO DE UBIC. DE BOTÓN EN VESTIDURA, PARA MAQ. EXIS. DEL PROY. RIVIAN Y TOYOTA, PARA LA PLANTA DE ADIENT LERMA</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="ch"><div class="ct">Liberado a (Jefaturas)</div></div>
+        <div class="cb">
+          <div class="fg" style="margin-bottom:0"><div class="fgg"><label class="fl">Ingeniería</label><input class="fi" value="Cristian Durán"></div><div class="fgg"><label class="fl">Manufactura</label><input class="fi" value="Jesús Lara"></div></div>
+          <div class="fg" style="margin-bottom:0;margin-top:12px"><div class="fgg"><label class="fl">Compras</label><input class="fi" value="Jessica Fuentes"></div><div class="fgg"><label class="fl">Otros</label><input class="fi" value="N/A"></div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ct">Presupuestos</div></div>
+        <div class="cb">
+          <div class="g3f" style="margin-bottom:10px"><div class="fgg"><label class="fl">Tipo de Cambio</label><input class="fi" value="$17.34 USD"></div><div class="fgg"><label class="fl">Ppto. MO (MXN)</label><input class="fi" value="$21,263"></div><div class="fgg"><label class="fl">Ppto. MO (USD)</label><input class="fi" value="$1,226"></div></div>
+          <div class="fg" style="margin-bottom:0"><div class="fgg"><label class="fl">Ppto. Material (MXN)</label><input class="fi" value="$12,050"></div><div class="fgg"><label class="fl">Ppto. Material (USD)</label><input class="fi" value="$695"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ch"><div><div class="ct">Horas Estimadas del Proyecto</div><div class="cs">OT-AL-1948 · Manufactura e Instalación en Planta Cliente</div></div></div>
+    <div class="tw"><table>
+      <thead><tr><th>Área</th><th>Ing./Diseño</th><th>Corte</th><th>Fabricación</th><th>Maquinado</th><th>L. Ensamble</th><th>L. Eléctrica</th><th>Automatiz.</th><th>Supervisor</th><th>Méc./Téc.</th><th>Eléctrico</th><th>Programador</th><th>Total</th></tr></thead>
+      <tbody>
+        <tr><td style="font-weight:600;color:var(--green)">Manufactura (Est.)</td><td class="mono">36</td><td class="mono">2</td><td class="mono">15</td><td class="mono">84</td><td class="mono">17</td><td class="mono">5</td><td class="mono">0</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td><td class="mono" style="font-weight:600">159</td></tr>
+        <tr><td style="font-weight:600;color:var(--blue)">Inst. Planta (Est.)</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td><td class="mono">0</td><td class="mono" style="color:var(--amber);font-weight:600">30</td><td class="mono" style="color:var(--amber);font-weight:600">24</td><td class="mono" style="color:var(--amber);font-weight:600">30</td><td class="mono" style="font-weight:600">84</td></tr>
+        <tr style="background:var(--green-lt)"><td style="font-weight:600;color:var(--green)">Manufactura (Reales)</td><td class="mono">0</td><td class="mono">0</td><td class="mono">0</td><td class="mono">0</td><td class="mono">0</td><td class="mono">0</td><td class="mono">0</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td><td class="mono" style="font-weight:600">0</td></tr>
+        <tr style="background:var(--surface2)"><td colspan="12" style="font-weight:600;color:var(--text2)">TOTAL HORAS ESTIMADAS</td><td class="mono" style="font-size:14px;font-weight:600;color:var(--green)">243</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+  <div class="card">
+    <div class="ch"><div class="ct">Flujo de Liberación</div></div>
+    <div class="tw"><table>
+      <thead><tr><th>Paso</th><th>Responsable</th><th>Área</th><th>Fecha</th><th>Estado</th><th>Observaciones</th></tr></thead>
+      <tbody>
+        <tr><td>Elaboración OT</td><td>Ing. Alejandro García</td><td>Coordinador Proyectos</td><td>10/03/2026</td><td><span class="badge bg">Completo</span></td><td>COT-AL-027ADL-26C registrada</td></tr>
+        <tr><td>Revisión Ingeniería</td><td>Cristian Durán</td><td>Ingeniería</td><td>10/03/2026</td><td><span class="badge bg">Completo</span></td><td>Sin observaciones técnicas</td></tr>
+        <tr><td>Revisión Compras</td><td>Jessica Fuentes</td><td>Compras</td><td>—</td><td><span class="badge ba">Pendiente</span></td><td>En espera de OC validada</td></tr>
+        <tr><td>Aprobación Manufactura</td><td>Jesús Lara</td><td>Manufactura</td><td>—</td><td><span class="badge bn">Bloqueado</span></td><td>Requiere aprobación de compras</td></tr>
+        <tr><td>Liberación a Producción</td><td>Sistema</td><td>—</td><td>03/03/2026</td><td><span class="badge bg">Liberada</span></td><td>Fecha liberación: 3 marzo 2026</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- COTIZACIONES -->
+<div class="mod" id="mod-cotizaciones">
+  <div class="kg">
+    <div class="kpi"><div class="kl">Cotizaciones 2026</div><div class="kv" style="color:var(--blue)">18+</div><div class="ks">Registradas en control ventas</div></div>
+    <div class="kpi"><div class="kl">Monto cotizado</div><div class="kv">$218K</div><div class="ks">USD · sin IVA · acumulado</div></div>
+    <div class="kpi"><div class="kl">Tipo de cambio ref.</div><div class="kv" style="color:var(--green)">$17.34</div><div class="ks">USD · Diario Oficial</div></div>
+    <div class="kpi"><div class="kl">Clientes activos</div><div class="kv">6</div><div class="ks">F3, Avanzar, Autoliv, Adient…</div></div>
+  </div>
+  <div class="card">
+    <div class="ch"><div><div class="ct">Control de Ventas 2026</div><div class="cs">Datos reales · Hoja Control Ventas 2026</div></div><button class="btn p sm">+ Nueva cotización</button></div>
+    <div class="tw"><table>
+      <thead><tr><th>Item</th><th>Cliente</th><th>COT Ref.</th><th>COT Alenstec</th><th>Fecha COT</th><th>Costo (USD s/IVA)</th><th>OC Cliente</th><th>T/C</th><th>No. OT</th><th>Tipo</th><th>Estado</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">1</td><td>F3</td><td class="mono">007F3-26</td><td class="mono">007F3-26</td><td>06/01/2026</td><td class="mono">$3,215.31</td><td class="mono">OC#20</td><td class="mono">—</td><td class="mono">—</td><td><span class="badge bb">Nuevo</span></td><td><span class="badge bg">Aprobada</span></td></tr>
+        <tr><td class="mono">2</td><td>Avanzar</td><td class="mono">058ADA-25C</td><td class="mono">004ADA-26</td><td>08/01/2026</td><td class="mono">$15,782.00</td><td class="mono">2310481395</td><td class="mono">—</td><td class="mono">OT-1934</td><td><span class="badge ba">Refurbish</span></td><td><span class="badge bg">Aprobada</span></td></tr>
+        <tr><td class="mono">5</td><td>Autoliv AMX</td><td class="mono">057AMX-24</td><td class="mono">057AMX-24</td><td>26/06/2024</td><td class="mono">$1,537.00</td><td class="mono">7569965 OM</td><td class="mono">—</td><td class="mono">OT-1941</td><td><span class="badge bb">Nuevo</span></td><td><span class="badge bg">Aprobada</span></td></tr>
+        <tr><td class="mono">10</td><td>Autoliv AMX</td><td class="mono">GIPU 0817</td><td class="mono">GIPU 0817</td><td>14/01/2026</td><td class="mono">$1,027.00</td><td class="mono">7569967 OM</td><td class="mono">$20.22</td><td class="mono">OT-1941</td><td><span class="badge bg">MECR</span></td><td><span class="badge bg">Aprobada</span></td></tr>
+        <tr><td class="mono">11</td><td>Autoliv AMX</td><td class="mono">GIPU 0817</td><td class="mono">GIPU 0817</td><td>29/01/2026</td><td class="mono">$1,048.00</td><td class="mono">7571148 OM</td><td class="mono">$20.22</td><td class="mono">OT-1942</td><td><span class="badge bg">MECR</span></td><td><span class="badge bg">Aprobada</span></td></tr>
+        <tr><td class="mono">13</td><td>Adient</td><td class="mono">TERM. Y COND.</td><td class="mono">2301481897</td><td>04/02/2026</td><td class="mono">$22,855.00</td><td class="mono">2301481897</td><td class="mono">$17.81</td><td class="mono">OT-1943</td><td><span class="badge ba">Refurbish</span></td><td><span class="badge bg">Aprobada</span></td></tr>
+        <tr><td class="mono">14</td><td>—</td><td class="mono">OC#23</td><td class="mono">N/A</td><td>19/02/2026</td><td class="mono">$217.00</td><td class="mono">OC#23</td><td class="mono">$17.13</td><td class="mono">OT-1944</td><td><span class="badge bn">Corte</span></td><td><span class="badge ba">En revisión</span></td></tr>
+        <tr><td class="mono">15</td><td>—</td><td class="mono">OC#22</td><td class="mono">N/A</td><td>19/02/2026</td><td class="mono">$5,886.51</td><td class="mono">OC#22</td><td class="mono">$17.13</td><td class="mono">OT-1945</td><td><span class="badge bb">Fabricación</span></td><td><span class="badge bg">Aprobada</span></td></tr>
+        <tr><td class="mono">16</td><td>Adient</td><td class="mono">TERM. Y COND.</td><td class="mono">2301492124</td><td>25/02/2026</td><td class="mono">$16,020.00</td><td class="mono">2301492124</td><td class="mono">$17.23</td><td class="mono">OT-1946</td><td><span class="badge bb">Manufactura</span></td><td><span class="badge bg">Aprobada</span></td></tr>
+        <tr><td class="mono">17</td><td>Adient</td><td class="mono">GIPU 0817</td><td class="mono">GIPU 0817</td><td>—</td><td class="mono">$8,990.00</td><td class="mono">—</td><td class="mono">$17.21</td><td class="mono">OT-1947</td><td><span class="badge ba">Fabricación</span></td><td><span class="badge ba">En revisión</span></td></tr>
+        <tr style="background:var(--green-lt)"><td class="mono">18</td><td>Adient Lerma</td><td class="mono">TERM. Y COND.</td><td class="mono">COT-AL-027ADL-26C</td><td>10/03/2026</td><td class="mono" style="font-weight:600">$6,789.00</td><td class="mono">2301498137</td><td class="mono">$17.34</td><td class="mono" style="font-weight:700">OT-1948</td><td><span class="badge ba">Refurbish</span></td><td><span class="badge bg">Aprobada</span></td></tr>
+        <tr><td class="mono">19</td><td>Adient</td><td class="mono">TERM. Y COND.</td><td class="mono">2301504802</td><td>24/03/2026</td><td class="mono">$8,407.00</td><td class="mono">2301504802</td><td class="mono">$17.54</td><td class="mono">OT-1951</td><td><span class="badge ba">Refurbish</span></td><td><span class="badge ba">En revisión</span></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- PRONÓSTICO -->
+<div class="mod" id="mod-pronostico">
+  <div class="kg">
+    <div class="kpi"><div class="kl">Costo cotizado total</div><div class="kv">$218K</div><div class="ks">USD · acumulado 2026</div></div>
+    <div class="kpi"><div class="kl">Costo real (OT-1936)</div><div class="kv" style="color:var(--green)">$2,473</div><div class="ks">USD · vs $8,520 cotizado</div></div>
+    <div class="kpi"><div class="kl">Horas cotizadas</div><div class="kv" style="color:var(--blue)">413</div><div class="ks">hrs · OT-1936 labor directa</div></div>
+    <div class="kpi"><div class="kl">Horas reales</div><div class="kv" style="color:var(--green)">388</div><div class="ks">hrs · registradas en ERP</div></div>
+  </div>
+  <div class="card">
+    <div class="ch"><div><div class="ct">Pronóstico del Costo por OT · Cotizado vs. Real</div><div class="cs">Datos reales del ERP Open Source · 2026</div></div></div>
+    <div class="tw"><table>
+      <thead><tr><th>No. OT</th><th>Cliente</th><th>Descripción</th><th>Cot. (USD)</th><th>Real (USD)</th><th>T/C</th><th>Cot. (MXN)</th><th>Varianza</th><th>Semáforo</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">OT-1936</td><td>Adient/Toyota</td><td>Manuf. 2 Brazos Neumáticos Tacoma</td><td class="mono">$8,520.19</td><td class="mono">$2,473.59</td><td class="mono">$17.95</td><td class="mono">$152,937</td><td><span class="badge bg">−71% bajo presup.</span></td><td><span class="badge bg">✓ OK</span></td></tr>
+        <tr><td class="mono">OT-1937</td><td>Adient Lerma</td><td>Fab. 10 pzas. punch T226038E</td><td class="mono">$6,789.00</td><td class="mono">—</td><td class="mono">$17.34</td><td class="mono">$117,720</td><td><span class="badge bn">En proceso</span></td><td><span class="badge bb">En ejecución</span></td></tr>
+        <tr><td class="mono">OT-1943</td><td>Adient</td><td>Refurbish e integración grande</td><td class="mono">$22,855.00</td><td class="mono">$9,458.34</td><td class="mono">$17.81</td><td class="mono">$407,048</td><td><span class="badge ba">+41% avance</span></td><td><span class="badge ba">Atención</span></td></tr>
+        <tr><td class="mono">OT-1946</td><td>Adient</td><td>Manuf. 2 Hand to Hand Tacoma 736D</td><td class="mono">$16,020.00</td><td class="mono">—</td><td class="mono">$17.23</td><td class="mono">$275,965</td><td><span class="badge bn">En proceso</span></td><td><span class="badge bb">En ejecución</span></td></tr>
+        <tr style="background:var(--green-lt)"><td class="mono">OT-1948</td><td>Adient Lerma</td><td>Camb. botón vestidura Rivian/Toyota</td><td class="mono" style="font-weight:600">$6,789.00</td><td class="mono">$0.00</td><td class="mono">$17.34</td><td class="mono" style="font-weight:600">$117,720</td><td><span class="badge bg">Inicio</span></td><td><span class="badge bb">En ejecución</span></td></tr>
+        <tr><td class="mono">OT-1951</td><td>Adient</td><td>Refurbish a 1 máquina</td><td class="mono">$8,407.00</td><td class="mono">—</td><td class="mono">$17.54</td><td class="mono">$147,459</td><td><span class="badge bn">Cotizado</span></td><td><span class="badge bn">Sin iniciar</span></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- COSTO MATERIAL -->
+<div class="mod" id="mod-material">
+  <div class="kg">
+    <div class="kpi"><div class="kl">Líneas de material</div><div class="kv" style="color:var(--blue)">377+</div><div class="ks">OCs en base de datos</div></div>
+    <div class="kpi"><div class="kl">Material stock activas</div><div class="kv">$1,411</div><div class="ks">USD · rev. 13-Mar-2026</div></div>
+    <div class="kpi"><div class="kl">Material solicitado</div><div class="kv" style="color:var(--amber)">$19,875</div><div class="ks">USD · total activas</div></div>
+    <div class="kpi"><div class="kl">Costo gral. real</div><div class="kv" style="color:var(--green)">$44,491</div><div class="ks">MXN · OT-1936</div></div>
+  </div>
+  <div class="card">
+    <div class="ch"><div><div class="ct">Requisición de Material Comercial por OT</div><div class="cs">Base de Datos OC · ERP Open Source · 2026</div></div><button class="btn p sm">+ Registrar material</button></div>
+    <div class="tw"><table>
+      <thead><tr><th>No. Prov.</th><th>Proveedor</th><th>Moneda</th><th>Clave</th><th>Descripción</th><th>OT</th><th>Pzas</th><th>Precio Unit.</th><th>IVA</th><th>Ret. ISR</th><th>Subtotal</th><th>IVA $</th><th>Total</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">37</td><td>Misumi Mexico</td><td><span class="badge bb">USD</span></td><td class="mono">DBB3-3-3</td><td>Tornillo escalado</td><td class="mono">1928</td><td class="mono">2</td><td class="mono">$6.19</td><td>16%</td><td>—</td><td class="mono">$12.38</td><td class="mono">$1.98</td><td class="mono" style="font-weight:600">$14.36</td></tr>
+        <tr><td class="mono">28</td><td>Ecosy Engineering</td><td><span class="badge bn">MXN</span></td><td class="mono">KQ2L04-M5A</td><td>Conex. instantáneo</td><td class="mono">1928</td><td class="mono">6</td><td class="mono">$31.68</td><td>16%</td><td>—</td><td class="mono">$190.08</td><td class="mono">$30.41</td><td class="mono" style="font-weight:600">$220.49</td></tr>
+        <tr><td class="mono">28</td><td>Ecosy Engineering</td><td><span class="badge bn">MXN</span></td><td class="mono">MH22-20D</td><td>Pinza neumática ×2</td><td class="mono">1928</td><td class="mono">2</td><td class="mono">$2,361.92</td><td>16%</td><td>—</td><td class="mono">$4,723.84</td><td class="mono">$755.81</td><td class="mono" style="font-weight:600">$5,479.65</td></tr>
+        <tr><td class="mono">28</td><td>Ecosy Engineering</td><td><span class="badge bn">MXN</span></td><td class="mono">MH22-20D</td><td>Pinza neumática ×6</td><td class="mono">1928</td><td class="mono">6</td><td class="mono">$2,361.92</td><td>16%</td><td>—</td><td class="mono">$14,171.52</td><td class="mono">$2,267.44</td><td class="mono" style="font-weight:600">$16,438.96</td></tr>
+        <tr><td class="mono">28</td><td>Ecosy Engineering</td><td><span class="badge bn">MXN</span></td><td class="mono">D-MBPL</td><td>Detector elemento ×18</td><td class="mono">1928</td><td class="mono">18</td><td class="mono">$270.10</td><td>16%</td><td>—</td><td class="mono">$4,861.80</td><td class="mono">$777.89</td><td class="mono" style="font-weight:600">$5,639.69</td></tr>
+        <tr><td class="mono">3</td><td>Pei Equipos</td><td><span class="badge bb">USD</span></td><td class="mono">40-4040</td><td>Perfil 40×40mm</td><td class="mono">1934</td><td class="mono">1</td><td class="mono">$80.81</td><td>16%</td><td>1.25%</td><td class="mono">$161.62</td><td class="mono">$25.86</td><td class="mono" style="font-weight:600">$187.48</td></tr>
+        <tr><td class="mono">254</td><td>CORTELASER (A.U. Ceballos)</td><td><span class="badge bn">MXN</span></td><td class="mono">CORTELASER</td><td>Corte láser ×11</td><td class="mono">1904</td><td class="mono">11</td><td class="mono">$249.47</td><td>16%</td><td>1.25%</td><td class="mono">$2,744.17</td><td class="mono">$438.67</td><td class="mono" style="font-weight:600">$3,182.84</td></tr>
+        <tr><td class="mono">254</td><td>CORTELASER (A.U. Ceballos)</td><td><span class="badge bn">MXN</span></td><td class="mono">CORTELASER</td><td>Corte láser ×22</td><td class="mono">1904</td><td class="mono">22</td><td class="mono">$244.65</td><td>16%</td><td>1.25%</td><td class="mono">$5,382.30</td><td class="mono">$860.77</td><td class="mono" style="font-weight:600">$6,243.07</td></tr>
+        <tr><td class="mono">20</td><td>Servicio Industrial</td><td><span class="badge bb">USD</span></td><td class="mono">PLACA C4140</td><td>Placa acero</td><td class="mono">1928</td><td class="mono">1</td><td class="mono">$48.18</td><td>16%</td><td>—</td><td class="mono">$48.18</td><td class="mono">$7.71</td><td class="mono" style="font-weight:600">$55.89</td></tr>
+        <tr><td class="mono">14</td><td>Aceros Argenis</td><td><span class="badge bn">MXN</span></td><td class="mono">PLÁFENE-1/2-6</td><td>Placa aluminio ×4</td><td class="mono">1937</td><td class="mono">4</td><td class="mono">$155.00</td><td>16%</td><td>—</td><td class="mono">$620.00</td><td class="mono">$99.20</td><td class="mono" style="font-weight:600">$719.20</td></tr>
+        <tr><td class="mono">14</td><td>Aceros Argenis</td><td><span class="badge bn">MXN</span></td><td class="mono">PLÁFENE-1/2-6</td><td>Placa aluminio ×5</td><td class="mono">1937</td><td class="mono">5</td><td class="mono">$155.00</td><td>16%</td><td>—</td><td class="mono">$775.00</td><td class="mono">$124.00</td><td class="mono" style="font-weight:600">$899.00</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- ENTREGAS -->
+<div class="mod" id="mod-entregas">
+  <div class="subnav">
+    <div class="sntab active" onclick="goSub('entregas','proveedores',this)">Proveedores</div>
+    <div class="sntab" onclick="goSub('entregas','ocp',this)">Órdenes de Compra</div>
+    <div class="sntab" onclick="goSub('entregas','inventario',this)">Inventario</div>
+    <div class="sntab" onclick="goSub('entregas','facturas',this)">Facturas</div>
+    <div class="sntab" onclick="goSub('entregas','entregas',this)">Entregas</div>
+  </div>
+
+  <!-- PROVEEDORES -->
+  <div class="submod active" id="sub-entregas-proveedores">
+    <div class="card">
+      <div class="ch">
+        <div><div class="ct">Proveedores</div><div class="cs">Catálogo de proveedores activos</div></div>
+        <div style="display:flex;gap:7px;align-items:center">
+          <button class="btn p sm">+ Agregar proveedor</button>
+          <button class="btn sm" id="btn-dl-prov" disabled style="opacity:.45">⬇ Descargar XLSX</button>
+        </div>
+      </div>
+      <div class="date-filter">
+        <label>Desde:</label><input type="date" id="prov-desde" oninput="checkDl('prov')">
+        <label>Hasta:</label><input type="date" id="prov-hasta" oninput="checkDl('prov')">
+      </div>
+      <div class="tw"><table>
+        <thead><tr><th>No. Prov.</th><th>Nombre</th><th>Moneda</th><th>Contacto</th><th>OTs asociadas</th><th>Saldo pendiente</th><th>Estado</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">28</td><td>Ecosy Engineering</td><td><span class="badge bb">MXN</span></td><td>—</td><td class="mono">1928</td><td class="mono">$0.00</td><td><span class="badge bg">Activo</span></td></tr>
+          <tr><td class="mono">37</td><td>Misumi Mexico</td><td><span class="badge bb">USD</span></td><td>—</td><td class="mono">1928, 1934</td><td class="mono">$0.00</td><td><span class="badge bg">Activo</span></td></tr>
+          <tr><td class="mono">254</td><td>CORTELASER (A.U. Ceballos Cruz)</td><td><span class="badge bn">MXN</span></td><td>Alexis Uriel Ceballos</td><td class="mono">1904, 1934</td><td class="mono">$1,206.41</td><td><span class="badge ba">Entrega pend.</span></td></tr>
+          <tr><td class="mono">3</td><td>Pei Equipos</td><td><span class="badge bb">USD</span></td><td>—</td><td class="mono">1934</td><td class="mono">$0.00</td><td><span class="badge bg">Activo</span></td></tr>
+          <tr><td class="mono">20</td><td>Servicio Industrial</td><td><span class="badge bb">USD</span></td><td>—</td><td class="mono">1928, 1940</td><td class="mono">$48.18</td><td><span class="badge ba">Entrega pend.</span></td></tr>
+          <tr><td class="mono">14</td><td>Aceros Argenis</td><td><span class="badge bn">MXN</span></td><td>—</td><td class="mono">1937</td><td class="mono">$0.00</td><td><span class="badge bg">Activo</span></td></tr>
+          <tr><td class="mono">32</td><td>Propimex</td><td><span class="badge bn">MXN</span></td><td>—</td><td class="mono">1928</td><td class="mono">$650.00</td><td><span class="badge bg">Activo</span></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- ÓRDENES DE COMPRA PROVEEDORES -->
+  <div class="submod" id="sub-entregas-ocp">
+    <div class="card">
+      <div class="ch">
+        <div><div class="ct">Órdenes de Compra a Proveedores</div><div class="cs">OCs emitidas por Alenstec a proveedores</div></div>
+        <div style="display:flex;gap:7px;align-items:center">
+          <button class="btn p sm">+ Capturar OCP</button>
+          <button class="btn sm" id="btn-dl-ocp" disabled style="opacity:.45">⬇ Descargar XLSX</button>
+        </div>
+      </div>
+      <div class="date-filter">
+        <label>Desde:</label><input type="date" id="ocp-desde" oninput="checkDl('ocp')">
+        <label>Hasta:</label><input type="date" id="ocp-hasta" oninput="checkDl('ocp')">
+      </div>
+      <div class="tw"><table>
+        <thead><tr><th>No. OC Alenstec</th><th>Proveedor</th><th>OT</th><th>Descripción</th><th>Moneda</th><th>Monto</th><th>F. Emisión</th><th>F. Entrega Prom.</th><th>Estado</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">OCA-2026-001</td><td>Ecosy Engineering</td><td class="mono">1928</td><td>Conectores KQ2L04, Pinzas MH22, Detectores D-MBPL</td><td><span class="badge bn">MXN</span></td><td class="mono">$27,778.83</td><td>15/01/2026</td><td>10/02/2026</td><td><span class="badge bg">Recibido</span></td></tr>
+          <tr><td class="mono">OCA-2026-002</td><td>Misumi Mexico</td><td class="mono">1928</td><td>Tornillos DBB3-3-3 ×8 pzas</td><td><span class="badge bb">USD</span></td><td class="mono">$54.03</td><td>15/01/2026</td><td>28/02/2026</td><td><span class="badge bg">Recibido</span></td></tr>
+          <tr><td class="mono">OCA-2026-003</td><td>CORTELASER</td><td class="mono">1904</td><td>Corte láser ×33 pzas + mant. edificio</td><td><span class="badge bn">MXN</span></td><td class="mono">$10,431.72</td><td>01/02/2026</td><td>19/03/2026</td><td><span class="badge ba">Parcial</span></td></tr>
+          <tr><td class="mono">OCA-2026-004</td><td>Pei Equipos</td><td class="mono">1934</td><td>Perfil 40×40mm ×1</td><td><span class="badge bb">USD</span></td><td class="mono">$187.48</td><td>10/02/2026</td><td>24/03/2026</td><td><span class="badge bg">Recibido</span></td></tr>
+          <tr><td class="mono">OCA-2026-005</td><td>Servicio Industrial</td><td class="mono">1928</td><td>Placa C4140-2-1/4 + Corte aceros</td><td><span class="badge bb">USD</span></td><td class="mono">$68.14</td><td>10/02/2026</td><td>05/03/2026</td><td><span class="badge ba">Pendiente</span></td></tr>
+          <tr><td class="mono">OCA-2026-006</td><td>Aceros Argenis</td><td class="mono">1937</td><td>Pláfene-1/2-6 ×9 pzas</td><td><span class="badge bn">MXN</span></td><td class="mono">$1,618.20</td><td>01/02/2026</td><td>28/02/2026</td><td><span class="badge bg">Recibido</span></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- INVENTARIO -->
+  <div class="submod" id="sub-entregas-inventario">
+    <div class="card">
+      <div class="ch">
+        <div><div class="ct">Inventario</div><div class="cs">Existencias de material en almacén</div></div>
+        <div style="display:flex;gap:7px;align-items:center">
+          <button class="btn p sm">+ Agregar existencia</button>
+          <button class="btn sm" id="btn-dl-inv" disabled style="opacity:.45">⬇ Descargar XLSX</button>
+        </div>
+      </div>
+      <div class="date-filter">
+        <label>Desde:</label><input type="date" id="inv-desde" oninput="checkDl('inv')">
+        <label>Hasta:</label><input type="date" id="inv-hasta" oninput="checkDl('inv')">
+      </div>
+      <div class="tw"><table>
+        <thead><tr><th>Clave</th><th>Descripción</th><th>Proveedor</th><th>Moneda</th><th>Existencia</th><th>Unidad</th><th>Costo Unit.</th><th>Valor Total</th><th>OT Asignada</th><th>Estado</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">KQ2L04-M5A</td><td>Conex. instantáneo</td><td>Ecosy Eng.</td><td><span class="badge bn">MXN</span></td><td class="mono">6</td><td>pza</td><td class="mono">$31.68</td><td class="mono">$190.08</td><td class="mono">1928</td><td><span class="badge bg">Asignado</span></td></tr>
+          <tr><td class="mono">MH22-20D</td><td>Pinza neumática</td><td>Ecosy Eng.</td><td><span class="badge bn">MXN</span></td><td class="mono">8</td><td>pza</td><td class="mono">$2,361.92</td><td class="mono">$18,895.36</td><td class="mono">1928</td><td><span class="badge bg">Asignado</span></td></tr>
+          <tr><td class="mono">D-MBPL</td><td>Detector de elemento</td><td>Ecosy Eng.</td><td><span class="badge bn">MXN</span></td><td class="mono">20</td><td>pza</td><td class="mono">$270.10</td><td class="mono">$5,402.00</td><td class="mono">1928</td><td><span class="badge bg">Asignado</span></td></tr>
+          <tr><td class="mono">DBB3-3-3</td><td>Tornillo escalado</td><td>Misumi MX</td><td><span class="badge bb">USD</span></td><td class="mono">8</td><td>pza</td><td class="mono">$6.19</td><td class="mono">$49.52</td><td class="mono">1928</td><td><span class="badge bg">Asignado</span></td></tr>
+          <tr><td class="mono">40-4040</td><td>Perfil 40×40mm</td><td>Pei Equipos</td><td><span class="badge bb">USD</span></td><td class="mono">1</td><td>pza</td><td class="mono">$80.81</td><td class="mono">$80.81</td><td class="mono">1934</td><td><span class="badge bg">Asignado</span></td></tr>
+          <tr><td class="mono">PLÁFENE-1/2-6</td><td>Placa aluminio 1/2"</td><td>Aceros Argenis</td><td><span class="badge bn">MXN</span></td><td class="mono">9</td><td>pza</td><td class="mono">$155.00</td><td class="mono">$1,395.00</td><td class="mono">1937</td><td><span class="badge bg">Asignado</span></td></tr>
+          <tr><td class="mono">PLACA C4140</td><td>Placa acero C4140-2-1/4</td><td>Serv. Ind.</td><td><span class="badge bb">USD</span></td><td class="mono">1</td><td>pza</td><td class="mono">$48.18</td><td class="mono">$48.18</td><td class="mono">1928</td><td><span class="badge ba">Sin asignar</span></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- FACTURAS -->
+  <div class="submod" id="sub-entregas-facturas">
+    <div class="card">
+      <div class="ch">
+        <div><div class="ct">Facturas de Proveedores</div><div class="cs">Facturas recibidas por compras de material</div></div>
+        <div style="display:flex;gap:7px">
+          <button class="btn p sm">+ Agregar factura</button>
+          <button class="btn sm" onclick="triggerXMLUpload()">+ Agregar por XML</button>
+          <input type="file" id="xmlFileInput" accept=".xml" style="display:none" onchange="handleXMLUpload(event)">
+          <button class="btn sm" id="btn-dl-fact" disabled style="opacity:.45">⬇ Descargar XLSX</button>
+        </div>
+      </div>
+      <div class="date-filter">
+        <label>Desde:</label><input type="date" id="fact-desde" oninput="checkDl('fact')">
+        <label>Hasta:</label><input type="date" id="fact-hasta" oninput="checkDl('fact')">
+      </div>
+      <div class="tw"><table>
+        <thead><tr><th>RFC Emisor</th><th>RFC Receptor</th><th>UUID / Folio</th><th>Serie</th><th>Folio</th><th>F. Emisión</th><th>F. Certificación</th><th>Régimen Fiscal</th><th>Concepto</th><th>Cantidad</th><th>P. Unit.</th><th>Subtotal</th><th>IVA</th><th>Ret. ISR</th><th>Ret. IVA</th><th>Total</th><th>Moneda</th><th>T/C</th><th>Método de Pago (PUE/PPD)</th><th>Validación SAT</th></tr></thead>
+        <tbody>
+          <tr><td class="mono" style="font-size:9px">ECO010101A1A</td><td>ALE010410123</td><td class="mono" style="font-size:9px">EMF006602Q2</td><td>—</td><td class="mono">76286 LN</td><td>20/03/2026</td><td>20/03/2026 11:47</td><td>Régimen General</td><td>Conectores y accesorios</td><td class="mono">1</td><td class="mono">$23,946.60</td><td class="mono">$23,946.60</td><td class="mono">$3,831.46</td><td>—</td><td>—</td><td class="mono" style="font-weight:600">$27,778.06</td><td><span class="badge bn">MXN</span></td><td>—</td><td><span class="badge bg">PUE</span></td><td><span class="badge bg">✓ Válida</span></td></tr>
+          <tr><td class="mono" style="font-size:9px">ECO010101A1A</td><td>ALE010410123</td><td class="mono" style="font-size:9px">SCD110101056</td><td>A</td><td class="mono">52960</td><td>20/03/2026</td><td>20/03/2026 12:16</td><td>Régimen General</td><td>Suministro de materiales</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td><td>—</td><td>—</td><td class="mono">—</td><td><span class="badge bn">MXN</span></td><td>—</td><td><span class="badge ba">PPD</span></td><td><span class="badge ba">Pendiente</span></td></tr>
+          <tr><td class="mono" style="font-size:9px">ECO010101A1A</td><td>ALE010410123</td><td class="mono" style="font-size:9px">EMF006602Q2</td><td>—</td><td class="mono">54700 FI</td><td>23/03/2026</td><td>23/03/2026 15:25</td><td>Régimen General</td><td>Servicios diversos</td><td class="mono">1</td><td class="mono">$15,500.00</td><td class="mono">$15,500.00</td><td class="mono">$2,480.00</td><td class="mono">$775.00</td><td>—</td><td class="mono" style="font-weight:600">$17,205.00</td><td><span class="badge bn">MXN</span></td><td>—</td><td><span class="badge bb">PUE</span></td><td><span class="badge bg">✓ Válida</span></td></tr>
+          <tr><td class="mono" style="font-size:9px">CTL010101ABC</td><td>ALE010410123</td><td class="mono" style="font-size:9px">LSO1306189</td><td>—</td><td class="mono">52918</td><td>24/03/2026</td><td>24/03/2026 12:12</td><td>Régimen General</td><td>Corte láser y servicios</td><td class="mono">1</td><td class="mono">$8,975.50</td><td class="mono">$8,975.50</td><td class="mono">$1,436.08</td><td class="mono">$448.78</td><td>—</td><td class="mono" style="font-weight:600">$9,962.80</td><td><span class="badge bn">MXN</span></td><td>—</td><td><span class="badge bg">PUE</span></td><td><span class="badge bg">✓ Válida</span></td></tr>
+          <tr><td class="mono" style="font-size:9px">CTL010101ABC</td><td>ALE010410123</td><td class="mono" style="font-size:9px">SNF171020FA</td><td>—</td><td class="mono">6140 EAC</td><td>24/03/2026</td><td>24/03/2026 19:01</td><td>Régimen General</td><td>Mantenimiento y servicios</td><td class="mono">1</td><td class="mono">$1,205.00</td><td class="mono">$1,205.00</td><td class="mono">$192.80</td><td>—</td><td>—</td><td class="mono" style="font-weight:600">$1,397.80</td><td><span class="badge bn">MXN</span></td><td>—</td><td><span class="badge ba">PUE</span></td><td><span class="badge bg">✓ Válida</span></td></tr>
+          <tr><td class="mono" style="font-size:9px">MIS010101XYZ</td><td>ALE010410123</td><td class="mono" style="font-size:9px">TSP00724QW</td><td>—</td><td class="mono">54900 FC</td><td>25/03/2026</td><td>25/03/2026 12:50</td><td>Régimen General</td><td>Distribuidor mayorista</td><td class="mono">2</td><td class="mono">$27.01</td><td class="mono">$54.02</td><td class="mono">$8.64</td><td>—</td><td>—</td><td class="mono" style="font-weight:600">$62.66</td><td><span class="badge bb">USD</span></td><td>$17.23</td><td><span class="badge bb">PUE</span></td><td><span class="badge br">⚠ Revisar</span></td></tr>
+          <tr><td class="mono" style="font-size:9px">PEI010101DEF</td><td>ALE010410123</td><td class="mono" style="font-size:9px">SFE080712F8</td><td>—</td><td class="mono">54033 FTPV</td><td>25/03/2026</td><td>25/03/2026 16:38</td><td>Régimen General</td><td>Equipos y accesorios industriales</td><td class="mono">1</td><td class="mono">$93.74</td><td class="mono">$93.74</td><td class="mono">$14.99</td><td>—</td><td>—</td><td class="mono" style="font-weight:600">$108.73</td><td><span class="badge bb">USD</span></td><td>$17.21</td><td><span class="badge bg">PUE</span></td><td><span class="badge bg">✓ Válida</span></td></tr>
+          <tr><td class="mono" style="font-size:9px">PRO010101GHI</td><td>ALE010410123</td><td class="mono" style="font-size:9px">CEC9610288A</td><td>—</td><td class="mono">54913 B</td><td>26/03/2026</td><td>26/03/2026 10:07</td><td>Régimen General</td><td>Suministro diversos</td><td class="mono">1</td><td class="mono">$1,400.00</td><td class="mono">$1,400.00</td><td class="mono">$224.00</td><td>—</td><td>—</td><td class="mono" style="font-weight:600">$1,624.00</td><td><span class="badge bn">MXN</span></td><td>—</td><td><span class="badge bg">PUE</span></td><td><span class="badge bg">✓ Válida</span></td></tr>
+          <tr><td class="mono" style="font-size:9px">ACR010101JKL</td><td>ALE010410123</td><td class="mono" style="font-size:9px">ASE0090952</td><td>—</td><td class="mono">6500 K</td><td>27/03/2026</td><td>27/03/2026 13:58</td><td>Régimen General</td><td>Materiales de acero</td><td class="mono">9</td><td class="mono">$155.00</td><td class="mono">$1,395.00</td><td class="mono">$223.20</td><td>—</td><td>—</td><td class="mono" style="font-weight:600">$1,618.20</td><td><span class="badge bn">MXN</span></td><td>—</td><td><span class="badge bb">PUE</span></td><td><span class="badge bg">✓ Válida</span></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- ENTREGAS -->
+  <div class="submod" id="sub-entregas-entregas">
+    <div class="kg">
+      <div class="kpi"><div class="kl">Entregadas</div><div class="kv" style="color:var(--green)">40+</div><div class="ks">Confirmadas en ERP</div></div>
+      <div class="kpi"><div class="kl">Pendientes</div><div class="kv" style="color:var(--amber)">6</div><div class="ks">Sin fecha de recepción</div></div>
+      <div class="kpi"><div class="kl">Con incidencia</div><div class="kv" style="color:var(--red)">2</div><div class="ks">Fecha real posterior a prometida</div></div>
+      <div class="kpi"><div class="kl">Material sin asignar</div><div class="kv">0%</div><div class="ks">Stock sin OT asignada</div></div>
+    </div>
+    <div class="card">
+      <div class="ch">
+        <div><div class="ct">Registro de Entregas de Material</div><div class="cs">Base de datos OC · ERP Open Source · 2026</div></div>
+        <div style="display:flex;gap:7px">
+          <button class="btn sm">+ Ingresar incidencia</button>
+          <button class="btn p sm">+ Registrar entrega</button>
+          <button class="btn sm" id="btn-dl-entr" disabled style="opacity:.45">⬇ Descargar XLSX</button>
+        </div>
+      </div>
+      <div class="date-filter">
+        <label>Desde:</label><input type="date" id="entr-desde" oninput="checkDl('entr')">
+        <label>Hasta:</label><input type="date" id="entr-hasta" oninput="checkDl('entr')">
+      </div>
+      <div class="tw"><table>
+        <thead><tr><th>No. Prov.</th><th>Proveedor</th><th>Producto</th><th>OT</th><th>Pzas</th><th>Precio Unit.</th><th>Entregado por</th><th>F. Recibido</th><th>F. Autorizado</th><th>Incidencia</th><th>Estado</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">28</td><td>Ecosy Engineering</td><td>Conex. KQ2L04-M5A</td><td class="mono">1928</td><td class="mono">6</td><td class="mono">$31.68 MXN</td><td>Diego</td><td>28/02/2026</td><td>—</td><td>—</td><td><span class="badge bg">Entregado</span></td></tr>
+          <tr><td class="mono">28</td><td>Ecosy Engineering</td><td>Pinza MH22-20D</td><td class="mono">1928</td><td class="mono">2</td><td class="mono">$2,361.92 MXN</td><td>Diego</td><td>28/02/2026</td><td>—</td><td>—</td><td><span class="badge bg">Entregado</span></td></tr>
+          <tr><td class="mono">28</td><td>Ecosy Engineering</td><td>Detector D-MBPL ×18</td><td class="mono">1928</td><td class="mono">18</td><td class="mono">$270.10 MXN</td><td>Eduardo</td><td>24/03/2026</td><td>—</td><td>—</td><td><span class="badge bg">Entregado</span></td></tr>
+          <tr><td class="mono">3</td><td>Pei Equipos</td><td>Perfil 40-4040</td><td class="mono">1934</td><td class="mono">1</td><td class="mono">$80.81 USD</td><td>Eduardo</td><td>24/03/2026</td><td>—</td><td>—</td><td><span class="badge bg">Entregado</span></td></tr>
+          <tr><td class="mono">254</td><td>CORTELASER</td><td>Corte láser ×11</td><td class="mono">1904</td><td class="mono">11</td><td class="mono">$249.47 MXN</td><td>L. Vargas-E.D.</td><td>19/03/2026</td><td>—</td><td>—</td><td><span class="badge bg">Entregado</span></td></tr>
+          <tr><td class="mono">254</td><td>CORTELASER</td><td>Mant. Edificio</td><td class="mono">1934</td><td class="mono">1</td><td class="mono">$310.32 MXN</td><td>—</td><td>—</td><td>—</td><td>—</td><td><span class="badge ba">Pendiente</span></td></tr>
+          <tr><td class="mono">254</td><td>CORTELASER</td><td>Mant. Edificio</td><td class="mono">1934</td><td class="mono">1</td><td class="mono">$896.09 MXN</td><td>—</td><td>—</td><td>—</td><td>—</td><td><span class="badge ba">Pendiente</span></td></tr>
+          <tr><td class="mono">37</td><td>Misumi Mexico</td><td>Tornillo DBB3-3-3</td><td class="mono">1928</td><td class="mono">2</td><td class="mono">$6.19 USD</td><td>Diego</td><td>28/02/2026</td><td>05/03/2026</td><td>—</td><td><span class="badge bg">Entregado</span></td></tr>
+          <tr><td class="mono">20</td><td>Servicio Industrial</td><td>Placa C4140-2-1/4</td><td class="mono">1928</td><td class="mono">1</td><td class="mono">$48.18 USD</td><td>—</td><td>—</td><td>05/03/2026</td><td>—</td><td><span class="badge ba">Pendiente</span></td></tr>
+          <tr><td class="mono">14</td><td>Aceros Argenis</td><td>Pláfene-1/2-6 ×4</td><td class="mono">1937</td><td class="mono">4</td><td class="mono">$155.00 MXN</td><td>Felipe N. Flores</td><td>28/02/2026</td><td>10/02/2026</td><td>—</td><td><span class="badge bg">Entregado</span></td></tr>
+          <tr><td class="mono">14</td><td>Aceros Argenis</td><td>Pláfene-1/2-6 ×5</td><td class="mono">1937</td><td class="mono">5</td><td class="mono">$155.00 MXN</td><td>Felipe N. Flores</td><td>28/02/2026</td><td>25/02/2026</td><td>—</td><td><span class="badge bg">Entregado</span></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ct">Últimas Incidencias</div><button class="btn sm">+ Ingresar incidencia</button></div>
+      <div class="tw"><table>
+        <thead><tr><th>Folio</th><th>OT</th><th>Proveedor</th><th>Descripción</th><th>Registrado por</th><th>Fecha</th><th>Estado</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">INC-001</td><td class="mono">1934</td><td>CORTELASER</td><td>Entrega de mant. edificio pendiente desde fecha comprometida</td><td>Felipe N. Flores</td><td>20/03/2026</td><td><span class="badge ba">Abierta</span></td></tr>
+          <tr><td class="mono">INC-002</td><td class="mono">1928</td><td>Servicio Industrial</td><td>Placa C4140 sin recibir, OC autorizada el 05/03</td><td>Diego Castillo</td><td>22/03/2026</td><td><span class="badge ba">Abierta</span></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+</div>
+
+<!-- HORAS -->
+<div class="mod" id="mod-horas">
+  <div class="kg">
+    <div class="kpi"><div class="kl">Horas capturadas</div><div class="kv" style="color:var(--green)">1,864+</div><div class="ks">Registros ERP · Ene–Mar 2026</div></div>
+    <div class="kpi"><div class="kl">Empleados registrados</div><div class="kv">20+</div><div class="ks">Activos en proyectos</div></div>
+    <div class="kpi"><div class="kl">Autorizador principal</div><div class="kv" style="font-size:15px">Jesús Lara</div><div class="ks">Manufactura · Terminal 02</div></div>
+    <div class="kpi"><div class="kl">Período del reporte</div><div class="kv" style="font-size:15px">Ene–Mar</div><div class="ks">01/01/2026 al 16/03/2026</div></div>
+  </div>
+  <div class="card">
+    <div class="ch"><div><div class="ct">Horas por Empleado, OT y Actividad</div><div class="cs">ALE-030424-J83 · Generado por Jesús Lara · Terminal 02 · 18-Mar-2026 10:09</div></div><button class="btn p sm">+ Capturar horas</button></div>
+    <div class="tw"><table>
+      <thead><tr><th>ID Reg.</th><th>ID Cli.</th><th>OT</th><th>Descripción Proyecto</th><th>ID Empl.</th><th>Nombre Empleado</th><th>Actividad</th><th>Hrs.</th><th>F. Captura</th><th>Capturado por</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">1848</td><td class="mono">0056</td><td class="mono">1951</td><td>Ref. Maq. Ens. Retenedores 40%</td><td class="mono">24</td><td>Magarito Álvarez Piña</td><td><span class="atag" style="background:var(--amber-lt);color:var(--amber)">E) Maquinado</span></td><td class="mono">2.500</td><td>24/03/2026</td><td style="font-size:11px">Jesús Lara 12:54:39</td></tr>
+        <tr><td class="mono">1849</td><td class="mono">0056</td><td class="mono">1951</td><td>Ref. Maq. Ens. Retenedores 40%</td><td class="mono">24</td><td>Magarito Álvarez Piña</td><td><span class="atag" style="background:var(--amber-lt);color:var(--amber)">E) Maquinado</span></td><td class="mono">2.500</td><td>24/03/2026</td><td style="font-size:11px">Jesús Lara 12:54:51</td></tr>
+        <tr><td class="mono">1850</td><td class="mono">0065</td><td class="mono">1934</td><td>Labor Indirecta</td><td class="mono">65</td><td>Cristian Saúl Durán Plata</td><td><span class="atag" style="background:var(--green-lt);color:var(--green)">2) Des. y Preventa</span></td><td class="mono">5.000</td><td>24/03/2026</td><td style="font-size:11px">Jesús Lara 11:53:32</td></tr>
+        <tr><td class="mono">1851</td><td class="mono">0065</td><td class="mono">1934</td><td>Labor Indirecta</td><td class="mono">65</td><td>Cristian Saúl Durán Plata</td><td><span class="atag" style="background:var(--green-lt);color:var(--green)">8) Control Costo</span></td><td class="mono">2.000</td><td>24/03/2026</td><td style="font-size:11px">Jesús Lara 11:53:41</td></tr>
+        <tr><td class="mono">1853</td><td class="mono">0071</td><td class="mono">1934</td><td>Labor Indirecta</td><td class="mono">71</td><td>David Báez Jara</td><td><span class="atag" style="background:var(--green-lt);color:var(--green)">2) Des. y Preventa</span></td><td class="mono">6.000</td><td>24/03/2026</td><td style="font-size:11px">Jesús Lara 12:54:03</td></tr>
+        <tr><td class="mono">1854</td><td class="mono">0071</td><td class="mono">1934</td><td>Labor Indirecta</td><td class="mono">71</td><td>David Báez Jara</td><td><span class="atag" style="background:var(--green-lt);color:var(--green)">8) Control Costo</span></td><td class="mono">3.000</td><td>24/03/2026</td><td style="font-size:11px">Jesús Lara 12:54:12</td></tr>
+        <tr><td class="mono">1855</td><td class="mono">0114</td><td class="mono">1934</td><td>Labor Indirecta</td><td class="mono">114</td><td>Diego Castillo Jiménez</td><td><span class="atag" style="background:var(--red-lt);color:var(--red)">13) Curso/Cap.</span></td><td class="mono">2.000</td><td>24/03/2026</td><td style="font-size:11px">Jesús Lara 11:55:11</td></tr>
+        <tr><td class="mono">1856</td><td class="mono">0114</td><td class="mono">1934</td><td>Labor Indirecta</td><td class="mono">114</td><td>Diego Castillo Jiménez</td><td><span class="atag" style="background:var(--surface2);color:var(--text2)">8) Corte</span></td><td class="mono">1.000</td><td>24/03/2026</td><td style="font-size:11px">Jesús Lara 11:55:24</td></tr>
+        <tr><td class="mono">1857</td><td class="mono">0114</td><td class="mono">1934</td><td>Labor Indirecta</td><td class="mono">114</td><td>Diego Castillo Jiménez</td><td><span class="atag" style="background:var(--blue-lt);color:var(--blue)">G) Ensamble</span></td><td class="mono">4.500</td><td>24/03/2026</td><td style="font-size:11px">Jesús Lara 11:54:41</td></tr>
+        <tr><td class="mono">1858</td><td class="mono">0141</td><td class="mono">1934</td><td>Labor Indirecta</td><td class="mono">141</td><td>Felipe Neri Flores Rodríguez</td><td><span class="atag" style="background:var(--surface2);color:var(--text2)">7) Almacén</span></td><td class="mono">1.000</td><td>24/03/2026</td><td style="font-size:11px">Jesús Lara 11:56:13</td></tr>
+        <tr><td class="mono">1859</td><td class="mono">0010</td><td class="mono">1934</td><td>Labor Indirecta</td><td class="mono">10</td><td>Miguel Á. Espinosa Martínez</td><td><span class="atag" style="background:var(--surface2);color:var(--text2)">10) Mantenimiento</span></td><td class="mono">0.500</td><td>25/03/2026</td><td style="font-size:11px">Jesús Lara 13:46:30</td></tr>
+        <tr><td class="mono">1860</td><td class="mono">0010</td><td class="mono">1934</td><td>Labor Indirecta</td><td class="mono">10</td><td>Miguel Á. Espinosa Martínez</td><td><span class="atag" style="background:var(--amber-lt);color:var(--amber)">E) Maquinado</span></td><td class="mono">4.500</td><td>25/03/2026</td><td style="font-size:11px">Jesús Lara 13:45:23</td></tr>
+        <tr><td class="mono">1864</td><td class="mono">0012</td><td class="mono">1934</td><td>Labor Indirecta</td><td class="mono">12</td><td>Luis Antonio Vargas Chía</td><td><span class="atag" style="background:var(--amber-lt);color:var(--amber)">E) Maquinado</span></td><td class="mono">7.500</td><td>24/03/2026</td><td style="font-size:11px">Jesús Lara 13:39:42</td></tr>
+        <tr><td class="mono">2026</td><td class="mono">0044</td><td class="mono">1936</td><td>Manuf. 2 Brazos Neumáticos Alt.</td><td class="mono">114</td><td>Diego Castillo Jiménez</td><td><span class="atag" style="background:var(--amber-lt);color:var(--amber)">E) Maquinado</span></td><td class="mono">—</td><td>—</td><td>—</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- COSTO MO -->
+<div class="mod" id="mod-costomo">
+  <div class="kg">
+    <div class="kpi"><div class="kl">Precio/hr cotizado</div><div class="kv" style="color:var(--blue)">$20.63</div><div class="ks">USD · labor directa</div></div>
+    <div class="kpi"><div class="kl">Costo cotizado MO</div><div class="kv">$8,520</div><div class="ks">USD · OT-1936 · 413 hrs</div></div>
+    <div class="kpi"><div class="kl">Horas reales</div><div class="kv" style="color:var(--green)">388</div><div class="ks">hrs · OT-1936 registradas</div></div>
+    <div class="kpi"><div class="kl">Moneda base</div><div class="kv">USD</div><div class="ks">T/C ref. $17.95 MXN</div></div>
+  </div>
+  <div class="card">
+    <div class="ch"><div><div class="ct">Costos MO — Labor Directa / Indirecta · OT-1936</div><div class="cs">Manuf. e Integr. 2 Brazos Neumáticos · Máq. Proceso Alterno Rear RH · Moneda USD</div></div></div>
+    <div class="tw"><table>
+      <thead><tr><th>Parte</th><th>Labor Directa</th><th>Precio/Cot.</th><th>Costo/Cot.</th><th>Hrs. Cot.</th><th>Precio/Real</th><th>Costo/Real</th><th>Hrs. Reales</th><th>Fechas</th></tr></thead>
+      <tbody>
+        <tr class="sec-row"><td colspan="9">COTIZADO vs. REAL · OT-1936</td></tr>
+        <tr><td class="mono" style="font-weight:600">A</td><td>Levantamiento, Ing. y Diseño</td><td class="mono">$20.63</td><td class="mono">$268.19</td><td class="mono">13.00</td><td class="mono">$0.00</td><td class="mono">$0.00</td><td class="mono">28.50</td><td style="font-size:10.5px;color:var(--text3)">14/01–10/03/26</td></tr>
+        <tr><td class="mono" style="font-weight:600">B</td><td>Corte</td><td class="mono">$20.63</td><td class="mono">$722.05</td><td class="mono">35.00</td><td class="mono">$0.00</td><td class="mono">$0.00</td><td class="mono">—</td><td style="font-size:10.5px;color:var(--text3)">19–26/01/2026</td></tr>
+        <tr><td class="mono" style="font-weight:600">C</td><td>Fabricación (Soldadura)</td><td class="mono">$20.63</td><td class="mono">$515.75</td><td class="mono">25.00</td><td class="mono">$0.00</td><td class="mono">$0.00</td><td class="mono">—</td><td style="font-size:10.5px;color:var(--text3)">03–07/01/2026</td></tr>
+        <tr><td class="mono" style="font-weight:600">D</td><td>Otros (Pavonado, Pintura, Temple)</td><td class="mono">$20.63</td><td class="mono">$0.00</td><td class="mono">—</td><td class="mono">$0.00</td><td class="mono">$0.00</td><td class="mono">4.00</td><td style="font-size:10.5px;color:var(--text3)">13/03/2026</td></tr>
+        <tr style="background:var(--amber-lt)"><td class="mono" style="font-weight:600">E</td><td>Maquinado</td><td class="mono">$20.63</td><td class="mono" style="font-weight:700;color:var(--amber)">$4,167.26</td><td class="mono" style="font-weight:700;color:var(--amber)">202.00</td><td class="mono">$0.00</td><td class="mono">$0.00</td><td class="mono">165.50</td><td style="font-size:10.5px;color:var(--text3)">19/01–28/02/2026</td></tr>
+        <tr><td class="mono" style="font-weight:600">F</td><td>Hiloerosión</td><td class="mono">$20.63</td><td class="mono">$0.00</td><td class="mono">—</td><td class="mono">$0.00</td><td class="mono">$0.00</td><td class="mono">2.00</td><td style="font-size:10.5px;color:var(--text3)">24/01/2026</td></tr>
+        <tr style="background:var(--blue-lt)"><td class="mono" style="font-weight:600">G</td><td>Ensamble</td><td class="mono">$20.63</td><td class="mono" style="font-weight:700;color:var(--blue)">$2,063.00</td><td class="mono" style="font-weight:700;color:var(--blue)">100.00</td><td class="mono">$0.00</td><td class="mono">$0.00</td><td class="mono">152.50</td><td style="font-size:10.5px;color:var(--text3)">16/02–01/03/2026</td></tr>
+        <tr><td class="mono" style="font-weight:600">H</td><td>Labor Eléctrica</td><td class="mono">$20.63</td><td class="mono">$247.56</td><td class="mono">12.00</td><td class="mono">$0.00</td><td class="mono">$0.00</td><td class="mono">—</td><td>—</td></tr>
+        <tr><td class="mono" style="font-weight:600">I</td><td>Automatización</td><td class="mono">$20.63</td><td class="mono">$0.00</td><td class="mono">—</td><td class="mono">$0.00</td><td class="mono">$0.00</td><td class="mono">—</td><td>—</td></tr>
+        <tr><td class="mono" style="font-weight:600">J</td><td>Shopper / Picer</td><td class="mono">$20.63</td><td class="mono">$0.00</td><td class="mono">—</td><td class="mono">$0.00</td><td class="mono">$0.00</td><td class="mono">3.00</td><td style="font-size:10.5px;color:var(--text3)">21/01–13/03/2026</td></tr>
+        <tr><td class="mono" style="font-weight:600">K</td><td>Certificación Dimensional</td><td class="mono">$20.63</td><td class="mono">$0.00</td><td class="mono">—</td><td class="mono">$0.00</td><td class="mono">$0.00</td><td class="mono">—</td><td>—</td></tr>
+        <tr><td class="mono" style="font-weight:600">L</td><td>Empaque y Embalaje</td><td class="mono">$20.63</td><td class="mono">$0.00</td><td class="mono">—</td><td class="mono">$0.00</td><td class="mono">$0.00</td><td class="mono">2.50</td><td>—</td></tr>
+        <tr><td class="mono" style="font-weight:600">M</td><td>Instalación en Campo</td><td class="mono">$20.63</td><td class="mono">$536.38</td><td class="mono">26.00</td><td class="mono">$0.00</td><td class="mono">$0.00</td><td class="mono">—</td><td>—</td></tr>
+        <tr style="background:var(--green-lt)"><td colspan="2" style="font-weight:700;color:var(--green)">TOTAL</td><td></td><td class="mono" style="font-weight:700;color:var(--green)">$8,520.19</td><td class="mono" style="font-weight:700;color:var(--green)">413 hrs</td><td></td><td class="mono" style="font-weight:700;color:var(--red)">$0.00</td><td class="mono" style="font-weight:700;color:var(--green)">388 hrs</td><td style="font-size:10.5px;font-weight:600;color:var(--green)">= Total horas reales</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</div>
+
+  </div>
+</div>
+</div>
+
+<script>
+const API_URL = 'http://localhost:3000/api';
+
+const CFG = {
+  dashboard:    { title: 'Dashboard',              crumb: '· Todas las Órdenes de Trabajo · 2026' },
+  ot:           { title: 'Orden de Trabajo',        crumb: '· Formato OT / Liberación' },
+  cotizaciones: { title: 'Cotizaciones y Ventas',   crumb: '· Control de Ventas 2026' },
+  pronostico:   { title: 'Pronóstico del Costo',    crumb: '· Cotizado vs. Real por OT' },
+  material:     { title: 'Costo de Material',       crumb: '· Requisición por OT' },
+  entregas:     { title: 'Entregas de Material',    crumb: '· Control de Recepciones' },
+  horas:        { title: 'Horas de Mano de Obra',   crumb: '· ALE-030424-J83 · Ene–Mar 2026' },
+  costomo:      { title: 'Costo de Mano de Obra',   crumb: '· Labor Directa / Indirecta · OT-1936' }
+};
+
+// API Calls
+async function loadWorkOrders() {
+  try {
+    const response = await fetch(`${API_URL}/work-orders`);
+    const orders = await response.json();
+    return orders;
+  } catch (error) {
+    console.warn('⚠ Backend not available. Using static data.', error);
+    return [];
+  }
+}
+
+async function loadQuotes() {
+  try {
+    const response = await fetch(`${API_URL}/quotes`);
+    const quotes = await response.json();
+    return quotes;
+  } catch (error) {
+    console.warn('⚠ Backend not available. Using static data.', error);
+    return [];
+  }
+}
+
+async function loadSuppliers() {
+  try {
+    const response = await fetch(`${API_URL}/suppliers`);
+    const suppliers = await response.json();
+    return suppliers;
+  } catch (error) {
+    console.warn('⚠ Backend not available. Using static data.', error);
+    return [];
+  }
+}
+
+// PDF Generation Function
+function generateOTPDF() {
+  const { jsPDF } = window.jspdf;
+  const otNum = document.querySelector('.ot-num')?.textContent || 'OT-AL-1948';
+  
+  // Collect data from form fields
+  const formData = {};
+  document.querySelectorAll('#mod-ot .fi').forEach(input => {
+    const label = input.parentElement?.querySelector('.fl')?.textContent || '';
+    if (label) formData[label.trim()] = input.value;
+  });
+
+  const doc = new jsPDF('p', 'mm', 'letter');
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const margin = 10;
+  const contentWidth = pageWidth - 2 * margin;
+  
+  let yPos = 10;
+
+  // Helper functions
+  const addText = (x, y, text, size = 10, weight = 'normal') => {
+    doc.setFontSize(size);
+    doc.setFont(undefined, weight);
+    doc.text(text, x, y);
+  };
+
+  const addLine = (x1, y1, x2, y2) => {
+    doc.setDrawColor(0);
+    doc.line(x1, y1, x2, y2);
+  };
+
+  const addRect = (x, y, w, h) => {
+    doc.setDrawColor(0);
+    doc.setLineWidth(0.3);
+    doc.rect(x, y, w, h);
+  };
+
+  const addCell = (x, y, w, h, text, size = 9, weight = 'normal') => {
+    addRect(x, y, w, h);
+    doc.setFontSize(size);
+    doc.setFont(undefined, weight);
+    doc.text(text, x + 2, y + h / 2 + 1.5);
+  };
+
+  const addLabelValue = (x, y, w1, w2, label, value, size = 9) => {
+    addCell(x, y, w1, 6, label, 8, 'bold');
+    addCell(x + w1, y, w2, 6, value, size);
+  };
+
+  // Title
+  addRect(margin, yPos, contentWidth, 8);
+  addText(margin + 2, yPos + 4.5, 'ALENSTEC SA DE CV', 12, 'bold');
+  addText(pageWidth - margin - 60, yPos + 4.5, 'FORMATO PARA INICIO V/O LIBERACION', 9, 'bold');
+  yPos += 10;
+
+  // Row 1: FECHA, CANTIDAD, No. OT
+  addLabelValue(margin, yPos, 30, 30, 'FECHA:', formData['Fecha de liberación'] || '10 de marzo de 2026', 8);
+  addLabelValue(margin + 70, yPos, 25, 35, 'CANTIDAD', formData['Cantidad'] || '1', 8);
+  addText(pageWidth - margin - 40, yPos + 1, 'No. DE OT ASIGNADA', 8, 'bold');
+  addRect(pageWidth - margin - 40, yPos + 4, 40, 6);
+  addText(pageWidth - margin - 38, yPos + 7.5, otNum, 11, 'bold');
+  yPos += 8;
+
+  // Row 2: CLIENTE
+  addLabelValue(margin, yPos, 30, contentWidth - 30, 'CLIENTE:', formData['Cliente'] || 'ADIENT LERMA', 8);
+  yPos += 8;
+
+  // Row 3: AREA REQUISITOR
+  addLabelValue(margin, yPos, 30, contentWidth - 30, 'AREA REQUISITOR:', formData['Área Requisitora'] || 'COORDINATOR PROYECT', 8);
+  yPos += 8;
+
+  // Row 4: REQUISITOR
+  addLabelValue(margin, yPos, 30, contentWidth - 30, 'REQUISITOR:', formData['Requisitor'] || 'ING. ALEJANDRO GARCIA', 8);
+  yPos += 8;
+
+  // Row 5: EMAIL
+  addLabelValue(margin, yPos, 30, contentWidth - 30, 'E-MAIL:', formData['E-mail'] || 'j.garcia.calzada@adient.com', 8);
+  yPos += 8;
+
+  // Row 6: PROGRAMA
+  addLabelValue(margin, yPos, 30, contentWidth - 30, 'PROGRAMA:', 'N/A', 8);
+  yPos += 8;
+
+  // Row 7: FECHA LIBERACION & ENTREGA
+  const dateY = yPos;
+  addCell(margin, dateY, 30, 6, 'FECHA LIBERACION:', 8, 'bold');
+  addCell(margin + 30, dateY, 40, 6, formData['Fecha de liberación'] || '3 de marzo de 2026', 8);
+  addCell(margin + 80, dateY, 40, 6, 'F. ENTREGA COMPROMISO:', 8, 'bold');
+  addCell(pageWidth - margin - 30, dateY, 30, 6, formData['F. Entrega Compromiso'] || '7 de abril de 2026', 8);
+  yPos += 8;
+
+  // Row 8: OC CLIENTE & COT
+  const ocY = yPos;
+  addCell(margin, ocY, 30, 6, '# OC CLIENTE:', 8, 'bold');
+  addCell(margin + 30, ocY, 40, 6, formData['# OC Cliente'] || '2301498137', 8);
+  addCell(margin + 80, ocY, 40, 6, '# COT REF. ALENSTEC:', 8, 'bold');
+  addCell(pageWidth - margin - 30, ocY, 30, 6, formData['COT Ref. Alenstec'] || 'COT-AL-027ADL-26C', 8);
+  yPos += 10;
+
+  // Description Header
+  addRect(margin, yPos, contentWidth, 5);
+  addText(margin + 2, yPos + 3, 'DESCRIPCION (ANOTE BREVEMENTE LO QUE SE REQUIERE)', 8, 'bold');
+  yPos += 6;
+
+  // Description Box
+  const description = 'TRAB. ADIC. POR CAMBIO DE UBIC. DE BOTÓN EN VESTIDURA, PARA MAQ. EXIS. DEL PROY. RIVIAN Y TOYOTA, PARA LA PLANTA DE ADIENT LERMA';
+  addRect(margin, yPos, contentWidth, 12);
+  const descLines = doc.splitTextToSize(description, contentWidth - 4);
+  doc.setFontSize(9);
+  doc.text(descLines, margin + 2, yPos + 2);
+  yPos += 14;
+
+  // Observations
+  addRect(margin, yPos, contentWidth, 5);
+  addText(margin + 2, yPos + 3, 'OBSERVACIONES', 8, 'bold');
+  yPos += 6;
+  addRect(margin, yPos, contentWidth, 8);
+  addText(margin + 2, yPos + 2, 'SE ANEXA CARATULA DE COTIZACION.', 8);
+  yPos += 10;
+
+  // Budget Section Header
+  addText(margin + 2, yPos, 'TIPO DE CAMBIO:', 9, 'bold');
+  addText(margin + 40, yPos, formData['Tipo de Cambio'] || '$17.34 USD', 9);
+  addText(pageWidth - margin - 50, yPos, '(REF. DIARIO OFICIAL)', 8);
+  yPos += 8;
+
+  // Budget Headers
+  addText(margin + 2, yPos, 'PRESUPUESTO MANO DE OBRA', 9, 'bold');
+  addText(margin + 85, yPos, 'PRESUPUESTO MATERIAL COMERCIAL', 9, 'bold');
+  yPos += 6;
+
+  // Budget Row
+  const budgetY = yPos;
+  addCell(margin, budgetY, 30, 5, 'MXN', 8, 'bold');
+  addCell(margin + 30, budgetY, 23, 5, 'USD', 8, 'bold');
+  addCell(margin + 85, budgetY, 30, 5, 'MXN', 8, 'bold');
+  addCell(margin + 115, budgetY, 28, 5, 'USD', 8, 'bold');
+  yPos += 6;
+
+  // Budget Values
+  addCell(margin, yPos, 30, 5, formData['Ppto. MO (MXN)'] || '$21,263', 8);
+  addCell(margin + 30, yPos, 23, 5, formData['Ppto. MO (USD)'] || '$1,226', 8);
+  addCell(margin + 85, yPos, 30, 5, formData['Ppto. Material (MXN)'] || '$12,050', 8);
+  addCell(margin + 115, yPos, 28, 5, formData['Ppto. Material (USD)'] || '$695', 8);
+  yPos += 8;
+
+  // Horas Estimadas
+  addText(margin + 2, yPos, 'HORAS ESTIMADAS DEL PROYECTO', 9, 'bold');
+  yPos += 5;
+
+  const hoursData = [
+    ['ING/DISEÑO', 'CORTE', 'FABRICACION', 'MAQUINADO', 'L.ENSAMBLE', 'L.ELECTRICA', 'AUTOMATIZ.', 'TOTAL'],
+    ['36', '2', '15', '84', '17', '5', '0', '243']
+  ];
+
+  const colW = contentWidth / 8;
+  hoursData[0].forEach((header, i) => {
+    addCell(margin + i * colW, yPos, colW, 5, header, 7, 'bold');
+  });
+  yPos += 5;
+
+  hoursData[1].forEach((val, i) => {
+    addCell(margin + i * colW, yPos, colW, 5, val, 8);
+  });
+  yPos += 7;
+
+  // Horas Reales Header
+  addText(margin + 2, yPos, 'HORAS REALES DEL PROYECTO', 9, 'bold');
+  yPos += 5;
+
+  // Empty hours row
+  hoursData[0].forEach((header, i) => {
+    addCell(margin + i * colW, yPos, colW, 5, header, 7, 'bold');
+  });
+  yPos += 5;
+
+  ['—', '—', '—', '—', '—', '—', '—', '—'].forEach((val, i) => {
+    addCell(margin + i * colW, yPos, colW, 5, val, 8);
+  });
+
+  // Footer with signatures
+  yPos = doc.internal.pageSize.getHeight() - 25;
+  addText(margin + 2, yPos, 'FIRMA DE LAS JEFATURAS CORRESPONDIENTES', 9, 'bold');
+  yPos += 6;
+
+  const sigLabels = ['VENTAS', 'R.H', 'INGENIERIA', 'CONTABILIDAD', 'MANUFACTURA', 'COMPRAS'];
+  const sigW = contentWidth / 6;
+
+  sigLabels.forEach((label, i) => {
+    const x = margin + i * sigW;
+    addRect(x, yPos, sigW, 10);
+    addText(x + 2, yPos + 8, label, 7, 'bold');
+  });
+
+  // Save PDF
+  doc.save(`OT-${otNum}.pdf`);
+  console.log('✓ PDF generated:', `OT-${otNum}.pdf`);
+}
+
+
+function goMod(id) {
+  document.querySelectorAll('.mod').forEach(m => m.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(n => n.classList.remove('active'));
+  const m = document.getElementById('mod-' + id);
+  const n = document.querySelector(`[data-mod="${id}"]`);
+  if (m) m.classList.add('active');
+  if (n) n.classList.add('active');
+  const c = CFG[id] || {};
+  document.getElementById('ttitle').textContent = c.title || id;
+  document.getElementById('tcrumb').textContent = c.crumb || '';
+  document.querySelector('.content').scrollTop = 0;
+  // topbar controls
+  const otSel = document.getElementById('ctrl-ot-sel');
+  const dates  = document.getElementById('ctrl-dates');
+  const tabs   = document.getElementById('ctrl-tabs');
+  const newBtn = document.getElementById('ctrl-new');
+  otSel.style.display = (id !== 'dashboard') ? 'flex' : 'none';
+  dates.style.display  = (id !== 'dashboard' && id !== 'ot') ? 'flex' : 'none';
+  tabs.style.display   = (id === 'dashboard') ? 'flex' : 'none';
+  newBtn.textContent   = c.newLabel || '+ Nueva OT';
+}
+
+document.querySelectorAll('.ni').forEach(el => {
+  el.addEventListener('click', () => goMod(el.dataset.mod));
+});
+document.querySelectorAll('.pill-tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.pill-tab').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+  });
+});
+function updateOTBanner(val) {
+  document.querySelector('.ot-num').textContent = val;
+}
+function goSub(mod, sub, el) {
+  const parent = document.getElementById('mod-' + mod);
+  parent.querySelectorAll('.submod').forEach(s => s.classList.remove('active'));
+  parent.querySelectorAll('.sntab').forEach(s => s.classList.remove('active'));
+  const target = document.getElementById('sub-' + mod + '-' + sub);
+  if (target) target.classList.add('active');
+  if (el) el.classList.add('active');
+}
+function checkDl(prefix) {
+  const d = document.getElementById((prefix||'g') + '-desde');
+  const h = document.getElementById((prefix||'g') + '-hasta');
+  const btn = document.getElementById('btn-dl-' + (prefix||'global'));
+  if (!btn) return;
+  const ok = d && h && d.value && h.value;
+  btn.disabled = !ok;
+  btn.style.opacity = ok ? '1' : '.45';
+}
+function checkGlobalDates() { checkDl(); }
+
+// XML CFDI Invoice Handling
+function triggerXMLUpload() {
+  document.getElementById('xmlFileInput').click();
+}
+
+function handleXMLUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const xmlContent = e.target.result;
+      const parser = new DOMParser();
+      const xmlText = typeof xmlContent === 'string' ? xmlContent.replace(/^\uFEFF/, '') : xmlContent;
+      const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+
+      // Check for parsing errors
+      if (xmlDoc.getElementsByTagName('parsererror').length > 0) {
+        alert('❌ Error: Archivo XML inválido');
+        return;
+      }
+
+      // Extract CFDI data
+      const cfdi = xmlDoc.documentElement;
+      const comprobante = cfdi.localName === 'Comprobante'
+        ? cfdi
+        : xmlDoc.getElementsByTagName('Comprobante')[0]
+          || xmlDoc.getElementsByTagName('cfdi:Comprobante')[0]
+          || xmlDoc.getElementsByTagNameNS('http://www.sat.gob.mx/cfd/4', 'Comprobante')[0];
+
+      if (!comprobante) {
+        alert('❌ Error: No es un CFDI válido');
+        return;
+      }
+
+      const getFirst = (names) => {
+        for (const name of names) {
+          const el = comprobante.getElementsByTagName(name)[0];
+          if (el) return el;
+        }
+        return null;
+      };
+
+      const getFirstNS = (namespace, localName) => {
+        const elements = comprobante.getElementsByTagNameNS(namespace, localName);
+        return elements.length > 0 ? elements[0] : null;
+      };
+
+      const tfd = getFirst(['TimbreFiscalDigital', 'tfd:TimbreFiscalDigital'])
+        || getFirstNS('http://www.sat.gob.mx/TimbreFiscalDigital', 'TimbreFiscalDigital');
+      const uuid = tfd ? tfd.getAttribute('UUID') : (comprobante.getAttribute('Folio') || 'xxx');
+      const serie = comprobante.getAttribute('Serie') || '—';
+      const fecha = comprobante.getAttribute('Fecha') ? comprobante.getAttribute('Fecha').split('T')[0] : new Date().toISOString().split('T')[0];
+
+      const emisor = getFirst(['Emisor', 'cfdi:Emisor']) || getFirstNS('http://www.sat.gob.mx/cfd/4', 'Emisor');
+      const receptor = getFirst(['Receptor', 'cfdi:Receptor']) || getFirstNS('http://www.sat.gob.mx/cfd/4', 'Receptor');
+      const rfcEmisor = emisor ? emisor.getAttribute('Rfc') || emisor.getAttribute('RfcEmisor') || 'XXXRXXXXX1XX' : 'XXXRXXXXX1XX';
+      const rfcReceptor = receptor ? receptor.getAttribute('Rfc') || receptor.getAttribute('RfcReceptor') || 'ALE010410123' : 'ALE010410123';
+      const moneda = comprobante.getAttribute('Moneda') || 'MXN';
+      const tipoCambio = comprobante.getAttribute('TipoCambio') || '1';
+      const subtotal = comprobante.getAttribute('SubTotal') || '0.00';
+      const ivaEl = getFirst(['Impuestos', 'cfdi:Impuestos']) || getFirstNS('http://www.sat.gob.mx/cfd/4', 'Impuestos');
+      const iva = ivaEl ? ivaEl.getAttribute('TotalImpuestosTrasladados') || '0.00' : '0.00';
+      const total = comprobante.getAttribute('Total') || '0.00';
+      const folioFiscal = comprobante.getAttribute('Folio') || '—';
+      const fechaCert = tfd ? (tfd.getAttribute('FechaTimbrado') ? tfd.getAttribute('FechaTimbrado').split('T')[0] : fecha) : fecha;
+
+      const concepto = getFirst(['Concepto', 'cfdi:Concepto']) || getFirstNS('http://www.sat.gob.mx/cfd/4', 'Concepto');
+      const cantidad = concepto ? concepto.getAttribute('Cantidad') || '1' : '1';
+      const descripcion = concepto ? concepto.getAttribute('Descripcion') || 'Factura importada' : 'Factura importada';
+      const precioUnitario = concepto ? concepto.getAttribute('ValorUnitario') || concepto.getAttribute('PrecioUnitario') || '0.00' : '0.00';
+      
+      // Get payment method from CFDI MetodoPago (PUE/PPD)
+      let metodoPago = comprobante.getAttribute('MetodoPago') || 'No especificado';
+      if (!['PUE', 'PPD'].includes(metodoPago)) {
+        // Fallback to legacy FormaPago attribute if MetodoPago is missing or nonstandard
+        const formaPagoClave = comprobante.getAttribute('FormaPago');
+        const puePpdFallback = {
+          '01': 'PUE',
+          '02': 'PUE',
+          '03': 'PUE',
+          '04': 'PUE',
+          '05': 'PUE',
+          '06': 'PUE',
+          '08': 'PUE',
+          '12': 'PUE',
+          '13': 'PUE',
+          '14': 'PUE',
+          '15': 'PUE',
+          '16': 'PUE',
+          '17': 'PUE',
+          '23': 'PUE',
+          '24': 'PUE',
+          '25': 'PUE',
+          '26': 'PUE',
+          '27': 'PUE',
+          '28': 'PUE',
+          '29': 'PUE',
+          '30': 'PUE',
+          '31': 'PUE',
+          '32': 'PUE',
+          '33': 'PUE',
+          '34': 'PUE',
+          '35': 'PUE'
+        };
+        if (formaPagoClave) {
+          metodoPago = puePpdFallback[formaPagoClave] || 'PUE';
+        }
+      }
+
+      // Create new row HTML
+      const nuevaFila = document.createElement('tr');
+      const badgeClass = total > 100000 ? 'bg' : (total > 50000 ? 'ba' : 'bb');
+      
+      nuevaFila.innerHTML = `
+        <td class="mono" style="font-size:9px">${rfcEmisor}</td>
+        <td class="mono" style="font-size:9px">${rfcReceptor}</td>
+        <td class="mono" style="font-size:9px">${uuid}</td>
+        <td>${serie}</td>
+        <td class="mono">${folioFiscal}</td>
+        <td>${fecha}</td>
+        <td>${fechaCert}</td>
+        <td>Régimen General</td>
+        <td>${descripcion.substring(0, 40)}</td>
+        <td class="mono">${cantidad}</td>
+        <td class="mono">$${parseFloat(precioUnitario).toLocaleString('es-MX')}</td>
+        <td class="mono">$${parseFloat(subtotal).toLocaleString('es-MX')}</td>
+        <td class="mono">$${parseFloat(iva).toLocaleString('es-MX')}</td>
+        <td>—</td>
+        <td>—</td>
+        <td class="mono" style="font-weight:600">$${parseFloat(total).toLocaleString('es-MX')}</td>
+        <td><span class="badge ${moneda === 'USD' ? 'bb' : 'bn'}">${moneda}</span></td>
+        <td>—</td>
+        <td><span class="badge ${badgeClass}">${metodoPago}</span></td>
+        <td><span class="badge bg">✓ Importada</span></td>
+      `;
+
+      // Add row to table
+      const tabla = document.querySelector('#sub-entregas-facturas table tbody');
+      if (tabla) {
+        tabla.insertBefore(nuevaFila, tabla.firstChild);
+        alert(`✓ Factura importada exitosamente\n\nUUID: ${uuid}\nTotal: $${parseFloat(total).toLocaleString('es-MX')} ${moneda}\nMétodo: ${metodoPago}`);
+      }
+    } catch (error) {
+      console.error('Error parsing XML:', error);
+      alert('❌ Error procesando el archivo XML: ' + error.message);
+    }
+  };
+  
+  reader.readAsText(file);
+  // Reset input
+  event.target.value = '';
+}
+
+// Initialize on page load
+(function(){
+  const tabs   = document.getElementById('ctrl-tabs');
+  const dates  = document.getElementById('ctrl-dates');
+  const otSel  = document.getElementById('ctrl-ot-sel');
+  tabs.style.display  = 'flex';
+  dates.style.display = 'none';
+  otSel.style.display = 'none';
+  
+  // Show backend connection status
+  fetch(`${API_URL}/health`)
+    .then(r => r.json())
+    .then(data => {
+      console.log('✓ Connected to backend:', data);
+    })
+    .catch(err => {
+      console.warn('⚠ Backend not available. Make sure to run: npm start in the backend folder');
+    });
+})();
+
+</script>
+</body>
+</html>
