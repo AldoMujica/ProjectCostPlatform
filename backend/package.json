@@ -9,6 +9,7 @@
     "migrate": "node src/db/migrator.js up",
     "migrate:down": "node src/db/migrator.js down",
     "seed": "node src/seed/index.js",
+    "seed:conciliacion": "node src/seed/conciliacion-demo.js",
     "lint": "eslint src test",
     "test": "jest --runInBand"
   },
