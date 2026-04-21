@@ -80,7 +80,7 @@ backend/src/
 
 ## Current state (2026-04-21)
 
-Phase-1 backend **done**; Phase-1 QA harness **done** (CI + ephemeral-Postgres jest suite). See [docs/implementation-roadmap.md](docs/implementation-roadmap.md#progress-snapshot--2026-04-20). Still open in Phase 1: **P1.15** (FE login page + token/refresh) and **P1.16** (FE 401 interceptor). P1.7 deferred to Phase 3 (P3.18b) pending the `Employee` master.
+**Phase 1 is complete.** Backend foundations, QA harness (CI + ephemeral-Postgres jest suite), and FE auth (login overlay, `apiFetch` wrapper with refresh-on-401) all landed. Ready for Phase 2 (MVP endpoint wiring). P1.7 deferred to Phase 3 (P3.18b) pending the `Employee` master. See [docs/implementation-roadmap.md](docs/implementation-roadmap.md#progress-snapshot--2026-04-20).
 
 ~20 % of mockup features wired end-to-end (audit headline). Next milestone: `v0.1-mvp` at end of Phase 2 (~week 6).
 

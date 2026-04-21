@@ -185,11 +185,44 @@ select.fi{cursor:pointer}
 /* RESPONSIVE */
 @media(max-width:1100px){.kg{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1fr 1fr}}
 @media(max-width:800px){:root{--sw:52px}.s-name,.s-sub,.ni span,.u-name,.u-role{display:none}.ni{justify-content:center;padding:9px}.ni-badge{display:none}.g2{grid-template-columns:1fr}}
+
+/* LOGIN (P1.15) */
+.login-overlay{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;font-family:'DM Sans',sans-serif}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:36px 40px;width:360px;box-shadow:0 10px 40px rgba(0,0,0,0.4)}
+.login-logo{font-size:18px;font-weight:600;color:var(--text)}
+.login-sub{font-size:12px;color:var(--text3);margin-bottom:24px}
+.login-card label{display:block;font-size:10px;color:var(--text2);margin:14px 0 6px;letter-spacing:0.5px;text-transform:uppercase;font-weight:500}
+.login-card input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:6px;font-size:14px;background:var(--bg);color:var(--text);font-family:inherit;outline:none}
+.login-card input:focus{border-color:var(--green)}
+.login-card button{width:100%;margin-top:24px;padding:11px;border:none;border-radius:6px;background:var(--green);color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+.login-card button:hover:not(:disabled){background:var(--green-md)}
+.login-card button:disabled{opacity:0.5;cursor:wait}
+.login-error{color:var(--red);font-size:12px;margin-top:12px;min-height:16px}
+.logout-link{margin-left:auto;font-size:10px;color:var(--text3);cursor:pointer;text-decoration:underline}
+.logout-link:hover{color:var(--text2)}
+.s-foot{display:flex;align-items:center;gap:8px}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
+
+<!-- LOGIN OVERLAY (P1.15) -->
+<div id="login-overlay" class="login-overlay">
+  <div class="login-card">
+    <div class="login-logo">Alenstec SA de CV</div>
+    <div class="login-sub">Gestión de Costos</div>
+    <form id="login-form" autocomplete="on">
+      <label for="login-email">Correo</label>
+      <input type="email" id="login-email" name="email" autocomplete="username" required>
+      <label for="login-password">Contraseña</label>
+      <input type="password" id="login-password" name="password" autocomplete="current-password" required>
+      <button type="submit" id="login-submit">Iniciar sesión</button>
+      <div id="login-error" class="login-error" role="alert"></div>
+    </form>
+  </div>
+</div>
+
 <div class="app">
 
 <!-- SIDEBAR -->
@@ -244,8 +277,9 @@ select.fi{cursor:pointer}
     </div>
   </div>
   <div class="s-foot">
-    <div class="av">JL</div>
-    <div><div class="u-name">Jesús Lara</div><div class="u-role">Manufactura · Autorización</div></div>
+    <div class="av" id="user-initials">··</div>
+    <div><div class="u-name" id="user-name">—</div><div class="u-role" id="user-role">—</div></div>
+    <span class="logout-link" id="logout-link" title="Cerrar sesión">salir</span>
   </div>
 </div>
 
@@ -1064,6 +1098,118 @@ select.fi{cursor:pointer}
 <script>
 const API_URL = '/api';
 
+// ===== Auth (P1.15 / P1.16) =====
+const AUTH_KEYS = { access: 'alenstec_access_token', refresh: 'alenstec_refresh_token', user: 'alenstec_user' };
+const AUTH = {
+  accessToken: () => localStorage.getItem(AUTH_KEYS.access),
+  refreshToken: () => localStorage.getItem(AUTH_KEYS.refresh),
+  user: () => { try { return JSON.parse(localStorage.getItem(AUTH_KEYS.user)); } catch { return null; } },
+  setSession(accessToken, refreshToken, user) {
+    if (accessToken) localStorage.setItem(AUTH_KEYS.access, accessToken);
+    if (refreshToken) localStorage.setItem(AUTH_KEYS.refresh, refreshToken);
+    if (user) localStorage.setItem(AUTH_KEYS.user, JSON.stringify(user));
+  },
+  setAccessToken(t) { localStorage.setItem(AUTH_KEYS.access, t); },
+  clear() { Object.values(AUTH_KEYS).forEach(k => localStorage.removeItem(k)); },
+};
+
+let _refreshInFlight = null;
+async function tryRefresh() {
+  if (_refreshInFlight) return _refreshInFlight;
+  const refreshToken = AUTH.refreshToken();
+  if (!refreshToken) return false;
+  _refreshInFlight = (async () => {
+    try {
+      const res = await fetch(`${API_URL}/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken }),
+      });
+      if (!res.ok) return false;
+      const data = await res.json();
+      if (!data.accessToken) return false;
+      AUTH.setAccessToken(data.accessToken);
+      return true;
+    } catch { return false; }
+    finally { _refreshInFlight = null; }
+  })();
+  return _refreshInFlight;
+}
+
+// P1.16: fetch wrapper that injects Bearer, handles 401 by trying a single refresh then falling back to login.
+async function apiFetch(url, options = {}) {
+  const attach = () => {
+    const token = AUTH.accessToken();
+    const headers = { ...(options.headers || {}) };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    return headers;
+  };
+  let res = await fetch(url, { ...options, headers: attach() });
+  if (res.status !== 401) return res;
+  const ok = await tryRefresh();
+  if (!ok) { AUTH.clear(); showLogin(); return res; }
+  return fetch(url, { ...options, headers: attach() });
+}
+
+function showLogin() {
+  document.getElementById('login-overlay').style.display = 'flex';
+  const app = document.querySelector('.app');
+  if (app) app.style.visibility = 'hidden';
+  const err = document.getElementById('login-error');
+  if (err) err.textContent = '';
+}
+
+function hideLogin() {
+  document.getElementById('login-overlay').style.display = 'none';
+  const app = document.querySelector('.app');
+  if (app) app.style.visibility = 'visible';
+}
+
+function renderUserChip() {
+  const u = AUTH.user();
+  if (!u) return;
+  const initials = (u.nombre || u.email || '').split(/\s+/).map(s => s[0]).filter(Boolean).slice(0, 2).join('').toUpperCase() || '—';
+  const el = (id) => document.getElementById(id);
+  if (el('user-initials')) el('user-initials').textContent = initials;
+  if (el('user-name'))     el('user-name').textContent = u.nombre || u.email;
+  if (el('user-role'))     el('user-role').textContent = u.rol || '';
+}
+
+function logout() {
+  AUTH.clear();
+  showLogin();
+}
+
+async function performLogin(email, password) {
+  const res = await fetch(`${API_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.exitoso) {
+    throw new Error(data.mensaje || 'No se pudo iniciar sesión');
+  }
+  AUTH.setSession(data.accessToken, data.refreshToken, data.user);
+  return data.user;
+}
+
+async function bootstrapAuth() {
+  if (!AUTH.accessToken()) { showLogin(); return false; }
+  try {
+    const res = await apiFetch(`${API_URL}/auth/me`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.user) AUTH.setSession(null, null, data.user);
+      renderUserChip();
+      hideLogin();
+      return true;
+    }
+  } catch { /* fall through to showLogin */ }
+  showLogin();
+  return false;
+}
+
 const CFG = {
   dashboard:    { title: 'Dashboard',              crumb: '· Todas las Órdenes de Trabajo · 2026' },
   ot:           { title: 'Orden de Trabajo',        crumb: '· Formato OT / Liberación' },
@@ -1080,7 +1226,7 @@ const CFG = {
 // API Calls
 async function loadWorkOrders() {
   try {
-    const response = await fetch(`${API_URL}/work-orders`);
+    const response = await apiFetch(`${API_URL}/work-orders`);
     const orders = await response.json();
     return orders;
   } catch (error) {
@@ -1091,7 +1237,7 @@ async function loadWorkOrders() {
 
 async function loadQuotes() {
   try {
-    const response = await fetch(`${API_URL}/quotes`);
+    const response = await apiFetch(`${API_URL}/quotes`);
     const quotes = await response.json();
     return quotes;
   } catch (error) {
@@ -1102,7 +1248,7 @@ async function loadQuotes() {
 
 async function loadSuppliers() {
   try {
-    const response = await fetch(`${API_URL}/suppliers`);
+    const response = await apiFetch(`${API_URL}/suppliers`);
     const suppliers = await response.json();
     return suppliers;
   } catch (error) {
@@ -1456,7 +1602,7 @@ async function previewChecador() {
   try {
     const formData = new FormData();
     formData.append('archivo', file);
-    const response = await fetch(`${API_URL}/conciliacion/checador/preview`, {
+    const response = await apiFetch(`${API_URL}/conciliacion/checador/preview`, {
       method: 'POST',
       body: formData
     });
@@ -1490,7 +1636,7 @@ async function importarChecador() {
   }
 
   try {
-    const response = await fetch(`${API_URL}/conciliacion/checador/importar`, {
+    const response = await apiFetch(`${API_URL}/conciliacion/checador/importar`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ temp_file: conciliacionState.previewData.temp_file, semana_id: conciliacionState.semanaId })
@@ -1532,7 +1678,7 @@ async function loadConciliacionSemana() {
   incidencias.textContent = 'Cargando...';
 
   try {
-    const response = await fetch(`${API_URL}/conciliacion/${conciliacionState.semanaId}`);
+    const response = await apiFetch(`${API_URL}/conciliacion/${conciliacionState.semanaId}`);
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || data.mensaje || 'No se pudo cargar la conciliación');
 
@@ -1588,7 +1734,7 @@ function renderClasifTable() {
 
 async function cerrarSemana() {
   try {
-    const response = await fetch(`${API_URL}/conciliacion/${conciliacionState.semanaId}/cerrar`, {
+    const response = await apiFetch(`${API_URL}/conciliacion/${conciliacionState.semanaId}/cerrar`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' }
     });
@@ -1604,7 +1750,7 @@ async function cerrarSemana() {
 
 async function exportConciliacionExcel() {
   try {
-    const response = await fetch(`${API_URL}/conciliacion/${conciliacionState.semanaId}/exportar`, {
+    const response = await apiFetch(`${API_URL}/conciliacion/${conciliacionState.semanaId}/exportar`, {
       headers: { 'Content-Type': 'application/json' }
     });
     if (!response.ok) {
@@ -1784,23 +1930,47 @@ function handleXMLUpload(event) {
 }
 
 // Initialize on page load
-(function(){
+(async function(){
+  // Wire login form (P1.15)
+  const form    = document.getElementById('login-form');
+  const errEl   = document.getElementById('login-error');
+  const submit  = document.getElementById('login-submit');
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errEl.textContent = '';
+    submit.disabled = true;
+    submit.textContent = 'Iniciando sesión…';
+    try {
+      await performLogin(
+        document.getElementById('login-email').value.trim(),
+        document.getElementById('login-password').value
+      );
+      renderUserChip();
+      hideLogin();
+    } catch (err) {
+      errEl.textContent = err.message;
+    } finally {
+      submit.disabled = false;
+      submit.textContent = 'Iniciar sesión';
+    }
+  });
+  document.getElementById('logout-link').addEventListener('click', logout);
+
+  // Health check — unauthenticated, so stays as raw fetch
+  fetch(`${API_URL}/health`)
+    .then(r => r.json())
+    .then(data => console.log('✓ Connected to backend:', data))
+    .catch(() => console.warn('⚠ Backend not available.'));
+
+  // Bootstrap session before revealing the app
+  await bootstrapAuth();
+
   const tabs   = document.getElementById('ctrl-tabs');
   const dates  = document.getElementById('ctrl-dates');
   const otSel  = document.getElementById('ctrl-ot-sel');
   tabs.style.display  = 'flex';
   dates.style.display = 'none';
   otSel.style.display = 'none';
-  
-  // Show backend connection status
-  fetch(`${API_URL}/health`)
-    .then(r => r.json())
-    .then(data => {
-      console.log('✓ Connected to backend:', data);
-    })
-    .catch(err => {
-      console.warn('⚠ Backend not available. Make sure to run: npm start in the backend folder');
-    });
 })();
 
 </script>

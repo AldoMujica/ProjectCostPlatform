@@ -11,7 +11,7 @@
 | 0     | Infrastructure setup                | Partial — local Postgres 15 reachable; Tailscale/B2 still not verified in this repo. **CI ✅ landed (P1.17).** |
 | 1     | Code foundations — **backend**      | ✅ **Done** — single Express app on `:3000`, umzug migrations, JWT auth with boot-time secret guard, 6 roles seeded, FKs enforced, `asistencia-modulo/` removed. Verified end-to-end against local Postgres. |
 | 1     | Code foundations — **QA harness**   | ✅ **Done (P1.17 + P1.18)** — jest + supertest smoke suite (health, auth, migrate/seed idempotence); ESLint `:recommended`; GitHub Actions workflow runs lint → migrate ×2 → seed → test against a Postgres 15 service container; `docker-compose.test.yml` for local dev. |
-| 1     | Code foundations — **frontend**     | ⏳ Pending (P1.15, P1.16) |
+| 1     | Code foundations — **frontend**     | ✅ **Done (P1.15 + P1.16)** — login overlay, `apiFetch` wrapper, `Authorization: Bearer` injection, single-flight refresh on 401, logout link; user chip renders current session. Existing wired fetches (work-orders, quotes, suppliers, conciliación) migrated to `apiFetch`. |
 | 2+    | —                                   | Not started |
 
 **Backend exit criteria for Phase 1 — met:**
@@ -23,7 +23,7 @@
 - [x] Schema migrations are idempotent (`npm run migrate && npm run seed` twice in a row succeeds).
 - [x] FK enforcement verified — `material_costs.work_order_id`, `labor_costs.work_order_id`, `supplier_work_orders` join table.
 
-**Still open in Phase 1:** P1.15–P1.16 (FE login + 401 interceptor).
+**Still open in Phase 1:** — none. All backend + QA + FE foundation items are ✅.
 
 **Deferred from Phase 1:** P1.7 — the cost/WO/quote models have no `supervisor_id` column to filter on, and the ownership semantic ("supervisor owns OT" vs "supervisor owns employee → labor-cost") is cleanest to pick after `Employee` lands. Moved to Phase 3, blocked on P3.16–P3.18 (G-HOR-3). Phase-1 hard exit criteria are unaffected — `verificarRol` already restricts supervisor writes to `POST /api/costs/labor`.
 
@@ -192,8 +192,8 @@ Make the codebase safe to build on. This is where the ADRs turn into code.
 | P1.12 | **FK migration:** add `work_order_id` to child tables, backfill, lock | BE | 2    | 006 | D-fk         | ✅ enforced on `material_costs` and `labor_costs` (`ON DELETE RESTRICT`) |
 | P1.13 | Replace `Supplier.workOrders[]` w/ `supplier_work_orders` join    | BE    | 1    | 006 | D-fk         | ✅     |
 | P1.14 | Migration tooling: replace `sequelize.sync({alter:true})` w/ umzug | BE  | 1    | 003 | (new)       | ✅ `src/db/migrator.js`; JS + SQL support; idempotent |
-| P1.15 | Frontend login page + token/refresh handling (localStorage + cookie) | FE | 2   | 005 | —           | ⏳     |
-| P1.16 | Auth-error fetch interceptor (redirect to login on 401)          | FE    | 1    | 005 | —           | ⏳     |
+| P1.15 | Frontend login page + token/refresh handling (localStorage + cookie) | FE | 2   | 005 | —           | ✅ — localStorage session (access + refresh + user), overlay login card in `alenstec_app.html`, user chip + logout link in sidebar footer |
+| P1.16 | Auth-error fetch interceptor (redirect to login on 401)          | FE    | 1    | 005 | —           | ✅ — `apiFetch()` wrapper auto-attaches Bearer; on 401, single-flight refresh then retry once; on refresh failure, clears session and shows login overlay |
 | P1.17 | CI: lint + unit tests + migration dry-run + seed check           | QA    | 2    | —   | (new)       | ✅     |
 | P1.18 | Ephemeral-Postgres test harness (Docker + seed)                  | QA    | 2    | —   | —           | ✅     |
 
