@@ -9,7 +9,7 @@ Each per-module design doc follows a common structure:
 1. **Requirement recap** — derived from the HTML mockup. Linked to the matching `<module>-features.md` in the repo root.
 2. **Intended design** — architecture, sequence diagrams, state machines.
 3. **Current implementation** — what actually exists in code (`file:line` refs).
-4. **Regression-test candidates** — promoted to the canonical list in [`REGRESSION_REQUIREMENTS.md`](../REGRESSION_REQUIREMENTS.md).
+4. **Regression-test candidates** — promoted to the canonical list in [`../docs/regression-requirements.md`](../docs/regression-requirements.md).
 
 Mermaid diagrams render in GitHub, GitLab, and VS Code (with *Markdown Preview Mermaid Support*).
 
@@ -79,16 +79,16 @@ The HTML declares **10 modules**. Existing design docs cover 7 feature groups th
 
 | HTML module                        | data-mod        | Existing design doc                                       | Coverage     |
 |------------------------------------|-----------------|------------------------------------------------------------|--------------|
-| 1. Dashboard                       | `dashboard`     | [01-dashboard-analytics.md](./01-dashboard-analytics.md)   | Refactor — drop aspirational widgets |
-| 2. Orden de Trabajo                | `ot`            | [02-work-orders.md](./02-work-orders.md)                   | Update with PDF flow + approval state machine |
-| 3. Cotizaciones y Ventas           | `cotizaciones`  | [03-sales-quoting.md](./03-sales-quoting.md)               | Refactor — remove CRM/email sections |
-| 4. Pronóstico del Costo            | `pronostico`    | [04-cost-forecasting.md](./04-cost-forecasting.md)         | Refactor — drop ML content |
-| 5. Costo de Material               | `material`      | [05-material-management.md](./05-material-management.md)   | Refactor — limit scope to Requisición table |
-| 6. Entregas de Material (5 subtabs)| `entregas`      | [05-material-management.md](./05-material-management.md) + [07-supplier-procurement.md](./07-supplier-procurement.md) | Split into 5 docs per subtab |
-| 7. Horas de Mano de Obra           | `horas`         | [06-labor-management.md](./06-labor-management.md)         | Refactor — remove biometric/mobile sections |
+| 1. Dashboard                       | `dashboard`     | [01-dashboard-analytics-design.md](./01-dashboard-analytics-design.md)   | Refactor — drop aspirational widgets |
+| 2. Orden de Trabajo                | `ot`            | [02-work-orders-design.md](./02-work-orders-design.md)                   | Update with PDF flow + approval state machine |
+| 3. Cotizaciones y Ventas           | `cotizaciones`  | [03-sales-quoting-design.md](./03-sales-quoting-design.md)               | Refactor — remove CRM/email sections |
+| 4. Pronóstico del Costo            | `pronostico`    | [04-cost-forecasting-design.md](./04-cost-forecasting-design.md)         | Refactor — drop ML content |
+| 5. Costo de Material               | `material`      | [05-material-management-design.md](./05-material-management-design.md)   | Refactor — limit scope to Requisición table |
+| 6. Entregas de Material (5 subtabs)| `entregas`      | [05-material-management-design.md](./05-material-management-design.md) + [07-supplier-procurement-design.md](./07-supplier-procurement-design.md) | Split into 5 docs per subtab |
+| 7. Horas de Mano de Obra           | `horas`         | [06-labor-management-design.md](./06-labor-management-design.md)         | Refactor — remove biometric/mobile sections |
 | 8. Nómina / CFDI                   | `nomina`        | — **missing** —                                            | **Create** — schema for 86-col matrix |
-| 9. Conciliación                    | `conciliacion`  | Referenced in [../CONCILIACION_README.md](../CONCILIACION_README.md) | **Promote to numbered design doc** |
-|10. Costo de Mano de Obra           | `costomo`       | [06-labor-management.md](./06-labor-management.md)         | Split off — activity rollup is a distinct concern |
+| 9. Conciliación                    | `conciliacion`  | Referenced in [../docs/conciliacion-ops.md](../docs/conciliacion-ops.md) | **Promote to numbered design doc** |
+|10. Costo de Mano de Obra           | `costomo`       | [06-labor-management-design.md](./06-labor-management-design.md)         | Split off — activity rollup is a distinct concern |
 
 **Action items for the Phase-2 architecture kickoff:**
 
@@ -98,20 +98,20 @@ The HTML declares **10 modules**. Existing design docs cover 7 feature groups th
 
 ## Feature status matrix (10-module baseline)
 
-Cross-reference with the detailed feature docs in the repo root. Source data: [`IMPLEMENTATION_AUDIT.md`](../IMPLEMENTATION_AUDIT.md).
+Cross-reference with the detailed feature docs in the repo root. Source data: [`../docs/implementation-audit.md`](../docs/implementation-audit.md).
 
 | # | Module                   | Feature doc                                                                  | Status    | Backend                         | Frontend wiring                    |
 |---|--------------------------|------------------------------------------------------------------------------|-----------|----------------------------------|------------------------------------|
-| 1 | Dashboard                | [dashboard-analytics-features.md](../dashboard-analytics-features.md)         | Mockup    | KPI stubs, no wiring             | Static HTML                        |
-| 2 | Orden de Trabajo         | [work-order-management-features.md](../work-order-management-features.md)     | Partial   | CRUD complete                    | Read-only + PDF export             |
-| 3 | Cotizaciones             | [sales-quoting-features.md](../sales-quoting-features.md)                     | Mockup    | CRUD complete, KPI stub          | Static HTML                        |
-| 4 | Pronóstico               | [cost-forecasting-features.md](../cost-forecasting-features.md)               | Mockup    | None                             | Static tables                      |
-| 5 | Costo de Material        | [material-management-features.md](../material-management-features.md)         | Partial   | Partial CRUD                     | Read-only                          |
-| 6 | Entregas (5 sub-tabs)    | [supplier-procurement-features.md](../supplier-procurement-features.md)       | Partial   | Suppliers only; 4 models missing | CFDI XML parse wired               |
-| 7 | Horas                    | [labor-management-features.md](../labor-management-features.md)               | Mockup    | LaborCost model + 2 endpoints    | Static HTML                        |
-| 8 | Nómina / CFDI            | [payroll-cfdi-features.md](../payroll-cfdi-features.md)                       | Mockup    | **Nothing**                      | Static + CFDI handler misrouted    |
-| 9 | Conciliación             | [attendance-reconciliation-features.md](../attendance-reconciliation-features.md) | Partial | 13 endpoints + JWT + ExcelJS    | Checador + semanal + cierre wired; alertas + clasif form not wired |
-|10 | Costo de Mano de Obra    | [labor-management-features.md](../labor-management-features.md)               | Mockup    | None (needs activity rollup)     | Static HTML                        |
+| 1 | Dashboard                | [dashboard.md](../docs/modules/dashboard.md)         | Mockup    | KPI stubs, no wiring             | Static HTML                        |
+| 2 | Orden de Trabajo         | [work-orders.md](../docs/modules/work-orders.md)     | Partial   | CRUD complete                    | Read-only + PDF export             |
+| 3 | Cotizaciones             | [sales-quoting.md](../docs/modules/sales-quoting.md)                     | Mockup    | CRUD complete, KPI stub          | Static HTML                        |
+| 4 | Pronóstico               | [cost-forecasting.md](../docs/modules/cost-forecasting.md)               | Mockup    | None                             | Static tables                      |
+| 5 | Costo de Material        | [material.md](../docs/modules/material.md)         | Partial   | Partial CRUD                     | Read-only                          |
+| 6 | Entregas (5 sub-tabs)    | [supplier-procurement.md](../docs/modules/supplier-procurement.md)       | Partial   | Suppliers only; 4 models missing | CFDI XML parse wired               |
+| 7 | Horas                    | [labor.md](../docs/modules/labor.md)               | Mockup    | LaborCost model + 2 endpoints    | Static HTML                        |
+| 8 | Nómina / CFDI            | [payroll-cfdi.md](../docs/modules/payroll-cfdi.md)                       | Mockup    | **Nothing**                      | Static + CFDI handler misrouted    |
+| 9 | Conciliación             | [attendance-reconciliation.md](../docs/modules/attendance-reconciliation.md) | Partial | 13 endpoints + JWT + ExcelJS    | Checador + semanal + cierre wired; alertas + clasif form not wired |
+|10 | Costo de Mano de Obra    | [labor.md](../docs/modules/labor.md)               | Mockup    | None (needs activity rollup)     | Static HTML                        |
 
 **Legend:**
 - *Mockup* — HTML only, no backend, no wiring.
@@ -158,7 +158,7 @@ Forecasting algorithms, productivity analytics, CFDI real-time SAT validation, m
 
 ## Regression-test priority map
 
-See [`REGRESSION_REQUIREMENTS.md`](../REGRESSION_REQUIREMENTS.md) for the full list. Summary:
+See [`../docs/regression-requirements.md`](../docs/regression-requirements.md) for the full list. Summary:
 
 **Stable enough to test now (~127 requirements):**
 - Full UI shell: navigation, module switching, sidebar, topbar controls (AC-NAV-*).
@@ -177,8 +177,8 @@ See [`REGRESSION_REQUIREMENTS.md`](../REGRESSION_REQUIREMENTS.md) for the full l
 
 ## Adjacent documents
 
-- [`../project-summary.md`](../project-summary.md) — master index, terminology, tech stack.
-- [`../IMPLEMENTATION_AUDIT.md`](../IMPLEMENTATION_AUDIT.md) — mockup-vs-implemented matrix, gap list, Phase-2 sequence.
-- [`../REGRESSION_REQUIREMENTS.md`](../REGRESSION_REQUIREMENTS.md) — testable AC list, seeding strategy, test-suite layout.
-- [`../CONCILIACION_README.md`](../CONCILIACION_README.md) — setup + operational guide for the conciliación module (retained for operator use; supersede the *requirements* sections with `attendance-reconciliation-features.md`).
-- [`../BACKEND_SETUP.md`](../BACKEND_SETUP.md) — backend developer setup. Accurate as of 2026-04-20.
+- [`../docs/project-summary.md`](../docs/project-summary.md) — master index, terminology, tech stack.
+- [`../docs/implementation-audit.md`](../docs/implementation-audit.md) — mockup-vs-implemented matrix, gap list, Phase-2 sequence.
+- [`../docs/regression-requirements.md`](../docs/regression-requirements.md) — testable AC list, seeding strategy, test-suite layout.
+- [`../docs/conciliacion-ops.md`](../docs/conciliacion-ops.md) — setup + operational guide for the conciliación module (retained for operator use; supersede the *requirements* sections with `attendance-reconciliation.md`).
+- [`../docs/backend-setup.md`](../docs/backend-setup.md) — backend developer setup. Accurate as of 2026-04-20.

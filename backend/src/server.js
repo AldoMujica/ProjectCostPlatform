@@ -1,79 +1,81 @@
+const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
-const path = require('path');
 require('dotenv').config();
 
-// Rutas
+const { sequelize } = require('./models');
+const { assertJwtSecret, verificarJWT } = require('./middleware/auth');
+
+assertJwtSecret();
+
+const authRoutes = require('./routes/auth');
+const workOrderRoutes = require('./routes/workOrders');
+const quoteRoutes = require('./routes/quotes');
+const costRoutes = require('./routes/costs');
+const supplierRoutes = require('./routes/suppliers');
 const conciliacionRoutes = require('./routes/conciliacionRoutes');
 
-// Crear aplicación Express
 const app = express();
 
-// Configuración de seguridad
 app.use(helmet());
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
-  credentials: true
+  origin: process.env.FRONTEND_URL || true,
+  credentials: true,
 }));
-
-// Middleware para parsear JSON
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(express.static(path.join(__dirname, '..', 'public')));
 
-// Servir archivos estáticos (HTML/CSS/JS del frontend)
-app.use(express.static('public'));
-
-// Rutas de API
-app.use('/api/conciliacion', conciliacionRoutes);
-
-// Ruta de salud
 app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    timestamp: new Date().toISOString()
-  });
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Ruta raíz (servir el app principal integrado)
+// Public: auth only
+app.use('/api/auth', authRoutes);
+
+// Everything else requires a valid JWT
+app.use('/api', verificarJWT);
+app.use('/api/work-orders', workOrderRoutes);
+app.use('/api/quotes', quoteRoutes);
+app.use('/api/costs', costRoutes);
+app.use('/api/suppliers', supplierRoutes);
+app.use('/api/conciliacion', conciliacionRoutes);
+
+// Serve the app SPA at root
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '..', '..', 'alenstec_app.html'));
 });
 
-// Middleware de manejo de errores
-app.use((err, req, res, next) => {
+app.use((err, req, res, _next) => {
   console.error('Error:', err);
-
-  // Error de validación
   if (err.status === 400 && err.array) {
-    return res.status(400).json({
-      exitoso: false,
-      mensaje: 'Errores de validación',
-      errores: err.array()
-    });
+    return res.status(400).json({ exitoso: false, mensaje: 'Errores de validación', errores: err.array() });
   }
-
-  // Error de archivo no encontrado (multer)
   if (err.code === 'LIMIT_FILE_SIZE') {
-    return res.status(400).json({
-      exitoso: false,
-      mensaje: 'Archivo demasiado grande. Máximo 10MB'
-    });
+    return res.status(400).json({ exitoso: false, mensaje: 'Archivo demasiado grande. Máximo 10MB' });
   }
-
-  // Error genérico
-  res.status(err.status || 500).json({
-    exitoso: false,
-    mensaje: err.message || 'Error interno del servidor'
-  });
+  res.status(err.status || 500).json({ exitoso: false, mensaje: err.message || 'Error interno del servidor' });
 });
 
-// Iniciar servidor
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`✓ Servidor de Conciliación iniciado en puerto ${PORT}`);
-  console.log(`✓ Ambiente: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`✓ API disponible en http://localhost:${PORT}/api`);
-});
+const PORT = parseInt(process.env.PORT, 10) || 3000;
+
+async function startServer() {
+  try {
+    await sequelize.authenticate();
+    console.log('✓ Database connection established');
+    app.listen(PORT, () => {
+      console.log(`✓ Server running on http://localhost:${PORT}`);
+      console.log(`✓ Environment: ${process.env.NODE_ENV || 'development'}`);
+    });
+  } catch (error) {
+    console.error('✗ Failed to start server:', error.message);
+    process.exit(1);
+  }
+}
+
+if (require.main === module) {
+  startServer();
+}
 
 module.exports = app;

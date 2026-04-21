@@ -1,6 +1,6 @@
 # Architecture Decisions Record (ADR)
 
-> **Status:** Accepted · **Date:** 2026-04-20 · **Scope:** v0.1–v1.0 roadmap (see [`../IMPLEMENTATION_ROADMAP.md`](../IMPLEMENTATION_ROADMAP.md)).
+> **Status:** Accepted · **Date:** 2026-04-20 · **Scope:** v0.1–v1.0 roadmap (see [`../docs/implementation-roadmap.md`](../docs/implementation-roadmap.md)).
 >
 > This document captures the architecture decisions made before Phase 1 begins, so the rationale survives the roadmap. Format per decision: context → options → chosen → consequences.
 
