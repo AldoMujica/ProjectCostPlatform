@@ -150,11 +150,29 @@ select.fi{cursor:pointer}
 .atag{display:inline-block;padding:1px 7px;border-radius:4px;font-size:10.5px;font-weight:600}
 
 /* SUBNAV */
-.subnav{display:flex;gap:3px;margin-bottom:18px;border-bottom:1px solid var(--border);padding-bottom:0}
+.subnav{display:flex;gap:3px;margin-bottom:18px;border-bottom:1px solid var(--border);padding-bottom:0;overflow-x:auto;scrollbar-width:auto}
+.subnav::-webkit-scrollbar{height:8px}
+.subnav::-webkit-scrollbar-thumb{background:var(--border);border-radius:999px}
 .sntab{padding:8px 14px;font-size:12.5px;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .12s,border-color .12s;white-space:nowrap}
 .sntab:hover{color:var(--text)}
 .sntab.active{color:var(--green);font-weight:500;border-bottom-color:var(--green)}
 .submod{display:none}.submod.active{display:block;animation:fi .15s ease}
+
+.tw{overflow-x:auto;scrollbar-width:auto}
+.tw::-webkit-scrollbar{height:10px}
+.tw::-webkit-scrollbar-thumb{background:var(--border);border-radius:999px}
+.tw table{min-width:100%;}
+
+.conciliacion-panel{display:grid;gap:18px}
+.conciliacion-panel .upload-box{background:var(--surface2);border:1px dashed var(--border);border-radius:14px;padding:24px;text-align:center;cursor:pointer;transition:all .15s}
+.conciliacion-panel .upload-box:hover{border-color:var(--green);background:var(--surface3)}
+.conciliacion-panel .upload-box strong{display:block;margin-top:10px;font-size:13px;color:var(--text)}
+.conciliacion-mini{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-top:18px}
+.conciliacion-card{background:var(--surface);border-radius:12px;padding:18px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.conciliacion-table{overflow-x:auto;margin-top:16px}
+.alert-card{background:var(--surface);border-radius:12px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.06);border-left:4px solid var(--green)}
+.alert-card.warn{border-left-color:var(--amber)}
+.alert-card.danger{border-left-color:var(--red)}
 
 /* DATE FILTER */
 .date-filter{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--surface2);border-bottom:1px solid var(--border)}
@@ -211,6 +229,14 @@ select.fi{cursor:pointer}
     <div class="ni" data-mod="horas">
       <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="7"/><path d="M10 6v4l2.5 2.5" stroke-linecap="round"/></svg>
       <span>Horas de Mano de Obra</span>
+    </div>
+    <div class="ni" data-mod="nomina">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path d="M4 4h12v3H4V4zm0 5h12v3H4V9zm0 5h12v3H4v-3z"/></svg>
+      <span>Nómina / CFDI</span>
+    </div>
+    <div class="ni" data-mod="conciliacion">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path d="M4 3h12v2H4V3zm0 5h12v2H4V8zm0 5h12v2H4v-2z"/></svg>
+      <span>Conciliación</span>
     </div>
     <div class="ni" data-mod="costomo">
       <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a4 4 0 110 8A4 4 0 0110 2zm0 9c4.42 0 8 1.79 8 4v2H2v-2c0-2.21 3.58-4 8-4z"/></svg>
@@ -667,27 +693,62 @@ select.fi{cursor:pointer}
     <div class="kpi"><div class="kl">Autorizador principal</div><div class="kv" style="font-size:15px">Jesús Lara</div><div class="ks">Manufactura · Terminal 02</div></div>
     <div class="kpi"><div class="kl">Período del reporte</div><div class="kv" style="font-size:15px">Ene–Mar</div><div class="ks">01/01/2026 al 16/03/2026</div></div>
   </div>
-  <div class="card">
-    <div class="ch"><div><div class="ct">Horas por Empleado, OT y Actividad</div><div class="cs">ALE-030424-J83 · Generado por Jesús Lara · Terminal 02 · 18-Mar-2026 10:09</div></div><button class="btn p sm">+ Capturar horas</button></div>
-    <div class="tw"><table>
-      <thead><tr><th>ID Reg.</th><th>ID Cli.</th><th>OT</th><th>Descripción Proyecto</th><th>ID Empl.</th><th>Nombre Empleado</th><th>Actividad</th><th>Hrs.</th><th>F. Captura</th><th>Capturado por</th></tr></thead>
-      <tbody>
-        <tr><td class="mono">1848</td><td class="mono">0056</td><td class="mono">1951</td><td>Ref. Maq. Ens. Retenedores 40%</td><td class="mono">24</td><td>Magarito Álvarez Piña</td><td><span class="atag" style="background:var(--amber-lt);color:var(--amber)">E) Maquinado</span></td><td class="mono">2.500</td><td>24/03/2026</td><td style="font-size:11px">Jesús Lara 12:54:39</td></tr>
-        <tr><td class="mono">1849</td><td class="mono">0056</td><td class="mono">1951</td><td>Ref. Maq. Ens. Retenedores 40%</td><td class="mono">24</td><td>Magarito Álvarez Piña</td><td><span class="atag" style="background:var(--amber-lt);color:var(--amber)">E) Maquinado</span></td><td class="mono">2.500</td><td>24/03/2026</td><td style="font-size:11px">Jesús Lara 12:54:51</td></tr>
-        <tr><td class="mono">1850</td><td class="mono">0065</td><td class="mono">1934</td><td>Labor Indirecta</td><td class="mono">65</td><td>Cristian Saúl Durán Plata</td><td><span class="atag" style="background:var(--green-lt);color:var(--green)">2) Des. y Preventa</span></td><td class="mono">5.000</td><td>24/03/2026</td><td style="font-size:11px">Jesús Lara 11:53:32</td></tr>
-        <tr><td class="mono">1851</td><td class="mono">0065</td><td class="mono">1934</td><td>Labor Indirecta</td><td class="mono">65</td><td>Cristian Saúl Durán Plata</td><td><span class="atag" style="background:var(--green-lt);color:var(--green)">8) Control Costo</span></td><td class="mono">2.000</td><td>24/03/2026</td><td style="font-size:11px">Jesús Lara 11:53:41</td></tr>
-        <tr><td class="mono">1853</td><td class="mono">0071</td><td class="mono">1934</td><td>Labor Indirecta</td><td class="mono">71</td><td>David Báez Jara</td><td><span class="atag" style="background:var(--green-lt);color:var(--green)">2) Des. y Preventa</span></td><td class="mono">6.000</td><td>24/03/2026</td><td style="font-size:11px">Jesús Lara 12:54:03</td></tr>
-        <tr><td class="mono">1854</td><td class="mono">0071</td><td class="mono">1934</td><td>Labor Indirecta</td><td class="mono">71</td><td>David Báez Jara</td><td><span class="atag" style="background:var(--green-lt);color:var(--green)">8) Control Costo</span></td><td class="mono">3.000</td><td>24/03/2026</td><td style="font-size:11px">Jesús Lara 12:54:12</td></tr>
-        <tr><td class="mono">1855</td><td class="mono">0114</td><td class="mono">1934</td><td>Labor Indirecta</td><td class="mono">114</td><td>Diego Castillo Jiménez</td><td><span class="atag" style="background:var(--red-lt);color:var(--red)">13) Curso/Cap.</span></td><td class="mono">2.000</td><td>24/03/2026</td><td style="font-size:11px">Jesús Lara 11:55:11</td></tr>
-        <tr><td class="mono">1856</td><td class="mono">0114</td><td class="mono">1934</td><td>Labor Indirecta</td><td class="mono">114</td><td>Diego Castillo Jiménez</td><td><span class="atag" style="background:var(--surface2);color:var(--text2)">8) Corte</span></td><td class="mono">1.000</td><td>24/03/2026</td><td style="font-size:11px">Jesús Lara 11:55:24</td></tr>
-        <tr><td class="mono">1857</td><td class="mono">0114</td><td class="mono">1934</td><td>Labor Indirecta</td><td class="mono">114</td><td>Diego Castillo Jiménez</td><td><span class="atag" style="background:var(--blue-lt);color:var(--blue)">G) Ensamble</span></td><td class="mono">4.500</td><td>24/03/2026</td><td style="font-size:11px">Jesús Lara 11:54:41</td></tr>
-        <tr><td class="mono">1858</td><td class="mono">0141</td><td class="mono">1934</td><td>Labor Indirecta</td><td class="mono">141</td><td>Felipe Neri Flores Rodríguez</td><td><span class="atag" style="background:var(--surface2);color:var(--text2)">7) Almacén</span></td><td class="mono">1.000</td><td>24/03/2026</td><td style="font-size:11px">Jesús Lara 11:56:13</td></tr>
-        <tr><td class="mono">1859</td><td class="mono">0010</td><td class="mono">1934</td><td>Labor Indirecta</td><td class="mono">10</td><td>Miguel Á. Espinosa Martínez</td><td><span class="atag" style="background:var(--surface2);color:var(--text2)">10) Mantenimiento</span></td><td class="mono">0.500</td><td>25/03/2026</td><td style="font-size:11px">Jesús Lara 13:46:30</td></tr>
-        <tr><td class="mono">1860</td><td class="mono">0010</td><td class="mono">1934</td><td>Labor Indirecta</td><td class="mono">10</td><td>Miguel Á. Espinosa Martínez</td><td><span class="atag" style="background:var(--amber-lt);color:var(--amber)">E) Maquinado</span></td><td class="mono">4.500</td><td>25/03/2026</td><td style="font-size:11px">Jesús Lara 13:45:23</td></tr>
-        <tr><td class="mono">1864</td><td class="mono">0012</td><td class="mono">1934</td><td>Labor Indirecta</td><td class="mono">12</td><td>Luis Antonio Vargas Chía</td><td><span class="atag" style="background:var(--amber-lt);color:var(--amber)">E) Maquinado</span></td><td class="mono">7.500</td><td>24/03/2026</td><td style="font-size:11px">Jesús Lara 13:39:42</td></tr>
-        <tr><td class="mono">2026</td><td class="mono">0044</td><td class="mono">1936</td><td>Manuf. 2 Brazos Neumáticos Alt.</td><td class="mono">114</td><td>Diego Castillo Jiménez</td><td><span class="atag" style="background:var(--amber-lt);color:var(--amber)">E) Maquinado</span></td><td class="mono">—</td><td>—</td><td>—</td></tr>
-      </tbody>
-    </table></div>
+  <div class="subnav">
+    <div class="sntab active" onclick="goSub('horas','main',this)">Resumen</div>
+    <div class="sntab" onclick="goSub('horas','empleados',this)">Control de Empleados</div>
+  </div>
+  <div class="submod active" id="sub-horas-main">
+    <div class="card">
+      <div class="ch"><div><div class="ct">Horas por Empleado, OT y Actividad</div><div class="cs">ALE-030424-J83 · Generado por Jesús Lara · Terminal 02 · 18-Mar-2026 10:09</div></div><button class="btn p sm">+ Capturar horas</button></div>
+      <div class="tw"><table>
+        <thead><tr><th>ID Reg.</th><th>ID Cli.</th><th>OT</th><th>Descripción Proyecto</th><th>ID Empl.</th><th>Nombre Empleado</th><th>Actividad</th><th>Hrs.</th><th>F. Captura</th><th>Capturado por</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">1848</td><td class="mono">0056</td><td class="mono">1951</td><td>Ref. Maq. Ens. Retenedores 40%</td><td class="mono">24</td><td>Magarito Álvarez Piña</td><td><span class="atag" style="background:var(--amber-lt);color:var(--amber)">E) Maquinado</span></td><td class="mono">2.500</td><td>24/03/2026</td><td style="font-size:11px">Jesús Lara 12:54:39</td></tr>
+          <tr><td class="mono">1849</td><td class="mono">0056</td><td class="mono">1951</td><td>Ref. Maq. Ens. Retenedores 40%</td><td class="mono">24</td><td>Magarito Álvarez Piña</td><td><span class="atag" style="background:var(--amber-lt);color:var(--amber)">E) Maquinado</span></td><td class="mono">2.500</td><td>24/03/2026</td><td style="font-size:11px">Jesús Lara 12:54:51</td></tr>
+          <tr><td class="mono">1850</td><td class="mono">0065</td><td class="mono">1934</td><td>Labor Indirecta</td><td class="mono">65</td><td>Cristian Saúl Durán Plata</td><td><span class="atag" style="background:var(--green-lt);color:var(--green)">2) Des. y Preventa</span></td><td class="mono">5.000</td><td>24/03/2026</td><td style="font-size:11px">Jesús Lara 11:53:32</td></tr>
+          <tr><td class="mono">1851</td><td class="mono">0065</td><td class="mono">1934</td><td>Labor Indirecta</td><td class="mono">65</td><td>Cristian Saúl Durán Plata</td><td><span class="atag" style="background:var(--green-lt);color:var(--green)">8) Control Costo</span></td><td class="mono">2.000</td><td>24/03/2026</td><td style="font-size:11px">Jesús Lara 11:53:41</td></tr>
+          <tr><td class="mono">1853</td><td class="mono">0071</td><td class="mono">1934</td><td>Labor Indirecta</td><td class="mono">71</td><td>David Báez Jara</td><td><span class="atag" style="background:var(--green-lt);color:var(--green)">2) Des. y Preventa</span></td><td class="mono">6.000</td><td>24/03/2026</td><td style="font-size:11px">Jesús Lara 12:54:03</td></tr>
+          <tr><td class="mono">1854</td><td class="mono">0071</td><td class="mono">1934</td><td>Labor Indirecta</td><td class="mono">71</td><td>David Báez Jara</td><td><span class="atag" style="background:var(--green-lt);color:var(--green)">8) Control Costo</span></td><td class="mono">3.000</td><td>24/03/2026</td><td style="font-size:11px">Jesús Lara 12:54:12</td></tr>
+          <tr><td class="mono">1855</td><td class="mono">0114</td><td class="mono">1934</td><td>Labor Indirecta</td><td class="mono">114</td><td>Diego Castillo Jiménez</td><td><span class="atag" style="background:var(--red-lt);color:var(--red)">13) Curso/Cap.</span></td><td class="mono">2.000</td><td>24/03/2026</td><td style="font-size:11px">Jesús Lara 11:55:11</td></tr>
+          <tr><td class="mono">1856</td><td class="mono">0114</td><td class="mono">1934</td><td>Labor Indirecta</td><td class="mono">114</td><td>Diego Castillo Jiménez</td><td><span class="atag" style="background:var(--surface2);color:var(--text2)">8) Corte</span></td><td class="mono">1.000</td><td>24/03/2026</td><td style="font-size:11px">Jesús Lara 11:55:24</td></tr>
+          <tr><td class="mono">1857</td><td class="mono">0114</td><td class="mono">1934</td><td>Labor Indirecta</td><td class="mono">114</td><td>Diego Castillo Jiménez</td><td><span class="atag" style="background:var(--blue-lt);color:var(--blue)">G) Ensamble</span></td><td class="mono">4.500</td><td>24/03/2026</td><td style="font-size:11px">Jesús Lara 11:54:41</td></tr>
+          <tr><td class="mono">1858</td><td class="mono">0141</td><td class="mono">1934</td><td>Labor Indirecta</td><td class="mono">141</td><td>Felipe Neri Flores Rodríguez</td><td><span class="atag" style="background:var(--surface2);color:var(--text2)">7) Almacén</span></td><td class="mono">1.000</td><td>24/03/2026</td><td style="font-size:11px">Jesús Lara 11:56:13</td></tr>
+          <tr><td class="mono">1859</td><td class="mono">0010</td><td class="mono">1934</td><td>Labor Indirecta</td><td class="mono">10</td><td>Miguel Á. Espinosa Martínez</td><td><span class="atag" style="background:var(--surface2);color:var(--text2)">10) Mantenimiento</span></td><td class="mono">0.500</td><td>25/03/2026</td><td style="font-size:11px">Jesús Lara 13:46:30</td></tr>
+          <tr><td class="mono">1860</td><td class="mono">0010</td><td class="mono">1934</td><td>Labor Indirecta</td><td class="mono">10</td><td>Miguel Á. Espinosa Martínez</td><td><span class="atag" style="background:var(--amber-lt);color:var(--amber)">E) Maquinado</span></td><td class="mono">4.500</td><td>25/03/2026</td><td style="font-size:11px">Jesús Lara 13:45:23</td></tr>
+          <tr><td class="mono">1864</td><td class="mono">0012</td><td class="mono">1934</td><td>Labor Indirecta</td><td class="mono">12</td><td>Luis Antonio Vargas Chía</td><td><span class="atag" style="background:var(--amber-lt);color:var(--amber)">E) Maquinado</span></td><td class="mono">7.500</td><td>24/03/2026</td><td style="font-size:11px">Jesús Lara 13:39:42</td></tr>
+          <tr><td class="mono">2026</td><td class="mono">0044</td><td class="mono">1936</td><td>Manuf. 2 Brazos Neumáticos Alt.</td><td class="mono">114</td><td>Diego Castillo Jiménez</td><td><span class="atag" style="background:var(--amber-lt);color:var(--amber)">E) Maquinado</span></td><td class="mono">—</td><td>—</td><td>—</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+  <div class="submod" id="sub-horas-empleados">
+    <div class="card">
+      <div class="ch"><div><div class="ct">Control de Empleados</div><div class="cs">Lista real de empleados con información de nómina</div></div></div>
+      <div class="tw" style="overflow-x:auto;"><table style="min-width:1600px;">
+        <thead><tr><th>No. listado de nómina</th><th>Nombre Rep Proc</th><th>Nombre</th><th>RFC</th><th>CURP</th><th>No. IMSS</th><th>Nivel de Estudios</th><th>Puesto</th><th>Departamento</th><th>Area</th><th>Fecha de ingreso</th><th>S.D</th><th>S.D.I 2</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">1</td><td>0010 MIGUEL ANGEL ESPINOSA MARTINEZ</td><td>ESPINOSA MARTINEZ MIGUEL ANGEL</td><td>EIMM760515CY1</td><td>EIMM760515HMNSRG01</td><td>92967614097</td><td>SECUNDARIA</td><td>ESPECIALIST APARATISTA</td><td>PRODUCCION</td><td>GENERAL</td><td>1/16/2023</td><td>677.27</td><td>714.3807</td></tr>
+          <tr><td class="mono">2</td><td>0015 JOSE DE JESUS LARA SOSA</td><td>LARA SOSA JOSE DE JEUS</td><td>LASJ710228GA5</td><td>LASJ710228HDFRSS08</td><td>07897147299</td><td>MEDIA SUPERIOR</td><td>SUPERVISOR PRODUCCION "A"</td><td>SUPERVICION</td><td>SUPERVICION</td><td>1/16/2023</td><td>700.85</td><td>739.2572</td></tr>
+          <tr><td class="mono">3</td><td>0024 MARGARITO ALVAREZ PIÑA</td><td>ALVAREZ PIÑA MARGARITO</td><td>AAPM6810173XA</td><td>AAPM681017HMCLXR04</td><td>92876806768</td><td>PRIMARIA</td><td>ESPECIALISTA ENSAMBLADOR</td><td>PRODUCCION</td><td>GENERAL</td><td>1/16/2023</td><td>677.27</td><td>738.8712</td></tr>
+          <tr><td class="mono">5</td><td>MARIA GUADALUPE FUENTES LOPEZ</td><td>FUENTES LOPEZ MARIA GUADALUPE</td><td>FULG720903PU0</td><td>FULG720903MDFNPD02</td><td>92897243819</td><td>MEDIA SUPERIOR</td><td>COMPRADOR "A"</td><td>COMERCIO EXTERIOR</td><td>COMPRAS</td><td>4/24/2023</td><td>560.68</td><td>590.6327</td></tr>
+          <tr><td class="mono">6</td><td>0065 CRISTIAN SAUL DURAN PLATA</td><td>DURAN PLATA CRISTIAN SAUL</td><td>DUPC930104HS5</td><td>DUPC930104HMCRLR01</td><td>92119363312</td><td>SUPERIOR</td><td>JEFE DE INGENIERIA Y DISEÑO</td><td>INGENIERIA</td><td>INGENIERIA</td><td>12/6/2018</td><td>909.32</td><td>962.8842</td></tr>
+          <tr><td class="mono">9</td><td>0113 JESUS ANGEL FALCÓN CERÓN</td><td>FALCON CERON JESUS ANGEL</td><td>FACJ7504039C9</td><td>FACJ750403HDFLRS08</td><td>92977539961</td><td>MEDIA SUPERIOR</td><td>LIDER ELECTROMECANICO</td><td>PRODUCCION</td><td>LABOR ELECTRICA</td><td>3/29/2022</td><td>630.77</td><td>683.8607</td></tr>
+          <tr><td class="mono">12</td><td>0019 EDUARDO ESTRADA JASSO</td><td>ESTRADA JASSO EDUARDO</td><td>EAJE670403KNA</td><td>EAJE670403HDFSSD01</td><td>89856706406</td><td>SECUNDARIA</td><td>ESPECIALISTA ENSAMBLADOR</td><td>PRODUCCION</td><td>ENSAMBLE E INSTALACION</td><td>1/9/2023</td><td>677.27</td><td>758.7684</td></tr>
+          <tr><td class="mono">14</td><td>0071 DAVID BAEZ JARA</td><td>BAEZ JARA DAVID</td><td>BAJD790110NX6</td><td>BAJD790110HDFZRV02</td><td>68977920682</td><td>SUPERIOR</td><td>DISEÑADOR "B"</td><td>INGENIERIA</td><td>INGENIERIA</td><td>6/20/2022</td><td>700.85</td><td>751.9281</td></tr>
+          <tr><td class="mono">16</td><td>0114 DIEGO CASTILLO JIMENEZ</td><td>CASTILLO JIMENEZ DIEGO</td><td>CAJD950807GQA</td><td>CAJD950807HMCSMG00</td><td>01169507462</td><td>SUPERIOR</td><td>ELECTROMECANICO "A"</td><td>PRODUCCION</td><td>LABOR ELECTRICA</td><td>3/4/2024</td><td>560.68</td><td>614.7939</td></tr>
+          <tr><td class="mono">17</td><td>0012 LUIS ANTONIO VARGAS CHIA</td><td>VARGAS CHIA LUIS ANTONIO</td><td>VACL780905PS6</td><td>VACL780905HDFRHS09</td><td>92997817868</td><td>MEDIA SUPERIOR</td><td>SUPERVISOR PRODUCCION "A"</td><td>PRODUCCION</td><td>SUPERVICION</td><td>7/24/2023</td><td>700.85</td><td>781.0611</td></tr>
+          <tr><td class="mono">19</td><td>0138 LUIS ALEJANDRO LOPEZ PRUDENTE</td><td>LOPEZ PRUDENTE LUIS ALEJANDRO</td><td>LOPL000531861</td><td>LOPL000531HMCPRSA1</td><td>04130069398</td><td>TECNICO</td><td>MECANICO APARATISTA "A"</td><td>PRODUCCION</td><td>GENERAL</td><td>10/13/2025</td><td>677.27</td><td>712.5252</td></tr>
+          <tr><td class="mono">21</td><td>0141 FELIPE NERI FLORES RODRIGUEZ</td><td>FLORES RODRIGUEZ FELIPE NERI</td><td>FORF840526PX9</td><td>FORF840526HMCLDL07</td><td>92068404398</td><td>MEDIA SUPERIOR</td><td>ENCARGADO DE ALMACEN "A"</td><td>PRODUCCION</td><td>ALMACEN</td><td>6/15/2023</td><td>420.51</td><td>442.9801</td></tr>
+          <tr><td class="mono">37</td><td>0156 DAVID ALONSO DIAZ</td><td>ALONSO DIAZ DAVID</td><td>AODD001215E97</td><td>AODD001215HMCLZVA6</td><td>46190010002</td><td>SUPERIOR</td><td>DISEÑADOR "C"</td><td>INGENIERIA</td><td>INGENIERIA</td><td>2/12/2025</td><td>560.68</td><td>621.0723</td></tr>
+          <tr><td class="mono">1.1</td><td></td><td>FUENTES LOPEZ LUIS IGNACIO</td><td>FULL630819P36</td><td>FULL630819HDFNPS07</td><td>89816302106</td><td>SUPERIOR</td><td>DIRECCION GENERAL</td><td>DIRECCION</td><td>ADMINISTRACION</td><td>10/18/2021</td><td>3,339.00</td><td>—</td></tr>
+          <tr><td class="mono">1.2</td><td></td><td>NUÑEZ MAYORGA YEIMY</td><td>NUMY9705053F7</td><td>NUMY970505MMCXYM07</td><td>92129770548</td><td>SUPERIOR</td><td>ANALISTA CONTABLE SEÑORIOR</td><td>CONTABILIDAD</td><td>ADMINISTRACION</td><td>5/1/2022</td><td>698.68</td><td>—</td></tr>
+          <tr><td class="mono">1.3</td><td></td><td>FUENTES RICARDO JESSICA MINERVA</td><td>FURJ9106266F4</td><td>FURJ9106266MDFNCS04</td><td>90129117900</td><td>SUPERIOR</td><td>JEFA DE ADQUISICION DE MERCANCIAS</td><td>COMERCIO EXTERIOR</td><td>ADMINISTRACION</td><td>3/1/2022</td><td>747.58</td><td>—</td></tr>
+          <tr><td class="mono">1.4</td><td></td><td>FUENTES LOPEZ MARIA CRISTINA</td><td>FULC7407244S4</td><td>FULC740724MMCNPR09</td><td>68937504451</td><td>POSGRADO</td><td>JEFE DE RECURSOS HUMANOS B</td><td>ADMINISTRACION</td><td>ADMINISTRACION</td><td>1/1/2023</td><td>873.34</td><td>—</td></tr>
+          <tr><td class="mono">1.5</td><td></td><td>NAVARRO VILLEGAS BRENDA MARIANA</td><td>NAVB000203L78</td><td>NAVB000203MMCVLRA0</td><td>92150024047</td><td>SUPERIOR</td><td>SUB CONTADOR</td><td>CONTABILIDAD</td><td>ADMINISTRACION</td><td>5/8/2023</td><td>567.68</td><td>—</td></tr>
+          <tr><td class="mono">1.6</td><td></td><td>LLAMAS BRIONES LESLYE MARGARITA</td><td>LABL970808Q87</td><td>LABL970808MMCLRS08</td><td>44169737499</td><td>SUPERIOR</td><td>AUXILIAR CONTABLE B</td><td>CONTABILIDAD</td><td>ADMINISTRACION</td><td>—</td><td>—</td><td>—</td></tr>
+        </tbody>
+      </table></div>
+    </div>
   </div>
 </div>
 
@@ -725,11 +786,283 @@ select.fi{cursor:pointer}
 </div>
 
   </div>
+
+  <!-- CONCILIACIÓN -->
+  <div class="mod" id="mod-conciliacion">
+    <div class="subnav">
+      <div class="sntab active" onclick="goSub('conciliacion','checador',this)">Carga de Checador</div>
+      <div class="sntab" onclick="goSub('conciliacion','semanal',this)">Conciliación Semanal</div>
+      <div class="sntab" onclick="goSub('conciliacion','alertas',this)">Alertas</div>
+      <div class="sntab" onclick="goSub('conciliacion','horas',this)">Clasificación de Horas</div>
+      <div class="sntab" onclick="goSub('conciliacion','cierre',this)">Cierre de Semana</div>
+    </div>
+
+    <div class="card" style="margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div>
+        <div class="ct">Semana de conciliación</div>
+        <div class="cs">Selecciona una semana para trabajar</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <label class="fl" style="margin-bottom:0">Semana</label>
+        <select id="conciliacion-week" class="fi" style="max-width:200px">
+          <option value="1">Semana 1 · 01-07 Mar 2026</option>
+          <option value="2">Semana 2 · 08-14 Mar 2026</option>
+          <option value="3">Semana 3 · 15-21 Mar 2026</option>
+          <option value="4">Semana 4 · 22-28 Mar 2026</option>
+        </select>
+        <button class="btn sm" onclick="loadConciliacionSemana()">Actualizar</button>
+      </div>
+    </div>
+
+    <div class="submod active" id="sub-conciliacion-checador">
+      <div class="card">
+        <div class="ch"><div><div class="ct">Carga de Checador</div><div class="cs">Importa registros para iniciar la conciliación semanal</div></div></div>
+        <div class="conciliacion-panel">
+          <div class="upload-box" id="checador-dropzone">
+            <div style="font-size:32px">📤</div>
+            <strong>Arrastra o selecciona un archivo CSV / XLSX</strong>
+            <div id="checador-drop-hint" style="color:var(--text3);margin-top:8px">Formato esperado: empleado, fecha, hora entrada/salida</div>
+            <input type="file" id="checador-file" accept=".csv,.xlsx" style="display:none">
+          </div>
+          <div class="conciliacion-card">
+            <div class="ch"><div><div class="ct">Vista previa</div><div class="cs">Revisa los primeros registros antes de importar</div></div></div>
+            <div id="checador-preview-summary" style="margin-top:12px;display:none"></div>
+            <div class="conciliacion-table">
+              <table id="checador-preview-table" style="width:100%;border-collapse:collapse;display:none">
+                <thead><tr><th>Empleado</th><th>Fecha</th><th>Entrada</th><th>Salida</th><th>Estado</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px">
+              <button class="btn p" id="checador-preview-btn">Previsualizar</button>
+              <button class="btn p" id="checador-import-btn" disabled>Importar registros</button>
+            </div>
+            <div id="checador-preview-error" style="margin-top:12px;color:var(--red);display:none"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="submod" id="sub-conciliacion-semanal">
+      <div class="card">
+        <div class="ch"><div><div class="ct">Resumen Semanal</div><div class="cs">Control de horas conciliadas, alertas y variaciones</div></div></div>
+        <div class="conciliacion-mini">
+          <div class="conciliacion-card"><strong>Total empleados</strong><div id="resumen-total-empleados" style="font-size:22px;margin-top:8px">—</div></div>
+          <div class="conciliacion-card"><strong>Horas checador</strong><div id="resumen-horas-checador" style="font-size:22px;margin-top:8px">—</div></div>
+          <div class="conciliacion-card"><strong>Horas clasificadas</strong><div id="resumen-horas-clasificadas" style="font-size:22px;margin-top:8px">—</div></div>
+          <div class="conciliacion-card"><strong>Incidencias</strong><div id="resumen-incidencias" style="font-size:22px;margin-top:8px">—</div></div>
+        </div>
+        <div class="conciliacion-table">
+          <table id="conciliacion-table" style="width:100%;border-collapse:collapse">
+            <thead><tr><th>Empleado</th><th>Total Checador</th><th>Total Clasif.</th><th>Diferencia</th><th>Estado</th></tr></thead>
+            <tbody><tr><td colspan="5" style="padding:16px;color:var(--text3);text-align:center">Selecciona una semana y haz clic en Actualizar</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="submod" id="sub-conciliacion-alertas">
+      <div class="card">
+        <div class="ch"><div><div class="ct">Alertas de Conciliación</div><div class="cs">Detecta registros pendientes, conflictos y ausencias.</div></div></div>
+        <div class="alerts-list" id="alertas-list">
+          <div class="alert-card danger"><strong>Conflicto de entrada</strong><p style="margin-top:8px;color:var(--text3)">Empleado no tiene registro de salida en fecha 2026-03-21.</p></div>
+          <div class="alert-card warn"><strong>Diferencia de horas</strong><p style="margin-top:8px;color:var(--text3)">Hay 3 empleados con más de 2 horas de diferencia.</p></div>
+          <div class="alert-card"><strong>Falta justificante</strong><p style="margin-top:8px;color:var(--text3)">Pendientes 4 justificantes de ausencia.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="submod" id="sub-conciliacion-horas">
+      <div class="card">
+        <div class="ch"><div><div class="ct">Captura y Clasificación de Horas</div><div class="cs">Registra horas adicionales o ajustes de proyecto.</div></div></div>
+        <div class="conciliacion-panel">
+          <div class="conciliacion-card" style="padding:18px">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+              <div><label class="fl">Empleado</label><input class="fi" id="clasif-empleado" placeholder="Nombre / ID"></div>
+              <div><label class="fl">Proyecto / OT</label><input class="fi" id="clasif-proyecto" placeholder="OT-AL-1948"></div>
+              <div><label class="fl">Fecha</label><input class="fi" id="clasif-fecha" type="date"></div>
+              <div><label class="fl">Horas</label><input class="fi" id="clasif-horas" type="number" min="0" step="0.25"></div>
+              <div><label class="fl">Actividad</label><input class="fi" id="clasif-actividad" placeholder="Maquinado, Ensamble"></div>
+              <div><label class="fl">Tipo</label><select class="fi" id="clasif-tipo"><option value="normal">Normal</option><option value="extra">Extra</option><option value="vacaciones">Vacaciones</option></select></div>
+            </div>
+            <button class="btn p" style="margin-top:16px;width:fit-content" id="clasif-add-btn">Agregar clasificación</button>
+            <div id="clasif-result" style="margin-top:12px;color:var(--text3)"></div>
+          </div>
+          <div class="conciliacion-card">
+            <div class="ch"><div><div class="ct">Horas clasificadas</div><div class="cs">Registros guardados en la semana</div></div></div>
+            <div class="conciliacion-table">
+              <table id="clasif-table" style="width:100%;border-collapse:collapse">
+                <thead><tr><th>Empleado</th><th>Fecha</th><th>Proyecto</th><th>Horas</th><th>Tipo</th></tr></thead>
+                <tbody><tr><td colspan="5" style="padding:16px;color:var(--text3);text-align:center">No hay registros guardados aún.</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="submod" id="sub-conciliacion-cierre">
+      <div class="card">
+        <div class="ch"><div><div class="ct">Cierre de Semana</div><div class="cs">Cierra la conciliación y genera reporte para la semana seleccionada.</div></div></div>
+        <div class="conciliacion-mini">
+          <div class="conciliacion-card"><strong>Estatus de cierre</strong><div id="cierre-status" style="font-size:22px;margin-top:8px">Pendiente</div></div>
+          <div class="conciliacion-card"><strong>Alertas activas</strong><div id="cierre-alertas" style="font-size:22px;margin-top:8px">—</div></div>
+          <div class="conciliacion-card"><strong>Conflictos</strong><div id="cierre-conflictos" style="font-size:22px;margin-top:8px">—</div></div>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:20px">
+          <button class="btn p" id="cierre-btn">Cerrar Semana</button>
+          <button class="btn sm" id="export-btn">Exportar Excel</button>
+        </div>
+        <div id="cierre-message" style="margin-top:14px;color:var(--text3)"></div>
+      </div>
+    </div>
+  </div>
 </div>
+
+<div class="mod" id="mod-nomina">
+  <div class="subnav">
+    <div class="sntab active" onclick="goSub('nomina','captura',this)">Captura</div>
+    <div class="sntab" onclick="goSub('nomina','cfdi',this)">CFDI</div>
+    <div class="sntab" onclick="goSub('nomina','resumen',this)">Resumen</div>
+  </div>
+  <div class="submod active" id="sub-nomina-captura">
+    <div class="card">
+      <div class="ch"><div><div class="ct">Nómina / CFDI</div><div class="cs">Registro de nómina y CFDI con estructura de cálculo completa</div></div><button class="btn p sm">+ Nueva línea</button></div>
+      <div class="tw" style="overflow-x:auto;">
+        <table style="min-width:2400px;border-collapse:collapse;">
+          <thead>
+            <tr>
+              <th rowspan="2">AÑO</th>
+              <th rowspan="2">MES</th>
+              <th rowspan="2">BIMESTRE</th>
+              <th rowspan="2">SEMANA</th>
+              <th rowspan="2">PUESTO</th>
+              <th rowspan="2">AREA</th>
+              <th rowspan="2">NO. LISTA DE NOMINA</th>
+              <th rowspan="2">TURNO</th>
+              <th rowspan="2">NOMBRE DEL TRABAJADOR</th>
+              <th rowspan="2">RFC</th>
+              <th rowspan="2">CURP</th>
+              <th rowspan="2">NO.IMSS</th>
+              <th rowspan="2">FECHA DE INGRESO</th>
+              <th rowspan="2">S.D</th>
+              <th rowspan="2">S.D.I 2</th>
+              <th colspan="2">HRS X 1ER TURNO NORMAL</th>
+              <th colspan="2">HRS X 2DO TURNO NORMAL</th>
+              <th colspan="2">HRS TURNO NORMAL</th>
+              <th rowspan="2">TIEMPO EXTRA HRS DOBLES</th>
+              <th rowspan="2">TIEMPO EXTRA HRS TRIPLES</th>
+              <th rowspan="2">DIAS TRABAJADOS</th>
+              <th colspan="2">DIA</th>
+              <th rowspan="2">HORAS DIA FESTIVO</th>
+              <th colspan="2">DIA DE</th>
+              <th rowspan="2">TOTAL DIAS EN NOMINA</th>
+              <th colspan="2">FALTAS</th>
+              <th rowspan="2">HRS LABORADAS EN LA SEMANA</th>
+              <th rowspan="2">SD</th>
+              <th rowspan="2">SDI</th>
+              <th colspan="3">SUELDO SEMANAL</th>
+              <th colspan="3">TIEMPO EXTRA DOBLE</th>
+              <th colspan="3">TIEMPO EXTRA TRIPLE</th>
+              <th colspan="3">PRIMA VACACIONAL</th>
+              <th colspan="3">VACACIONES</th>
+              <th colspan="3">OTRAS PERCEPCIONES</th>
+              <th colspan="3">VIATICOS</th>
+              <th rowspan="2">TOTAL PERCEPCIONES</th>
+              <th rowspan="2">3% NOMINA</th>
+              <th rowspan="2">PERCEPCIONES GRAVADAS</th>
+              <th colspan="3">IMSS</th>
+              <th rowspan="2">ISR</th>
+              <th rowspan="2">INFONAVIT</th>
+              <th rowspan="2">FONACOT</th>
+              <th rowspan="2">TOTAL DEDUCCIONES</th>
+              <th rowspan="2">PAGO NOMINA</th>
+            </tr>
+            <tr>
+              <th>MIXTO</th>
+              <th>NORMAL</th>
+              <th>VESPERTINO</th>
+              <th>NORMAL</th>
+              <th>MATUTINO</th>
+              <th>NORMAL</th>
+              <th>FESTIVO</th>
+              <th>VACACIONES</th>
+              <th>FALTA</th>
+              <th>INCAPACIDAD</th>
+              <th>GRAVADO</th>
+              <th>EXENTO</th>
+              <th>TOTAL</th>
+              <th>GRAVADO</th>
+              <th>EXENTO</th>
+              <th>TOTAL</th>
+              <th>GRAVADO</th>
+              <th>EXENTO</th>
+              <th>TOTAL</th>
+              <th>GRAVADO</th>
+              <th>EXENTO</th>
+              <th>TOTAL</th>
+              <th>GRAVADO</th>
+              <th>EXENTO</th>
+              <th>TOTAL</th>
+              <th>GRAVADO</th>
+              <th>EXENTO</th>
+              <th>TOTAL</th>
+              <th>NORMAL</th>
+              <th>VACACIONES</th>
+              <th>IMSS</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td colspan="86" style="padding:16px;text-align:center;color:var(--text3)">Registros de nómina disponibles para capturar aquí.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="submod" id="sub-nomina-cfdi">
+    <div class="card">
+      <div class="ch"><div><div class="ct">CFDI</div><div class="cs">Importa XML de CFDI y valida el registro</div></div><button class="btn sm" onclick="document.getElementById('nominaXmlFileInput').click()">+ Cargar CFDI</button></div>
+      <input type="file" id="nominaXmlFileInput" accept=".xml" style="display:none" onchange="handleXMLUpload(event)">
+      <div class="cb" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="fgg"><label class="fl">RFC Emisor</label><input class="fi" placeholder="AAA010101AAA"></div>
+        <div class="fgg"><label class="fl">RFC Receptor</label><input class="fi" placeholder="ALE010410123"></div>
+        <div class="fgg"><label class="fl">UUID / Folio</label><input class="fi" placeholder="EMF006602Q2"></div>
+        <div class="fgg"><label class="fl">Método de Pago</label><input class="fi" placeholder="PUE / PPD"></div>
+      </div>
+      <div class="tw" style="margin-top:14px"><table>
+        <thead><tr><th>RFC Emisor</th><th>UUID</th><th>Folio</th><th>Fecha</th><th>Moneda</th><th>Total</th><th>Estado</th></tr></thead>
+        <tbody>
+          <tr><td colspan="7" style="padding:16px;text-align:center;color:var(--text3)">Carga un CFDI para ver datos de validación y procesos de nómina.</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+  <div class="submod" id="sub-nomina-resumen">
+    <div class="kg">
+      <div class="kpi"><div class="kl">Registros de nómina</div><div class="kv">0</div><div class="ks">Líneas capturadas</div></div>
+      <div class="kpi"><div class="kl">Percepciones totales</div><div class="kv">$0</div><div class="ks">CFDI / nómina</div></div>
+      <div class="kpi"><div class="kl">Deducciones totales</div><div class="kv">$0</div><div class="ks">ISR · IMSS · INFONAVIT</div></div>
+      <div class="kpi"><div class="kl">Pago de nómina</div><div class="kv">$0</div><div class="ks">Monto neto</div></div>
+    </div>
+    <div class="card">
+      <div class="ch"><div><div class="ct">Detalle de nómina</div><div class="cs">Información general y líneas de captura</div></div></div>
+      <div class="tw"><table>
+        <thead><tr><th>Campo</th><th>Valor</th></tr></thead>
+        <tbody>
+          <tr><td>Período</td><td>2026 · Semana 1</td></tr>
+          <tr><td>Total empleados</td><td>0</td></tr>
+          <tr><td>Total días en nómina</td><td>0</td></tr>
+          <tr><td>Total horas trabajadas</td><td>0</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
 </div>
 
 <script>
-const API_URL = 'http://localhost:3000/api';
+const API_URL = '/api';
 
 const CFG = {
   dashboard:    { title: 'Dashboard',              crumb: '· Todas las Órdenes de Trabajo · 2026' },
@@ -739,6 +1072,8 @@ const CFG = {
   material:     { title: 'Costo de Material',       crumb: '· Requisición por OT' },
   entregas:     { title: 'Entregas de Material',    crumb: '· Control de Recepciones' },
   horas:        { title: 'Horas de Mano de Obra',   crumb: '· ALE-030424-J83 · Ene–Mar 2026' },
+  conciliacion: { title: 'Conciliación',           crumb: '· Gestión de checador y horas',    newLabel: '+ Cerrar Semana' },
+  nomina:       { title: 'Nómina / CFDI',           crumb: '· Registro de nómina y CFDI' },
   costomo:      { title: 'Costo de Mano de Obra',   crumb: '· Labor Directa / Indirecta · OT-1936' }
 };
 
@@ -993,7 +1328,7 @@ function goMod(id) {
   const tabs   = document.getElementById('ctrl-tabs');
   const newBtn = document.getElementById('ctrl-new');
   otSel.style.display = (id !== 'dashboard') ? 'flex' : 'none';
-  dates.style.display  = (id !== 'dashboard' && id !== 'ot') ? 'flex' : 'none';
+  dates.style.display  = (id !== 'dashboard' && id !== 'ot' && id !== 'conciliacion') ? 'flex' : 'none';
   tabs.style.display   = (id === 'dashboard') ? 'flex' : 'none';
   newBtn.textContent   = c.newLabel || '+ Nueva OT';
 }
@@ -1028,6 +1363,270 @@ function checkDl(prefix) {
   btn.style.opacity = ok ? '1' : '.45';
 }
 function checkGlobalDates() { checkDl(); }
+
+const conciliacionState = {
+  semanaId: '1',
+  checadorFile: null,
+  previewData: null,
+  clasificacionRecords: []
+};
+
+function getCurrentModule() {
+  const activeNav = document.querySelector('.ni.active');
+  return activeNav?.dataset?.mod || 'dashboard';
+}
+
+function handleGlobalAction() {
+  if (getCurrentModule() === 'conciliacion') {
+    exportConciliacionExcel();
+    return;
+  }
+  alert('Acción no disponible en este módulo.');
+}
+
+function handleNewAction() {
+  if (getCurrentModule() === 'conciliacion') {
+    cerrarSemana();
+    return;
+  }
+  alert('Funcionalidad no disponible para este módulo.');
+}
+
+function initConciliacionModule() {
+  const fileInput = document.getElementById('checador-file');
+  const dropzone = document.getElementById('checador-dropzone');
+  if (!fileInput || !dropzone) return;
+
+  document.getElementById('btn-dl-global').addEventListener('click', handleGlobalAction);
+  document.getElementById('ctrl-new').addEventListener('click', handleNewAction);
+  document.getElementById('conciliacion-week').addEventListener('change', (event) => {
+    conciliacionState.semanaId = event.target.value;
+  });
+
+  dropzone.addEventListener('click', () => fileInput.click());
+  dropzone.addEventListener('dragover', (event) => {
+    event.preventDefault();
+    dropzone.classList.add('dragover');
+  });
+  dropzone.addEventListener('dragleave', () => {
+    dropzone.classList.remove('dragover');
+  });
+  dropzone.addEventListener('drop', (event) => {
+    event.preventDefault();
+    dropzone.classList.remove('dragover');
+    const file = event.dataTransfer.files?.[0];
+    if (file) {
+      fileInput.files = event.dataTransfer.files;
+      handleChecadorFileSelected();
+    }
+  });
+
+  fileInput.addEventListener('change', handleChecadorFileSelected);
+  document.getElementById('checador-preview-btn').addEventListener('click', previewChecador);
+  document.getElementById('checador-import-btn').addEventListener('click', importarChecador);
+  document.getElementById('clasif-add-btn').addEventListener('click', addClasificacion);
+  document.getElementById('cierre-btn').addEventListener('click', cerrarSemana);
+  document.getElementById('export-btn').addEventListener('click', exportConciliacionExcel);
+}
+
+function handleChecadorFileSelected() {
+  const fileInput = document.getElementById('checador-file');
+  if (fileInput.files.length === 0) {
+    conciliacionState.checadorFile = null;
+    document.getElementById('checador-import-btn').disabled = true;
+    return;
+  }
+  conciliacionState.checadorFile = fileInput.files[0];
+  document.getElementById('checador-import-btn').disabled = false;
+  document.getElementById('checador-preview-error').style.display = 'none';
+}
+
+async function previewChecador() {
+  const file = conciliacionState.checadorFile;
+  if (!file) {
+    alert('Selecciona un archivo primero.');
+    return;
+  }
+  const summary = document.getElementById('checador-preview-summary');
+  const table = document.getElementById('checador-preview-table');
+  summary.style.display = 'none';
+  table.style.display = 'none';
+  document.getElementById('checador-preview-error').style.display = 'none';
+
+  try {
+    const formData = new FormData();
+    formData.append('archivo', file);
+    const response = await fetch(`${API_URL}/conciliacion/checador/preview`, {
+      method: 'POST',
+      body: formData
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || data.mensaje || 'Error al previsualizar');
+
+    conciliacionState.previewData = data;
+    summary.innerHTML = `<strong>Registros leídos:</strong> ${data.preview.total_leidos} · <strong>Válidos:</strong> ${data.preview.total_validos} · <strong>Errores:</strong> ${data.preview.total_errores}`;
+    summary.style.display = 'block';
+
+    const tbody = table.querySelector('tbody');
+    tbody.innerHTML = '';
+
+    data.preview.registros.slice(0, 20).forEach((row) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${row.empleado || '—'}</td><td>${row.fecha || '—'}</td><td>${row.entrada || '—'}</td><td>${row.salida || '—'}</td><td>${row.estado || 'OK'}</td>`;
+      tbody.appendChild(tr);
+    });
+
+    table.style.display = 'table';
+  } catch (error) {
+    document.getElementById('checador-preview-error').textContent = error.message;
+    document.getElementById('checador-preview-error').style.display = 'block';
+  }
+}
+
+async function importarChecador() {
+  if (!conciliacionState.previewData) {
+    alert('Primero realiza la previsualización.');
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/conciliacion/checador/importar`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ temp_file: conciliacionState.previewData.temp_file, semana_id: conciliacionState.semanaId })
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || data.mensaje || 'Error al importar');
+
+    alert('Importación exitosa. Revisa el resumen semanal.');
+    loadConciliacionSemana();
+  } catch (error) {
+    alert(`Error al importar: ${error.message}`);
+  }
+}
+
+function renderConciliacionRows(empleados) {
+  const tbody = document.getElementById('conciliacion-table').querySelector('tbody');
+  tbody.innerHTML = '';
+  if (!empleados || empleados.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" style="padding:16px;color:var(--text3);text-align:center">No se encontraron registros para la semana seleccionada.</td></tr>';
+    return;
+  }
+
+  empleados.forEach((empleado) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${empleado.nombre || '—'}</td><td>${empleado.total_horas_checador || 0}</td><td>${empleado.total_horas_clasificadas || 0}</td><td>${empleado.diferencia || 0}</td><td>${empleado.estado || 'pendiente'}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+async function loadConciliacionSemana() {
+  const summaryAll = document.getElementById('resumen-total-empleados');
+  const horasChecador = document.getElementById('resumen-horas-checador');
+  const horasClasificadas = document.getElementById('resumen-horas-clasificadas');
+  const incidencias = document.getElementById('resumen-incidencias');
+
+  summaryAll.textContent = 'Cargando...';
+  horasChecador.textContent = 'Cargando...';
+  horasClasificadas.textContent = 'Cargando...';
+  incidencias.textContent = 'Cargando...';
+
+  try {
+    const response = await fetch(`${API_URL}/conciliacion/${conciliacionState.semanaId}`);
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || data.mensaje || 'No se pudo cargar la conciliación');
+
+    const resumen = data.resumen || {};
+    summaryAll.textContent = resumen.total_empleados || 0;
+    horasChecador.textContent = resumen.total_horas_checador || 0;
+    horasClasificadas.textContent = resumen.total_horas_clasificadas || 0;
+    incidencias.textContent = resumen.total_incidencias || 0;
+
+    renderConciliacionRows(data.empleados || []);
+    document.getElementById('cierre-status').textContent = data.semana?.cerrada ? 'Cerrada' : 'Abierta';
+    document.getElementById('cierre-alertas').textContent = `${data.resumen?.estado_alerta || 0}`;
+    document.getElementById('cierre-conflictos').textContent = `${data.resumen?.estado_conflicto || 0}`;
+    document.getElementById('cierre-message').textContent = data.semana?.cerrada ? 'La semana ya está cerrada.' : 'Puedes cerrar la semana si no existen conflictos.';
+  } catch (error) {
+    summaryAll.textContent = '—';
+    horasChecador.textContent = '—';
+    horasClasificadas.textContent = '—';
+    incidencias.textContent = '—';
+    renderConciliacionRows([]);
+    alert(`No se pudo cargar la conciliación: ${error.message}`);
+  }
+}
+
+function addClasificacion() {
+  const empleado = document.getElementById('clasif-empleado').value.trim();
+  const proyecto = document.getElementById('clasif-proyecto').value.trim();
+  const fecha = document.getElementById('clasif-fecha').value;
+  const horas = document.getElementById('clasif-horas').value;
+  const actividad = document.getElementById('clasif-actividad').value.trim();
+  const tipo = document.getElementById('clasif-tipo').value;
+
+  if (!empleado || !proyecto || !fecha || !horas || !actividad) {
+    document.getElementById('clasif-result').textContent = 'Completa todos los campos antes de guardar.';
+    return;
+  }
+
+  conciliacionState.clasificacionRecords.push({ empleado, proyecto, fecha, horas, tipo });
+  document.getElementById('clasif-result').textContent = 'Registro guardado localmente. No se envía a backend en esta vista integrada.';
+  renderClasifTable();
+}
+
+function renderClasifTable() {
+  const tbody = document.getElementById('clasif-table').querySelector('tbody');
+  const records = conciliacionState.clasificacionRecords;
+  if (!records.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="padding:16px;color:var(--text3);text-align:center">No hay registros guardados aún.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = records.map(r => `<tr><td>${r.empleado}</td><td>${r.fecha}</td><td>${r.proyecto}</td><td>${r.horas}</td><td>${r.tipo}</td></tr>`).join('');
+}
+
+async function cerrarSemana() {
+  try {
+    const response = await fetch(`${API_URL}/conciliacion/${conciliacionState.semanaId}/cerrar`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || data.mensaje || 'Error al cerrar semana');
+
+    document.getElementById('cierre-message').textContent = 'Semana cerrada correctamente.';
+    loadConciliacionSemana();
+  } catch (error) {
+    document.getElementById('cierre-message').textContent = `No se pudo cerrar la semana: ${error.message}`;
+  }
+}
+
+async function exportConciliacionExcel() {
+  try {
+    const response = await fetch(`${API_URL}/conciliacion/${conciliacionState.semanaId}/exportar`, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw new Error(body.error || body.mensaje || 'Error al exportar Excel');
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `conciliacion_semana_${conciliacionState.semanaId}.xlsx`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    alert(`No se pudo exportar: ${error.message}`);
+  }
+}
+
+initConciliacionModule();
 
 // XML CFDI Invoice Handling
 function triggerXMLUpload() {

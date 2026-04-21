@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conciliación Semanal - Alenstec</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f5f5;
+      color: #333;
+    }
+
+    .container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 250px;
+      background: #2c3e50;
+      color: white;
+      padding: 20px;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar h2 {
+      font-size: 18px;
+      margin-bottom: 30px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #34495e;
+    }
+
+    .sidebar-menu {
+      list-style: none;
+    }
+
+    .sidebar-menu li {
+      margin-bottom: 15px;
+    }
+
+    .sidebar-menu a {
+      color: #bdc3c7;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      border-radius: 4px;
+      transition: all 0.3s;
+    }
+
+    .sidebar-menu a:hover,
+    .sidebar-menu a.active {
+      background: #34495e;
+      color: white;
+    }
+
+    .sidebar-menu span {
+      margin-left: 10px;
+    }
+
+    .user-info {
+      background: #34495e;
+      padding: 15px;
+      border-radius: 4px;
+      margin-top: auto;
+      font-size: 12px;
+    }
+
+    .user-info p {
+      margin-bottom: 8px;
+    }
+
+    .logout-btn {
+      width: 100%;
+      padding: 8px;
+      background: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: background 0.3s;
+      margin-top: 10px;
+    }
+
+    .logout-btn:hover {
+      background: #c0392b;
+    }
+
+    /* MAIN CONTENT */
+    .main-content {
+      margin-left: 250px;
+      flex: 1;
+      padding: 30px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      color: #2c3e50;
+      font-size: 32px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .btn-primary {
+      background: #3498db;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #2980b9;
+    }
+
+    .btn-secondary {
+      background: #95a5a6;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #7f8c8d;
+    }
+
+    .btn-danger {
+      background: #e74c3c;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #c0392b;
+    }
+
+    .btn-success {
+      background: #27ae60;
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #229954;
+    }
+
+    /* FILTROS */
+    .filters {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      display: flex;
+      gap: 15px;
+      align-items: flex-end;
+    }
+
+    .filter-group {
+      flex: 1;
+    }
+
+    .filter-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #666;
+    }
+
+    .filter-group select,
+    .filter-group input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+
+    .filter-group input:focus,
+    .filter-group select:focus {
+      outline: none;
+      border-color: #3498db;
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    }
+
+    /* TABLA */
+    .table-container {
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: #34495e;
+      color: white;
+    }
+
+    th {
+      padding: 15px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 13px;
+      text-transform: uppercase;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid #ecf0f1;
+      transition: background 0.2s;
+      cursor: pointer;
+    }
+
+    tbody tr:hover {
+      background: #f9f9f9;
+    }
+
+    td {
+      padding: 15px;
+      font-size: 13px;
+    }
+
+    /* COLORES DE ESTADO */
+    .estado-ok {
+      background: #d5f4e6;
+      color: #27ae60;
+      padding: 5px 10px;
+      border-radius: 3px;
+      font-weight: 600;
+    }
+
+    .estado-alerta {
+      background: #fef5e7;
+      color: #f39c12;
+      padding: 5px 10px;
+      border-radius: 3px;
+      font-weight: 600;
+    }
+
+    .estado-conflicto {
+      background: #fadbd8;
+      color: #e74c3c;
+      padding: 5px 10px;
+      border-radius: 3px;
+      font-weight: 600;
+    }
+
+    .estado-justificado {
+      background: #d6eaf8;
+      color: #3498db;
+      padding: 5px 10px;
+      border-radius: 3px;
+      font-weight: 600;
+    }
+
+    tr.row-ok {
+      border-left: 4px solid #27ae60;
+    }
+
+    tr.row-alerta {
+      border-left: 4px solid #f39c12;
+    }
+
+    tr.row-conflicto {
+      border-left: 4px solid #e74c3c;
+    }
+
+    tr.row-justificado {
+      border-left: 4px solid #3498db;
+    }
+
+    .resumen {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .resumen-card {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .resumen-card h3 {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+
+    .resumen-card .value {
+      font-size: 28px;
+      font-weight: bold;
+      color: #2c3e50;
+    }
+
+    .resumen-card.ok .value { color: #27ae60; }
+    .resumen-card.alerta .value { color: #f39c12; }
+    .resumen-card.conflicto .value { color: #e74c3c; }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+    }
+
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #3498db;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 15px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 15px;
+    }
+
+    .modal-header h2 {
+      color: #2c3e50;
+      font-size: 20px;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 28px;
+      cursor: pointer;
+      color: #999;
+      transition: color 0.2s;
+    }
+
+    .close-btn:hover {
+      color: #333;
+    }
+
+    .alert {
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+      font-size: 13px;
+      display: none;
+    }
+
+    .alert-error {
+      background: #fadbd8;
+      color: #c0392b;
+      border: 1px solid #f5b7b1;
+      display: block;
+    }
+
+    .alert-success {
+      background: #d5f4e6;
+      color: #27ae60;
+      border: 1px solid #a9dfbf;
+      display: block;
+    }
+
+    @media (max-width: 1280px) {
+      .sidebar {
+        width: 200px;
+      }
+      .main-content {
+        margin-left: 200px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <h2>🕐 Alenstec</h2>
+      <ul class="sidebar-menu">
+        <li><a href="conciliacion-semanal.html" class="active">📊 Conciliación Semanal</a></li>
+        <li><a href="alertas.html">⚠️ Alertas</a></li>
+        <li><a href="carga-checador.html">📤 Carga Checador</a></li>
+        <li><a href="captura-horas.html">📝 Captura de Horas</a></li>
+        <li><a href="cierre-semana.html">✓ Cierre de Semana</a></li>
+      </ul>
+
+      <div class="user-info" style="margin-top: 30px;">
+        <p><strong>Usuario:</strong> <span id="userEmail">-</span></p>
+        <p><strong>Rol:</strong> <span id="userRol">-</span></p>
+        <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+      </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+      <div class="header">
+        <div>
+          <h1>Conciliación Semanal</h1>
+          <p id="periodInfo" style="color: #666; margin-top: 5px; font-size: 14px;">-</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-secondary" onclick="recargar()">🔄 Recargar</button>
+          <button class="btn btn-primary" onclick="abrirDetalle()">👤 Ver Detalle</button>
+        </div>
+      </div>
+
+      <!-- RESUMEN -->
+      <div class="resumen" id="resumenContainer">
+        <div class="resumen-card ok">
+          <h3>Sin Diferencia</h3>
+          <div class="value" id="countOk">-</div>
+        </div>
+        <div class="resumen-card alerta">
+          <h3>Con Alerta</h3>
+          <div class="value" id="countAlerta">-</div>
+        </div>
+        <div class="resumen-card conflicto">
+          <h3>Conflictivo</h3>
+          <div class="value" id="countConflicto">-</div>
+        </div>
+        <div class="resumen-card">
+          <h3>Total Empleados</h3>
+          <div class="value" id="countTotal">-</div>
+        </div>
+      </div>
+
+      <!-- FILTROS -->
+      <div class="filters">
+        <div class="filter-group" style="flex: 2;">
+          <label>Semana</label>
+          <select id="semanaFilter" onchange="cargarConciliacion()">
+            <option value="">Cargando semanas...</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Área</label>
+          <select id="areaFilter" onchange="cargarConciliacion()">
+            <option value="">Todas</option>
+            <option value="Producción">Producción</option>
+            <option value="Mantenimiento">Mantenimiento</option>
+            <option value="Almacén">Almacén</option>
+            <option value="Administrativo">Administrativo</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Estado</label>
+          <select id="estadoFilter" onchange="cargarConciliacion()">
+            <option value="">Todos</option>
+            <option value="ok">Sin Diferencia</option>
+            <option value="alerta">Con Alerta</option>
+            <option value="conflicto">Conflictivo</option>
+            <option value="justificado">Justificado</option>
+          </select>
+        </div>
+        <button class="btn btn-secondary" onclick="exportarExcel()" style="flex: 0;">📊 Exportar</button>
+      </div>
+
+      <!-- TABLA -->
+      <div class="table-container">
+        <div id="loading" class="loading" style="display: none;">
+          <div class="spinner"></div>
+          <p>Cargando datos...</p>
+        </div>
+
+        <div id="alertMessage" class="alert"></div>
+
+        <table id="tablaEmpleados">
+          <thead>
+            <tr>
+              <th style="width: 12%;">Número</th>
+              <th style="width: 20%;">Nombre</th>
+              <th style="width: 15%;">Turno</th>
+              <th style="width: 15%;">Área</th>
+              <th style="width: 12%;">Hrs Checador</th>
+              <th style="width: 12%;">Hrs Clasificadas</th>
+              <th style="width: 10%;">Diferencia</th>
+              <th style="width: 14%;">Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td colspan="8" style="text-align: center; color: #999;">Cargando datos...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DETALLE -->
+  <div id="modalDetalle" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Detalle del Empleado</h2>
+        <button class="close-btn" onclick="cerrarDetalle()">×</button>
+      </div>
+      <div id="detalleContent"></div>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script>
+    let semanaActual = null;
+    let empleadoSeleccionado = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      verificarAutenticacion();
+      inicializarUI();
+      cargarSemanas();
+      cargarConciliacion();
+    });
+
+    function verificarAutenticacion() {
+      const token = localStorage.getItem('jwt_token');
+      if (!token) {
+        window.location.href = '/login.html';
+        return;
+      }
+
+      document.getElementById('userEmail').textContent = localStorage.getItem('user_email') || '-';
+      document.getElementById('userRol').textContent = localStorage.getItem('user_rol') || '-';
+    }
+
+    function inicializarUI() {
+      // Generar semanas de ejemplo
+      const hoy = new Date();
+      for (let i = 0; i < 4; i++) {
+        const fecha = new Date(hoy);
+        fecha.setDate(fecha.getDate() - (fecha.getDay() === 0 ? 7 : fecha.getDay()) - (i * 7));
+        const semanaId = Math.floor(fecha.getTime() / (7 * 24 * 60 * 60 * 1000));
+        const inicio = new Date(fecha);
+        inicio.setDate(inicio.getDate() + 1);
+        const fin = new Date(inicio);
+        fin.setDate(fin.getDate() + 5);
+
+        const option = document.createElement('option');
+        option.value = semanaId;
+        option.textContent = `Semana del ${inicio.toLocaleDateString('es-MX')} al ${fin.toLocaleDateString('es-MX')}`;
+        document.getElementById('semanaFilter').appendChild(option);
+      }
+    }
+
+    async function cargarSemanas() {
+      // En demostración, se carga en inicializarUI
+    }
+
+    async function cargarConciliacion() {
+      const semanaId = document.getElementById('semanaFilter').value;
+      if (!semanaId) return;
+
+      semanaActual = semanaId;
+      mostrarLoading(true);
+
+      try {
+        // Simular datos (en producción vendría del backend)
+        const datos = generarDatosDemo(semanaId);
+        mostrarConciliacion(datos);
+        mostrarLoading(false);
+      } catch (error) {
+        mostrarAlerta('Error al cargar datos: ' + error.message, 'error');
+        mostrarLoading(false);
+      }
+    }
+
+    function generarDatosDemo(semanaId) {
+      const empleados = [
+        { numero_lista: 'E001', nombre: 'Juan García López', turno: 'Matutino', area: 'Producción', horas_checador: 40, horas_clasificadas: 40, diferencia: 0, estado: 'ok' },
+        { numero_lista: 'E002', nombre: 'Maria Rodríguez Jones', turno: 'Vespertino', area: 'Producción', horas_checador: 40, horas_clasificadas: 39.5, diferencia: 0.5, estado: 'alerta' },
+        { numero_lista: 'E003', nombre: 'Carlos Mendez Perez', turno: 'Matutino', area: 'Mantenimiento', horas_checador: 40, horas_clasificadas: 37, diferencia: 3, estado: 'conflicto' },
+        { numero_lista: 'E004', nombre: 'Ana Fernández Martinez', turno: 'Nocturno', area: 'Almacén', horas_checador: 40, horas_clasificadas: 40, diferencia: 0, estado: 'ok' },
+        { numero_lista: 'E005', nombre: 'Roberto Sánchez López', turno: 'Matutino', area: 'Producción', horas_checador: 32, horas_clasificadas: 32, diferencia: 0, estado: 'justificado' },
+        { numero_lista: 'E006', nombre: 'Laura González Ramírez', turno: 'Vespertino', area: 'Administrativo', horas_checador: 40, horas_clasificadas: 40.2, diferencia: 0.2, estado: 'ok' },
+        { numero_lista: 'E007', nombre: 'Pedro Flores Castillo', turno: 'Matutino', area: 'Producción', horas_checador: 38, horas_clasificadas: 35, diferencia: 3, estado: 'conflicto' },
+        { numero_lista: 'E008', nombre: 'Sophia Ruiz García', turno: 'Vespertino', area: 'Producción', horas_checador: 40, horas_clasificadas: 40, diferencia: 0, estado: 'ok' }
+      ];
+
+      // Filtro por área
+      const areaFilter = document.getElementById('areaFilter').value;
+      const estadoFilter = document.getElementById('estadoFilter').value;
+
+      let filtered = empleados;
+      if (areaFilter) filtered = filtered.filter(e => e.area === areaFilter);
+      if (estadoFilter) filtered = filtered.filter(e => e.estado === estadoFilter);
+
+      const resumen = {
+        ok: filtered.filter(e => e.estado === 'ok').length,
+        alerta: filtered.filter(e => e.estado === 'alerta').length,
+        conflicto: filtered.filter(e => e.estado === 'conflicto').length,
+        total: filtered.length
+      };
+
+      return { empleados: filtered, resumen, semanaId };
+    }
+
+    function mostrarConciliacion(datos) {
+      const tabla = document.getElementById('tablaEmpleados');
+      const tbody = tabla.querySelector('tbody');
+
+      // Actualizar resumen
+      document.getElementById('countOk').textContent = datos.resumen.ok;
+      document.getElementById('countAlerta').textContent = datos.resumen.alerta;
+      document.getElementById('countConflicto').textContent = datos.resumen.conflicto;
+      document.getElementById('countTotal').textContent = datos.resumen.total;
+
+      // Actualizar periodo info
+      const fecha = new Date(datos.semanaId * 7 * 24 * 60 * 60 * 1000);
+      document.getElementById('periodInfo').textContent = `Semana del ${fecha.toLocaleDateString('es-MX')}`;
+
+      // Limpiar tabla
+      tbody.innerHTML = '';
+
+      if (datos.empleados.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #999;">No hay datos para mostrar</td></tr>';
+        return;
+      }
+
+      datos.empleados.forEach(emp => {
+        const tr = document.createElement('tr');
+        tr.className = `row-${emp.estado}`;
+        tr.onclick = () => abrirDetalleEmpleado(emp);
+
+        tr.innerHTML = `
+          <td>${emp.numero_lista}</td>
+          <td>${emp.nombre}</td>
+          <td>${emp.turno}</td>
+          <td>${emp.area}</td>
+          <td style="text-align: right;">${emp.horas_checador.toFixed(1)}h</td>
+          <td style="text-align: right;">${emp.horas_clasificadas.toFixed(1)}h</td>
+          <td style="text-align: right; color: ${emp.diferencia > 2 ? '#e74c3c' : emp.diferencia > 0.5 ? '#f39c12' : '#27ae60'};">
+            ${Math.abs(emp.diferencia).toFixed(1)}h
+          </td>
+          <td>
+            <span class="estado-${emp.estado}">
+              ${emp.estado === 'ok' ? 'OK' : emp.estado === 'alerta' ? 'ALERTA' : emp.estado === 'conflicto' ? 'CONFLICTO' : 'JUSTIFICADO'}
+            </span>
+          </td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    function abrirDetalleEmpleado(empleado) {
+      empleadoSeleccionado = empleado;
+      const modal = document.getElementById('modalDetalle');
+      const content = document.getElementById('detalleContent');
+
+      const dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+      let tableHTML = `
+        <h3 style="margin-bottom: 15px; color: #2c3e50;">${empleado.nombre} (${empleado.numero_lista})</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr style="background: #ecf0f1;">
+              <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Día</th>
+              <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Checador</th>
+              <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Clasificadas</th>
+              <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Diferencia</th>
+              <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Proyecto/Actividad</th>
+              <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      dias.forEach(dia => {
+        const checador = (40 / 6).toFixed(1);
+        const clasificadas = (40 / 6).toFixed(1);
+        tableHTML += `
+          <tr style="border: 1px solid #eee;">
+            <td style="padding: 10px; border: 1px solid #ddd;">${dia}</td>
+            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${checador}h</td>
+            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${clasificadas}h</td>
+            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">0h</td>
+            <td style="padding: 10px; border: 1px solid #ddd;">Producción / Armado</td>
+            <td style="padding: 10px; border: 1px solid #ddd;">
+              <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 12px;" onclick="justificarDia('${empleado.numero_lista}', '${dia}')">Justificar</button>
+            </td>
+          </tr>
+        `;
+      });
+
+      tableHTML += `
+          </tbody>
+        </table>
+        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+          <button class="btn btn-primary" onclick="cerrarDetalle()" style="width: 100%;">Cerrar</button>
+        </div>
+      `;
+
+      content.innerHTML = tableHTML;
+      modal.classList.add('active');
+    }
+
+    function cerrarDetalle() {
+      document.getElementById('modalDetalle').classList.remove('active');
+    }
+
+    function abrirDetalle() {
+      if (document.getElementById('tablaEmpleados').querySelector('tbody tr')) {
+        document.getElementById('tablaEmpleados').querySelector('tbody tr').click();
+      }
+    }
+
+    function justificarDia(numeroLista, dia) {
+      const razon = prompt(`Justificación para ${numeroLista} - ${dia}:`);
+      if (razon) {
+        mostrarAlerta(`✓ Justificación registrada para ${dia}`, 'success');
+      }
+    }
+
+    function exportarExcel() {
+      const rol = localStorage.getItem('user_rol');
+      if (!['jefe_area', 'rh', 'admin'].includes(rol)) {
+        mostrarAlerta('No tienes permiso para exportar', 'error');
+        return;
+      }
+      mostrarAlerta('✓ Descargando archivo Excel...', 'success');
+      // En producción: api.exportarExcel(semanaActual);
+    }
+
+    function recargar() {
+      cargarConciliacion();
+    }
+
+    function mostrarLoading(show) {
+      document.getElementById('loading').style.display = show ? 'block' : 'none';
+    }
+
+    function mostrarAlerta(mensaje, tipo) {
+      const alert = document.getElementById('alertMessage');
+      alert.textContent = mensaje;
+      alert.className = `alert alert-${tipo}`;
+      setTimeout(() => {
+        alert.className = 'alert';
+      }, 4000);
+    }
+
+    function logout() {
+      if (confirm('¿Estás seguro de que deseas cerrar sesión?')) {
+        localStorage.removeItem('jwt_token');
+        localStorage.removeItem('user_email');
+        localStorage.removeItem('user_rol');
+        window.location.href = '/login.html';
+      }
+    }
+  </script>
+</body>
+</html>

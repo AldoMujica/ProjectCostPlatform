@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carga de Checador - Alenstec</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f5f5;
+      color: #333;
+    }
+
+    .container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 250px;
+      background: #2c3e50;
+      color: white;
+      padding: 20px;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .sidebar h2 {
+      font-size: 18px;
+      margin-bottom: 30px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #34495e;
+    }
+
+    .sidebar-menu {
+      list-style: none;
+    }
+
+    .sidebar-menu li {
+      margin-bottom: 15px;
+    }
+
+    .sidebar-menu a {
+      color: #bdc3c7;
+      text-decoration: none;
+      padding: 10px;
+      border-radius: 4px;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+    }
+
+    .sidebar-menu a:hover,
+    .sidebar-menu a.active {
+      background: #34495e;
+      color: white;
+    }
+
+    .sidebar-menu span {
+      margin-left: 10px;
+    }
+
+    .main-content {
+      margin-left: 250px;
+      flex: 1;
+      padding: 30px;
+    }
+
+    .header h1 {
+      color: #2c3e50;
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 8px;
+      padding: 30px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+
+    .upload-area {
+      border: 2px dashed #3498db;
+      border-radius: 8px;
+      padding: 40px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      background: #f9f9f9;
+    }
+
+    .upload-area:hover {
+      background: #f0f0f0;
+      border-color: #2980b9;
+    }
+
+    .upload-area.dragover {
+      background: #e3f2fd;
+      border-color: #2196f3;
+    }
+
+    .upload-icon {
+      font-size: 48px;
+      margin-bottom: 15px;
+    }
+
+    .upload-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #2c3e50;
+    }
+
+    .upload-desc {
+      color: #666;
+      font-size: 13px;
+      margin-bottom: 20px;
+    }
+
+    .upload-formats {
+      font-size: 12px;
+      color: #999;
+      margin-bottom: 15px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+      font-size: 14px;
+    }
+
+    .btn-primary {
+      background: #3498db;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #2980b9;
+    }
+
+    .btn-success {
+      background: #27ae60;
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #229954;
+    }
+
+    .btn-secondary {
+      background: #95a5a6;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #7f8c8d;
+    }
+
+    .btn-danger {
+      background: #e74c3c;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #c0392b;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    .file-info {
+      background: #f9f9f9;
+      border: 1px solid #eee;
+      border-radius: 4px;
+      padding: 15px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .file-info.show {
+      display: block;
+    }
+
+    .file-info h3 {
+      font-size: 14px;
+      margin-bottom: 10px;
+      color: #2c3e50;
+    }
+
+    .file-details {
+      font-size: 13px;
+      color: #666;
+    }
+
+    .file-details p {
+      margin-bottom: 5px;
+    }
+
+    .preview-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .preview-table thead {
+      background: #ecf0f1;
+      position: sticky;
+      top: 0;
+    }
+
+    .preview-table th,
+    .preview-table td {
+      padding: 12px;
+      text-align: left;
+      border: 1px solid #ddd;
+      font-size: 12px;
+    }
+
+    .preview-table th {
+      font-weight: 600;
+      background: #34495e;
+      color: white;
+    }
+
+    .preview-table tbody tr:hover {
+      background: #f9f9f9;
+    }
+
+    .anomaly {
+      background: #fadbd8;
+      color: #c0392b;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-weight: 600;
+      font-size: 11px;
+    }
+
+    .summary-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin: 20px 0;
+    }
+
+    .stat-box {
+      background: #f9f9f9;
+      border: 1px solid #eee;
+      border-radius: 4px;
+      padding: 15px;
+      text-align: center;
+    }
+
+    .stat-box h4 {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .stat-box .value {
+      font-size: 24px;
+      font-weight: bold;
+      color: #2c3e50;
+    }
+
+    .stat-box.error .value {
+      color: #e74c3c;
+    }
+
+    .stat-box.success .value {
+      color: #27ae60;
+    }
+
+    .stat-box.warning .value {
+      color: #f39c12;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .alert {
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      display: none;
+      font-size: 14px;
+    }
+
+    .alert.show {
+      display: block;
+    }
+
+    .alert-success {
+      background: #d5f4e6;
+      color: #27ae60;
+      border: 1px solid #a9dfbf;
+    }
+
+    .alert-error {
+      background: #fadbd8;
+      color: #c0392b;
+      border: 1px solid #f5b7b1;
+    }
+
+    .alert-warning {
+      background: #fef5e7;
+      color: #f39c12;
+      border: 1px solid #fdebd0;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .spinner {
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid #3498db;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 10px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .error-list {
+      background: #fadbd8;
+      border: 1px solid #f5b7b1;
+      border-radius: 4px;
+      padding: 15px;
+      margin-top: 20px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .error-list h4 {
+      color: #c0392b;
+      margin-bottom: 10px;
+    }
+
+    .error-item {
+      padding: 8px;
+      border-left: 3px solid #e74c3c;
+      margin-bottom: 8px;
+      background: white;
+      padding-left: 12px;
+      font-size: 12px;
+    }
+
+    @media (max-width: 1280px) {
+      .sidebar {
+        width: 200px;
+      }
+      .main-content {
+        margin-left: 200px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <h2>🕐 Alenstec</h2>
+      <ul class="sidebar-menu">
+        <li><a href="conciliacion-semanal.html">📊 Conciliación Semanal</a></li>
+        <li><a href="alertas.html">⚠️ Alertas</a></li>
+        <li><a href="carga-checador.html" class="active">📤 Carga Checador</a></li>
+        <li><a href="captura-horas.html">📝 Captura de Horas</a></li>
+        <li><a href="cierre-semana.html">✓ Cierre de Semana</a></li>
+      </ul>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+      <div class="header">
+        <h1>Carga de Registros Checador</h1>
+        <p>Importa archivos CSV o Excel con los registros de asistencia</p>
+      </div>
+
+      <div id="alertMessage" class="alert"></div>
+
+      <div class="card">
+        <div class="upload-area" id="uploadArea" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+          <div class="upload-icon">📁</div>
+          <div class="upload-title">Arrastra tu archivo aquí</div>
+          <div class="upload-desc">o haz clic para seleccionar</div>
+          <div class="upload-formats">Formatos aceptados: CSV, XLSX (máximo 10MB)</div>
+          <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">Seleccionar archivo</button>
+          <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" onchange="handleFileSelect(event)">
+        </div>
+
+        <div class="file-info" id="fileInfo">
+          <h3>📄 Archivo Seleccionado</h3>
+          <div class="file-details">
+            <p><strong>Nombre:</strong> <span id="fileName">-</span></p>
+            <p><strong>Tamaño:</strong> <span id="fileSize">-</span></p>
+            <p><strong>Registros:</strong> <span id="recordCount">-</span></p>
+          </div>
+        </div>
+
+        <div class="loading" id="loading">
+          <div class="spinner"></div>
+          <p>Procesando archivo...</p>
+        </div>
+
+        <div id="previewContent" style="display: none;">
+          <h3 style="margin-bottom: 15px; color: #2c3e50;">Vista Previa</h3>
+          <div class="summary-stats">
+            <div class="stat-box success">
+              <h4>Registros Válidos</h4>
+              <div class="value" id="validRecords">0</div>
+            </div>
+            <div class="stat-box error">
+              <h4>Registros c/ Error</h4>
+              <div class="value" id="errorRecords">0</div>
+            </div>
+            <div class="stat-box warning">
+              <h4>Anomalías Detectadas</h4>
+              <div class="value" id="anomalyRecords">0</div>
+            </div>
+            <div class="stat-box">
+              <h4>Total Leídos</h4>
+              <div class="value" id="totalRecords">0</div>
+            </div>
+          </div>
+
+          <table class="preview-table">
+            <thead>
+              <tr>
+                <th>Número Lista</th>
+                <th>Nombre</th>
+                <th>Fecha</th>
+                <th>Entrada</th>
+                <th>Salida</th>
+                <th>Horas</th>
+                <th>Anomalía</th>
+              </tr>
+            </thead>
+            <tbody id="previewTableBody">
+            </tbody>
+          </table>
+
+          <div id="errorList"></div>
+
+          <div class="actions">
+            <button class="btn btn-danger" onclick="cancelarCarga()">❌ Cancelar</button>
+            <button class="btn btn-success" onclick="confirmarCarga()">✓ Confirmar e Importar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let archivoSeleccionado = null;
+    let datosPreview = null;
+
+    const uploadArea = document.getElementById('uploadArea');
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      uploadArea.classList.add('dragover');
+    }
+
+    function handleDragLeave(e) {
+      uploadArea.classList.remove('dragover');
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      uploadArea.classList.remove('dragover');
+      handleFileSelect({ target: { files: e.dataTransfer.files } });
+    }
+
+    function handleFileSelect(e) {
+      const files = e.target.files;
+      if (files.length === 0) return;
+
+      const archivo = files[0];
+      const maxSize = 10 * 1024 * 1024; // 10MB
+
+      if (archivo.size > maxSize) {
+        mostrarAlerta('El archivo es demasiado grande (máximo 10MB)', 'error');
+        return;
+      }
+
+      if (!['text/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'].includes(archivo.type) && 
+          !archivo.name.endsWith('.csv') && !archivo.name.endsWith('.xlsx') && !archivo.name.endsWith('.xls')) {
+        mostrarAlerta('Formato no soportado. Solo CSV o Excel.', 'error');
+        return;
+      }
+
+      archivoSeleccionado = archivo;
+      procesarArchivo(archivo);
+    }
+
+    function procesarArchivo(archivo) {
+      document.getElementById('loading').style.display = 'block';
+      document.getElementById('fileInfo').classList.add('show');
+      document.getElementById('fileName').textContent = archivo.name;
+      document.getElementById('fileSize').textContent = (archivo.size / 1024).toFixed(2) + ' KB';
+
+      // Simular procesamiento
+      setTimeout(() => {
+        datosPreview = generarPreview();
+        mostrarPreview(datosPreview);
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('previewContent').style.display = 'block';
+      }, 1500);
+    }
+
+    function generarPreview() {
+      const registros = [
+        { numero_lista: 'E001', nombre: 'Juan García López', fecha: '2024-01-15', entrada: '06:00:00', salida: '14:30:00', horas: 8.5, anomalia: null },
+        { numero_lista: 'E002', nombre: 'Maria Rodríguez Jones', fecha: '2024-01-15', entrada: '14:00:00', salida: '22:15:00', horas: 8.25, anomalia: null },
+        { numero_lista: 'E003', nombre: 'Carlos Mendez', fecha: '2024-01-15', entrada: '06:00:00', salida: null, horas: 0, anomalia: 'Sin salida' },
+        { numero_lista: 'E004', nombre: 'Ana Fernández', fecha: '2024-01-15', entrada: '14:15:00', salida: '22:45:00', horas: 8.5, anomalia: null },
+        { numero_lista: 'E999', nombre: 'Desconocido', fecha: '2024-01-15', entrada: '06:00:00', salida: '14:00:00', horas: 8, anomalia: 'Empleado no existe' },
+        { numero_lista: 'E005', nombre: 'Roberto Sánchez', fecha: '2024-01-15', entrada: '22:00:00', salida: '06:30:00', horas: 8.5, anomalia: null }
+      ];
+
+      return {
+        total: registros.length,
+        validos: registros.filter(r => !r.anomalia).length,
+        errores: registros.filter(r => r.anomalia && r.anomalia.includes('no existe')).length,
+        anomalias: registros.filter(r => r.anomalia).length,
+        registros
+      };
+    }
+
+    function mostrarPreview(datos) {
+      document.getElementById('recordCount').textContent = datos.total;
+      document.getElementById('validRecords').textContent = datos.validos;
+      document.getElementById('errorRecords').textContent = datos.errores;
+      document.getElementById('anomalyRecords').textContent = datos.anomalias;
+      document.getElementById('totalRecords').textContent = datos.total;
+
+      const tbody = document.getElementById('previewTableBody');
+      tbody.innerHTML = datos.registros.slice(0, 20).map(r => `
+        <tr>
+          <td>${r.numero_lista}</td>
+          <td>${r.nombre}</td>
+          <td>${new Date(r.fecha).toLocaleDateString('es-MX')}</td>
+          <td>${r.entrada}</td>
+          <td>${r.salida || '-'}</td>
+          <td>${r.horas}h</td>
+          <td>${r.anomalia ? `<span class="anomaly">⚠️ ${r.anomalia}</span>` : '✓'}</td>
+        </tr>
+      `).join('');
+
+      if (datos.anomalias > 0) {
+        const errorList = document.getElementById('errorList');
+        errorList.innerHTML = `
+          <div class="error-list">
+            <h4>⚠️ Anomalías Detectadas (${datos.anomalias})</h4>
+            ${datos.registros.filter(r => r.anomalia).map(r => `
+              <div class="error-item">
+                <strong>${r.numero_lista}</strong> - ${r.anomalia}
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+    }
+
+    function cancelarCarga() {
+      document.getElementById('previewContent').style.display = 'none';
+      document.getElementById('fileInfo').classList.remove('show');
+      document.getElementById('fileInput').value = '';
+      archivoSeleccionado = null;
+      datosPreview = null;
+      mostrarAlerta('Carga cancelada', 'warning');
+    }
+
+    function confirmarCarga() {
+      if (!datosPreview) return;
+
+      document.getElementById('loading').style.display = 'block';
+
+      // Simular importación
+      setTimeout(() => {
+        document.getElementById('loading').style.display = 'none';
+        mostrarAlerta(`✓ Se importaron ${datosPreview.validos} registros exitosamente. Se disparó la conciliación automática.`, 'success');
+        
+        setTimeout(() => {
+          cancelarCarga();
+        }, 2000);
+      }, 1500);
+    }
+
+    function mostrarAlerta(mensaje, tipo) {
+      const alert = document.getElementById('alertMessage');
+      alert.textContent = mensaje;
+      alert.className = `alert show alert-${tipo}`;
+      
+      setTimeout(() => {
+        alert.classList.remove('show');
+      }, 5000);
+    }
+  </script>
+</body>
+</html>

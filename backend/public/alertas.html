@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alertas - Conciliación Alenstec</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f5f5;
+      color: #333;
+    }
+
+    .container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 250px;
+      background: #2c3e50;
+      color: white;
+      padding: 20px;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+      box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar h2 {
+      font-size: 18px;
+      margin-bottom: 30px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #34495e;
+    }
+
+    .sidebar-menu {
+      list-style: none;
+    }
+
+    .sidebar-menu li {
+      margin-bottom: 15px;
+    }
+
+    .sidebar-menu a {
+      color: #bdc3c7;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      border-radius: 4px;
+      transition: all 0.3s;
+    }
+
+    .sidebar-menu a:hover,
+    .sidebar-menu a.active {
+      background: #34495e;
+      color: white;
+    }
+
+    .sidebar-menu span {
+      margin-left: 10px;
+    }
+
+    .main-content {
+      margin-left: 250px;
+      flex: 1;
+      padding: 30px;
+    }
+
+    .header {
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      color: #2c3e50;
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+
+    .filters {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: flex;
+      gap: 15px;
+      align-items: flex-end;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .filter-group {
+      flex: 1;
+    }
+
+    .filter-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #666;
+    }
+
+    .filter-group select,
+    .filter-group input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .btn-secondary {
+      background: #95a5a6;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #7f8c8d;
+    }
+
+    .alerts-container {
+      display: grid;
+      gap: 15px;
+    }
+
+    .alert-card {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      border-left: 4px solid #999;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+
+    .alert-card:hover {
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .alert-card.critico {
+      border-left-color: #e74c3c;
+      background: #fadbd8;
+    }
+
+    .alert-card.media {
+      border-left-color: #f39c12;
+      background: #fef5e7;
+    }
+
+    .alert-card.baja {
+      border-left-color: #3498db;
+      background: #d6eaf8;
+    }
+
+    .alert-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .alert-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+
+    .alert-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .badge-critico {
+      background: #e74c3c;
+      color: white;
+    }
+
+    .badge-media {
+      background: #f39c12;
+      color: white;
+    }
+
+    .badge-baja {
+      background: #3498db;
+      color: white;
+    }
+
+    .alert-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 15px;
+      font-size: 13px;
+    }
+
+    .alert-field {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .alert-field strong {
+      color: #666;
+      margin-right: 10px;
+    }
+
+    .alert-field span {
+      color: #333;
+      font-weight: 600;
+    }
+
+    .alert-description {
+      background: rgba(0, 0, 0, 0.05);
+      padding: 12px;
+      border-radius: 4px;
+      margin-bottom: 15px;
+      font-size: 13px;
+      color: #555;
+    }
+
+    .alert-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-small {
+      padding: 6px 12px;
+      font-size: 12px;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .btn-primary-sm {
+      background: #3498db;
+      color: white;
+    }
+
+    .btn-primary-sm:hover {
+      background: #2980b9;
+    }
+
+    .btn-danger-sm {
+      background: #e74c3c;
+      color: white;
+    }
+
+    .btn-danger-sm:hover {
+      background: #c0392b;
+    }
+
+    .btn-success-sm {
+      background: #27ae60;
+      color: white;
+    }
+
+    .btn-success-sm:hover {
+      background: #229954;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    .stat-card h3 {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .stat-card .value {
+      font-size: 28px;
+      font-weight: bold;
+      color: #2c3e50;
+    }
+
+    .stat-card.critico .value { color: #e74c3c; }
+    .stat-card.media .value { color: #f39c12; }
+    .stat-card.baja .value { color: #3498db; }
+
+    .empty {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+      background: white;
+      border-radius: 8px;
+    }
+
+    .empty p {
+      margin-bottom: 10px;
+    }
+
+    @media (max-width: 1280px) {
+      .sidebar {
+        width: 200px;
+      }
+      .main-content {
+        margin-left: 200px;
+      }
+      .alert-content {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <h2>🕐 Alenstec</h2>
+      <ul class="sidebar-menu">
+        <li><a href="conciliacion-semanal.html">📊 Conciliación Semanal</a></li>
+        <li><a href="alertas.html" class="active">⚠️ Alertas</a></li>
+        <li><a href="carga-checador.html">📤 Carga Checador</a></li>
+        <li><a href="captura-horas.html">📝 Captura de Horas</a></li>
+        <li><a href="cierre-semana.html">✓ Cierre de Semana</a></li>
+      </ul>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+      <div class="header">
+        <h1>Centro de Alertas</h1>
+        <p style="color: #666; margin-top: 5px;">Anomalías detectadas en la conciliación de asistencia</p>
+      </div>
+
+      <!-- ESTADÍSTICAS -->
+      <div class="stats">
+        <div class="stat-card critico">
+          <h3>Crítico</h3>
+          <div class="value" id="countCritico">0</div>
+        </div>
+        <div class="stat-card media">
+          <h3>Media</h3>
+          <div class="value" id="countMedia">0</div>
+        </div>
+        <div class="stat-card baja">
+          <h3>Baja</h3>
+          <div class="value" id="countBaja">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>Total Alertas</h3>
+          <div class="value" id="countTotal">0</div>
+        </div>
+      </div>
+
+      <!-- FILTROS -->
+      <div class="filters">
+        <div class="filter-group">
+          <label>Severidad</label>
+          <select id="filtroSeveridad" onchange="cargarAlertas()">
+            <option value="">Todas</option>
+            <option value="critico">Crítico</option>
+            <option value="media">Media</option>
+            <option value="baja">Baja</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Tipo de Alerta</label>
+          <select id="filtroTipo" onchange="cargarAlertas()">
+            <option value="">Todos</option>
+            <option value="sin_checada">Sin checada</option>
+            <option value="horas_extra">Horas extra no autorizadas</option>
+            <option value="clasificadas_mayores">Hrs clasificadas mayores</option>
+            <option value="sin_clasificar">Sin clasificar</option>
+            <option value="diferencia_significativa">Diferencia significativa</option>
+            <option value="anomalia_estructural">Anomalía estructural</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>Semana</label>
+          <select id="filtroSemana" onchange="cargarAlertas()">
+            <option value="">Actual</option>
+            <option value="1">Hace 1 semana</option>
+            <option value="2">Hace 2 semanas</option>
+          </select>
+        </div>
+        <button class="btn btn-secondary" onclick="recargarAlertas()">🔄 Recargar</button>
+      </div>
+
+      <!-- ALERTAS -->
+      <div class="alerts-container" id="alertasContainer">
+        <div class="empty" style="grid-column: 1/-1;">
+          <p>Cargando alertas...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      cargarAlertas();
+    });
+
+    async function cargarAlertas() {
+      const severidad = document.getElementById('filtroSeveridad').value;
+      const tipo = document.getElementById('filtroTipo').value;
+
+      // Datos de demostración
+      const alertas = generarAlertas().filter(a => {
+        return (!severidad || a.severidad === severidad) && (!tipo || a.tipo === tipo);
+      });
+
+      mostrarAlertas(alertas);
+      actualizarStats(alertas);
+    }
+
+    function generarAlertas() {
+      return [
+        {
+          id: 1,
+          empleado_id: 'E003',
+          nombre: 'Carlos Mendez Perez',
+          area: 'Mantenimiento',
+          fecha: '2024-01-15',
+          tipo_alerta: 'diferencia_significativa',
+          severidad: 'critico',
+          diferencia: 3,
+          detalle: 'Diferencia de 3 horas entre checador y clasificadas',
+          accion_requerida: 'Requiere justificación'
+        },
+        {
+          id: 2,
+          empleado_id: 'E002',
+          nombre: 'Maria Rodríguez Jones',
+          area: 'Producción',
+          fecha: '2024-01-15',
+          tipo_alerta: 'horas_extra',
+          severidad: 'media',
+          diferencia: 1.5,
+          detalle: 'Horas extra detectadas sin autorización previa',
+          accion_requerida: 'Requiere aprobación de jefe'
+        },
+        {
+          id: 3,
+          empleado_id: 'E004',
+          nombre: 'Ana Fernández Martinez',
+          area: 'Almacén',
+          fecha: '2024-01-14',
+          tipo_alerta: 'sin_checada',
+          severidad: 'critico',
+          diferencia: 8,
+          detalle: 'Día sin registro de checada. Verificar con el empleado.',
+          accion_requerida: 'Aclaración inmediata necesaria'
+        },
+        {
+          id: 4,
+          empleado_id: 'E001',
+          nombre: 'Juan García López',
+          area: 'Producción',
+          fecha: '2024-01-16',
+          tipo_alerta: 'clasificadas_mayores',
+          severidad: 'baja',
+          diferencia: 0.25,
+          detalle: 'Hrs clasificadas ligeramente mayores a checador',
+          accion_requerida: 'Revisar redondeos'
+        },
+        {
+          id: 5,
+          empleado_id: 'E007',
+          nombre: 'Pedro Flores Castillo',
+          area: 'Producción',
+          fecha: '2024-01-15',
+          tipo_alerta: 'diferencia_significativa',
+          severidad: 'critico',
+          diferencia: 2.8,
+          detalle: 'Diferencia importante entre horas registradas y clasificadas',
+          accion_requerida: 'Revisión de supervisor requerida'
+        },
+        {
+          id: 6,
+          empleado_id: 'E005',
+          nombre: 'Roberto Sánchez López',
+          area: 'Producción',
+          fecha: '2024-01-16',
+          tipo_alerta: 'sin_clasificar',
+          severidad: 'media',
+          diferencia: 4,
+          detalle: 'Empleado tiene checadas pero sin horas clasificadas',
+          accion_requerida: 'Supervisor debe clasificar horas'
+        }
+      ];
+    }
+
+    function mostrarAlertas(alertas) {
+      const container = document.getElementById('alertasContainer');
+      
+      if (alertas.length === 0) {
+        container.innerHTML = '<div class="empty" style="grid-column: 1/-1;"><p>✓ No hay alertas</p><p style="font-size: 12px; color: #999;">Todos los empleados están conciliados correctly</p></div>';
+        return;
+      }
+
+      container.innerHTML = alertas.map(alerta => `
+        <div class="alert-card ${alerta.severidad}">
+          <div class="alert-header">
+            <div class="alert-title">${alerta.nombre}</div>
+            <span class="alert-badge badge-${alerta.severidad}">${alerta.severidad.toUpperCase()}</span>
+          </div>
+
+          <div class="alert-content">
+            <div class="alert-field">
+              <strong>Número:</strong>
+              <span>${alerta.empleado_id}</span>
+            </div>
+            <div class="alert-field">
+              <strong>Área:</strong>
+              <span>${alerta.area}</span>
+            </div>
+            <div class="alert-field">
+              <strong>Fecha:</strong>
+              <span>${new Date(alerta.fecha).toLocaleDateString('es-MX')}</span>
+            </div>
+            <div class="alert-field">
+              <strong>Diferencia:</strong>
+              <span style="color: #e74c3c;">${Math.abs(alerta.diferencia).toFixed(2)}h</span>
+            </div>
+          </div>
+
+          <div class="alert-description">
+            <strong>Tipo:</strong> ${alerta.tipo_alerta.replace(/_/g, ' ').toUpperCase()}<br>
+            <strong>Detalle:</strong> ${alerta.detalle}
+          </div>
+
+          <div style="background: rgba(0, 0, 0, 0.05); padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 12px; color: #e74c3c; font-weight: 600;">
+            ⚠️ ${alerta.accion_requerida}
+          </div>
+
+          <div class="alert-actions">
+            <button class="btn-small btn-primary-sm" onclick="justificarAlerta(${alerta.id}, '${alerta.empleado_id}')">📝 Justificar</button>
+            <button class="btn-small btn-success-sm" onclick="resolverAlerta(${alerta.id}, '${alerta.empleado_id}')">✓ Resolver</button>
+            <button class="btn-small btn-danger-sm" onclick="escalarAlerta(${alerta.id}, '${alerta.empleado_id}')">⬆️ Escalar</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function actualizarStats(alertas) {
+      const critico = alertas.filter(a => a.severidad === 'critico').length;
+      const media = alertas.filter(a => a.severidad === 'media').length;
+      const baja = alertas.filter(a => a.severidad === 'baja').length;
+
+      document.getElementById('countCritico').textContent = critico;
+      document.getElementById('countMedia').textContent = media;
+      document.getElementById('countBaja').textContent = baja;
+      document.getElementById('countTotal').textContent = alertas.length;
+    }
+
+    function justificarAlerta(id, empleadoId) {
+      const razon = prompt('Ingresa la justificación para esta alerta:');
+      if (razon) {
+        alert(`Justificación registrada para ${empleadoId}`);
+        cargarAlertas();
+      }
+    }
+
+    function resolverAlerta(id, empleadoId) {
+      if (confirm(`¿Marcar como resuelta la alerta de ${empleadoId}?`)) {
+        alert('Alerta resuelta ✓');
+        cargarAlertas();
+      }
+    }
+
+    function escalarAlerta(id, empleadoId) {
+      alert(`Alerta de ${empleadoId} escalada a supervisores`);
+      cargarAlertas();
+    }
+
+    function recargarAlertas() {
+      cargarAlertas();
+    }
+  </script>
+</body>
+</html>

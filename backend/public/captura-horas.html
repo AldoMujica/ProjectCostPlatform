@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Captura de Horas - Alenstec</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f5f5;
+      color: #333;
+    }
+
+    .container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 250px;
+      background: #2c3e50;
+      color: white;
+      padding: 20px;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .sidebar h2 {
+      font-size: 18px;
+      margin-bottom: 30px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #34495e;
+    }
+
+    .sidebar-menu {
+      list-style: none;
+    }
+
+    .sidebar-menu li {
+      margin-bottom: 15px;
+    }
+
+    .sidebar-menu a {
+      color: #bdc3c7;
+      text-decoration: none;
+      padding: 10px;
+      border-radius: 4px;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+    }
+
+    .sidebar-menu a:hover,
+    .sidebar-menu a.active {
+      background: #34495e;
+      color: white;
+    }
+
+    .sidebar-menu span {
+      margin-left: 10px;
+    }
+
+    .main-content {
+      margin-left: 250px;
+      flex: 1;
+      padding: 30px;
+    }
+
+    .header h1 {
+      color: #2c3e50;
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 8px;
+      padding: 30px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #333;
+      font-size: 14px;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #3498db;
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+      font-size: 14px;
+    }
+
+    .btn-primary {
+      background: #3498db;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #2980b9;
+    }
+
+    .btn-secondary {
+      background: #95a5a6;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #7f8c8d;
+    }
+
+    .btn-success {
+      background: #27ae60;
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #229954;
+    }
+
+    .alert {
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      display: none;
+      font-size: 14px;
+    }
+
+    .alert.show {
+      display: block;
+    }
+
+    .alert-success {
+      background: #d5f4e6;
+      color: #27ae60;
+      border: 1px solid #a9dfbf;
+    }
+
+    .alert-error {
+      background: #fadbd8;
+      color: #c0392b;
+      border: 1px solid #f5b7b1;
+    }
+
+    .alert-warning {
+      background: #fef5e7;
+      color: #f39c12;
+      border: 1px solid #fdebd0;
+    }
+
+    .hours-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .hours-table thead {
+      background: #ecf0f1;
+    }
+
+    .hours-table th,
+    .hours-table td {
+      padding: 12px;
+      text-align: left;
+      border: 1px solid #ddd;
+      font-size: 13px;
+    }
+
+    .hours-table th {
+      font-weight: 600;
+      background: #34495e;
+      color: white;
+    }
+
+    .hours-table tbody tr:hover {
+      background: #f9f9f9;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-small {
+      padding: 5px 10px;
+      font-size: 12px;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .btn-edit {
+      background: #3498db;
+      color: white;
+    }
+
+    .btn-edit:hover {
+      background: #2980b9;
+    }
+
+    .btn-delete {
+      background: #e74c3c;
+      color: white;
+    }
+
+    .btn-delete:hover {
+      background: #c0392b;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      max-width: 500px;
+      width: 90%;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 15px;
+    }
+
+    .modal-header h2 {
+      color: #2c3e50;
+      font-size: 20px;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 28px;
+      cursor: pointer;
+      color: #999;
+    }
+
+    .close-btn:hover {
+      color: #333;
+    }
+
+    .info-box {
+      background: #e3f2fd;
+      border: 1px solid #bbdefb;
+      border-radius: 4px;
+      padding: 15px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      color: #1565c0;
+    }
+
+    .info-box strong {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .spinner {
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid #3498db;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 10px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .rol-warning {
+      background: #fef5e7;
+      border-left: 4px solid #f39c12;
+      padding: 15px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      color: #7d6608;
+    }
+
+    @media (max-width: 1280px) {
+      .sidebar {
+        width: 200px;
+      }
+      .main-content {
+        margin-left: 200px;
+      }
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <h2>🕐 Alenstec</h2>
+      <ul class="sidebar-menu">
+        <li><a href="conciliacion-semanal.html">📊 Conciliación Semanal</a></li>
+        <li><a href="alertas.html">⚠️ Alertas</a></li>
+        <li><a href="carga-checador.html">📤 Carga Checador</a></li>
+        <li><a href="captura-horas.html" class="active">📝 Captura de Horas</a></li>
+        <li><a href="cierre-semana.html">✓ Cierre de Semana</a></li>
+      </ul>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+      <div class="header">
+        <h1>Captura de Horas Clasificadas</h1>
+        <p>Registra las horas de trabajo clasificadas por proyecto y actividad</p>
+      </div>
+
+      <div id="rolWarning" class="rol-warning" style="display: none;">
+        ⚠️ Solo supervisores y jefes de área pueden capturar horas clasificadas.
+      </div>
+
+      <div id="alertMessage" class="alert"></div>
+
+      <div class="card">
+        <h2 style="margin-bottom: 20px; color: #2c3e50;">Nueva Captura de Horas</h2>
+
+        <form id="capturaForm" onsubmit="guardarCaptura(event)">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="empleado">Empleado *</label>
+              <select id="empleado" required onchange="actualizarPreview()">
+                <option value="">Selecciona un empleado...</option>
+                <option value="E001">E001 - Juan García López</option>
+                <option value="E002">E002 - Maria Rodríguez Jones</option>
+                <option value="E003">E003 - Carlos Mendez Perez</option>
+                <option value="E004">E004 - Ana Fernández Martinez</option>
+                <option value="E005">E005 - Roberto Sánchez López</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="fecha">Fecha *</label>
+              <input type="date" id="fecha" required onchange="actualizarPreview()">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="proyecto">Proyecto *</label>
+              <select id="proyecto" required>
+                <option value="">Selecciona un proyecto...</option>
+                <option value="P001">P001 - Producción Línea 1</option>
+                <option value="P002">P002 - Mantenimiento Preventivo</option>
+                <option value="P003">P003 - Almacén y Logística</option>
+                <option value="P004">P004 - Calidad</option>
+                <option value="P005">P005 - Administrativo</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="actividad">Actividad *</label>
+              <input type="text" id="actividad" placeholder="Ej: Armado de componentes" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="horas">Horas Trabajadas *</label>
+              <input type="number" id="horas" min="0.5" max="12" step="0.25" placeholder="Ej: 8.5" required>
+            </div>
+
+            <div class="form-group">
+              <label for="tipoHora">Tipo de Hora *</label>
+              <select id="tipoHora" required>
+                <option value="normal">Normal</option>
+                <option value="extra">Extra</option>
+                <option value="incidencia">Incidencia</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="observaciones">Observaciones (opcional)</label>
+            <textarea id="observaciones" rows="3" placeholder="Notas adicionales..."></textarea>
+          </div>
+
+          <div class="info-box" id="previewBox" style="display: none;">
+            <strong>Vista Previa:</strong>
+            <div id="previewInfo"></div>
+          </div>
+
+          <div class="loading" id="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>Guardando...</p>
+          </div>
+
+          <div style="display: flex; gap: 10px;">
+            <button type="submit" class="btn btn-success">✓ Guardar Captura</button>
+            <button type="reset" class="btn btn-secondary">Limpiar Formulario</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- TABLA DE CAPTURAS REGISTRADAS -->
+      <div class="card">
+        <h2 style="margin-bottom: 20px; color: #2c3e50;">Capturas Registradas (Esta Semana)</h2>
+
+        <table class="hours-table">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Empleado</th>
+              <th>Proyecto</th>
+              <th>Actividad</th>
+              <th>Horas</th>
+              <th>Tipo</th>
+              <th>Capturado por</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="capturaTableBody">
+            <tr>
+              <td colspan="8" style="text-align: center; color: #999;">Cargando capturas...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE EDICIÓN -->
+  <div id="modalEditar" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Editar Captura</h2>
+        <button class="close-btn" onclick="cerrarModal()">×</button>
+      </div>
+
+      <form id="editarForm" onsubmit="guardarEdicion(event)">
+        <div class="form-group">
+          <label for="editHoras">Horas *</label>
+          <input type="number" id="editHoras" min="0.5" max="12" step="0.25" required>
+        </div>
+
+        <div class="form-group">
+          <label for="editActividad">Actividad *</label>
+          <input type="text" id="editActividad" required>
+        </div>
+
+        <div class="form-group">
+          <label for="editTipo">Tipo de Hora *</label>
+          <select id="editTipo" required>
+            <option value="normal">Normal</option>
+            <option value="extra">Extra</option>
+            <option value="incidencia">Incidencia</option>
+          </select>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+          <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+          <button type="button" class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let capturaEnEdicion = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      verificarRol();
+      setFechaHoy();
+      cargarCapturas();
+    });
+
+    function verificarRol() {
+      const rol = localStorage.getItem('user_rol');
+      if (!['supervisor', 'jefe_area', 'rh', 'admin'].includes(rol)) {
+        document.getElementById('rolWarning').style.display = 'block';
+        document.getElementById('capturaForm').style.pointerEvents = 'none';
+        document.getElementById('capturaForm').style.opacity = '0.5';
+      }
+    }
+
+    function setFechaHoy() {
+      const hoy = new Date().toISOString().split('T')[0];
+      document.getElementById('fecha').value = hoy;
+    }
+
+    function actualizarPreview() {
+      const empleado = document.getElementById('empleado').value;
+      const fecha = document.getElementById('fecha').value;
+      const horas = document.getElementById('horas').value;
+
+      if (empleado && fecha && horas) {
+        const preview = document.getElementById('previewBox');
+        const previewInfo = document.getElementById('previewInfo');
+        
+        previewInfo.innerHTML = `
+          <div style="font-size: 13px; margin-top: 10px;">
+            <div><strong>Empleado:</strong> ${empleado}</div>
+            <div><strong>Fecha:</strong> ${new Date(fecha).toLocaleDateString('es-MX')}</div>
+            <div><strong>Horas a capturar:</strong> ${horas}h</div>
+            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.2);">
+              ✓ Se disparará la conciliación automática después de guardar
+            </div>
+          </div>
+        `;
+        preview.style.display = 'block';
+      }
+    }
+
+    function guardarCaptura(e) {
+      e.preventDefault();
+
+      document.getElementById('loading').style.display = 'block';
+
+      setTimeout(() => {
+        document.getElementById('loading').style.display = 'none';
+        mostrarAlerta('✓ Captura registrada exitosamente', 'success');
+        document.getElementById('capturaForm').reset();
+        setFechaHoy();
+        document.getElementById('previewBox').style.display = 'none';
+        cargarCapturas();
+      }, 800);
+    }
+
+    function cargarCapturas() {
+      const datos = [
+        { id: 1, fecha: '2024-01-16', empleado: 'E001 - Juan García', proyecto: 'P001', actividad: 'Armado componentes', horas: 8, tipo: 'normal', capturado: 'supervisor@alenstec.com' },
+        { id: 2, fecha: '2024-01-16', empleado: 'E002 - Maria Rodríguez', proyecto: 'P001', actividad: 'Supervisión línea', horas: 7.5, tipo: 'normal', capturado: 'supervisor@alenstec.com' },
+        { id: 3, fecha: '2024-01-15', empleado: 'E003 - Carlos Mendez', proyecto: 'P002', actividad: 'Mantenimiento preventivo', horas: 8, tipo: 'normal', capturado: 'supervisor@alenstec.com' },
+        { id: 4, fecha: '2024-01-15', empleado: 'E004 - Ana Fernández', proyecto: 'P003', actividad: 'Recepción de materiales', horas: 8, tipo: 'normal', capturado: 'supervisor@alenstec.com' },
+        { id: 5, fecha: '2024-01-14', empleado: 'E005 - Roberto Sánchez', proyecto: 'P001', actividad: 'Empaque y etiquetado', horas: 8.25, tipo: 'normal', capturado: 'supervisor@alenstec.com' }
+      ];
+
+      const tbody = document.getElementById('capturaTableBody');
+      tbody.innerHTML = datos.map(d => `
+        <tr>
+          <td>${new Date(d.fecha).toLocaleDateString('es-MX')}</td>
+          <td>${d.empleado}</td>
+          <td>${d.proyecto}</td>
+          <td>${d.actividad}</td>
+          <td style="text-align: right; font-weight: 600;">${d.horas}h</td>
+          <td>${d.tipo}</td>
+          <td style="font-size: 12px; color: #666;">${d.capturado}</td>
+          <td>
+            <div class="action-buttons">
+              <button class="btn-small btn-edit" onclick="abrirEditar(${d.id}, '${d.actividad}', ${d.horas}, '${d.tipo}')">✏️</button>
+              <button class="btn-small btn-delete" onclick="eliminarCaptura(${d.id})">🗑️</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function abrirEditar(id, actividad, horas, tipo) {
+      capturaEnEdicion = id;
+      document.getElementById('editActividad').value = actividad;
+      document.getElementById('editHoras').value = horas;
+      document.getElementById('editTipo').value = tipo;
+      document.getElementById('modalEditar').classList.add('active');
+    }
+
+    function cerrarModal() {
+      document.getElementById('modalEditar').classList.remove('active');
+    }
+
+    function guardarEdicion(e) {
+      e.preventDefault();
+      mostrarAlerta('✓ Captura actualizada', 'success');
+      cerrarModal();
+      cargarCapturas();
+    }
+
+    function eliminarCaptura(id) {
+      if (confirm('¿Estás seguro de eliminar esta captura?')) {
+        mostrarAlerta('✓ Captura eliminada', 'success');
+        cargarCapturas();
+      }
+    }
+
+    function mostrarAlerta(mensaje, tipo) {
+      const alert = document.getElementById('alertMessage');
+      alert.textContent = mensaje;
+      alert.className = `alert show alert-${tipo}`;
+
+      setTimeout(() => {
+        alert.classList.remove('show');
+      }, 4000);
+    }
+  </script>
+</body>
+</html>
