@@ -9,6 +9,7 @@ const {
   LaborCost,
   Supplier,
 } = require('../models');
+const seedConciliacionDemo = require('./conciliacion-demo');
 
 const DEFAULT_PASSWORD = process.env.SEED_DEFAULT_PASSWORD || 'alenstec_dev_2026';
 
@@ -80,6 +81,12 @@ async function seedDatabase() {
   await misumi.setWorkOrders([byOt['OT-AL-1947']]);
   await corte.setWorkOrders([byOt['OT-AL-1946']]);
   console.log('✓ Created suppliers and supplier_work_orders links');
+
+  // Conciliación demo data (empleados + one semana_nomina).
+  // Kept in its own module so it can be re-run standalone via
+  // `npm run seed:conciliacion`.
+  console.log('\n— Conciliación demo —');
+  await seedConciliacionDemo();
 
   console.log('\n✓ Database seeded successfully!');
 }

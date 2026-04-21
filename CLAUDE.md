@@ -58,7 +58,7 @@ cd backend
 cp .env.example .env   # fill in DB_*, JWT_SECRET (≥ 32 chars — boot fails otherwise)
 npm install
 npm run migrate        # umzug; idempotent
-npm run seed           # 6 role users
+npm run seed           # 6 role users + cost fixtures + conciliación demo data
 npm run dev            # nodemon on :3000
 ```
 

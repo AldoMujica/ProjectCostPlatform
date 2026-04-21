@@ -19,8 +19,10 @@ const semana = {
 };
 
 async function seedConciliacionDemo() {
+  // Callable both standalone (via `npm run seed:conciliacion`) and as a
+  // subroutine of the main seed. Authenticate is idempotent — Sequelize
+  // returns immediately if the pool's already connected.
   await sequelize.authenticate();
-  console.log('✓ Connected to database');
 
   for (const e of empleados) {
     await sequelize.query(
@@ -45,17 +47,19 @@ async function seedConciliacionDemo() {
     { replacements: semana }
   );
   console.log(`✓ Upserted semana_nomina (id=${rows[0].id}) ${semana.descripcion}`);
-
-  console.log('\nNext steps:');
-  console.log('  1. Log in as any role');
-  console.log('  2. Open the Conciliación module');
-  console.log('  3. Upload backend/fixtures/checador-sample.csv in sub-tab 9.1');
-  console.log(`  4. Use semana_id=${rows[0].id} when you confirm the import`);
+  return { semanaId: rows[0].id };
 }
 
 if (require.main === module) {
   seedConciliacionDemo()
-    .then(() => process.exit(0))
+    .then(({ semanaId }) => {
+      console.log('\nNext steps:');
+      console.log('  1. Log in as any role');
+      console.log('  2. Open the Conciliación module');
+      console.log('  3. Upload backend/fixtures/checador-sample.csv in sub-tab 9.1');
+      console.log(`  4. Use semana_id=${semanaId} when you confirm the import`);
+      process.exit(0);
+    })
     .catch((err) => {
       console.error('✗ Conciliación demo seed failed:', err);
       process.exit(1);

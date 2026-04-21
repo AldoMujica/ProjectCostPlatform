@@ -13,7 +13,7 @@ Single Express app that serves the cost-management API, the conciliación-nómin
 npm install
 cp .env.example .env      # then edit values
 npm run migrate            # apply all umzug migrations
-npm run seed               # seed 6-role users + demo fixtures
+npm run seed               # 6-role users + cost fixtures + conciliación demo
 npm run dev                # nodemon on :3000
 ```
 

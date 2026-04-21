@@ -20,8 +20,10 @@ Este módulo automatiza el proceso de conciliación de asistencia para una plant
 
 ```bash
 cd backend
-npm run seed:conciliacion
-# seeds 5 empleados + one semana_nomina (Apr 13–17, 2026)
+npm run seed
+# seeds 6 role users + cost fixtures + 5 empleados + one semana_nomina
+# (Apr 13–17, 2026). Run `npm run seed:conciliacion` if you only want
+# to refresh the conciliación slice.
 ```
 
 Then in the SPA, open module 9 (Conciliación) and upload `backend/fixtures/checador-sample.csv` in sub-tab 9.1. The CSV exercises normal days, overtime, a missing check-out (empleado 004, 15 Apr) and a late arrival (empleado 005, 14 Apr). Use the `semana_id` printed by the seed when you confirm the import.
