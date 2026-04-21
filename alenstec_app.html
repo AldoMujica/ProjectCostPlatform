@@ -1620,7 +1620,9 @@ async function previewChecador() {
 
     data.preview.registros.slice(0, 20).forEach((row) => {
       const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${row.empleado || '—'}</td><td>${row.fecha || '—'}</td><td>${row.entrada || '—'}</td><td>${row.salida || '—'}</td><td>${row.estado || 'OK'}</td>`;
+      const fecha = row.fecha ? String(row.fecha).slice(0, 10) : '—';
+      const estado = row.anomalia || 'OK';
+      tr.innerHTML = `<td>${row.nombre_empleado || row.numero_lista || '—'}</td><td>${fecha}</td><td>${row.check_in || '—'}</td><td>${row.check_out || '—'}</td><td>${estado}</td>`;
       tbody.appendChild(tr);
     });
 
