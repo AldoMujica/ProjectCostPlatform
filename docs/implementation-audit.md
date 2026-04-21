@@ -24,6 +24,10 @@ Gaps fully closed by the Phase-1 backend foundations landing:
 
 Model-side work for **G-OT-2** (liberation-form fields on `WorkOrder`) is done; FE still renders mockup values — the audit entries remain ⚠️ until Phase-2 wires them.
 
+### Phase-1 deferrals
+
+**P1.7 (per-record supervisor ACL) → Phase 3.** The helper `filtrarPorSupervisor` is present in [`backend/src/middleware/auth.js`](../backend/src/middleware/auth.js), but `WorkOrder` / `Quote` / `MaterialCost` / `LaborCost` have no `supervisor_id` column — and `LaborCost` has no `empleado_id` (only free-text `employeeName`). Picking the ownership semantic before the `Employee` master (G-HOR-3) exists would lock in an arbitrary choice between "supervisor owns OT" and "supervisor owns employee → labor-cost". Deferred to P3.18b after G-HOR-3 lands. In the meantime `verificarRol` already restricts supervisor writes to `POST /api/costs/labor`, which is the only write they should be doing in Phase 1.
+
 ## Legend
 
 | Symbol | Meaning                                                   |

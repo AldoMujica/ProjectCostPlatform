@@ -22,7 +22,9 @@
 - [x] Schema migrations are idempotent (`npm run migrate && npm run seed` twice in a row succeeds).
 - [x] FK enforcement verified — `material_costs.work_order_id`, `labor_costs.work_order_id`, `supplier_work_orders` join table.
 
-**Still open in Phase 1:** P1.7 (apply `filtrarPorSupervisor` to resource routes — helper exists), P1.15–P1.16 (FE login + 401 interceptor), P1.17 (CI), P1.18 (ephemeral-Postgres test harness).
+**Still open in Phase 1:** P1.15–P1.16 (FE login + 401 interceptor), P1.17 (CI), P1.18 (ephemeral-Postgres test harness).
+
+**Deferred from Phase 1:** P1.7 — the cost/WO/quote models have no `supervisor_id` column to filter on, and the ownership semantic ("supervisor owns OT" vs "supervisor owns employee → labor-cost") is cleanest to pick after `Employee` lands. Moved to Phase 3, blocked on P3.16–P3.18 (G-HOR-3). Phase-1 hard exit criteria are unaffected — `verificarRol` already restricts supervisor writes to `POST /api/costs/labor`.
 
 ---
 
@@ -181,7 +183,7 @@ Make the codebase safe to build on. This is where the ADRs turn into code.
 | P1.4  | Remove dev JWT fallback `{id:1, rol:'admin'}`                    | BE    | 0.5  | 005 | G-CONC-6    | ✅     |
 | P1.5  | `POST /api/auth/login` + `POST /api/auth/refresh` + seed 6 roles | BE    | 2    | 005 | (new)       | ✅     |
 | P1.6  | Apply auth middleware to every `/api/*` route (except login/health) | BE | 1    | 005 | (new)       | ✅     |
-| P1.7  | Per-record access filter extended from `filtrarPorSupervisor`    | BE    | 1    | 005 | (new)       | ⏳ helper present, not wired into cost/WO/quote routes |
+| P1.7  | Per-record access filter extended from `filtrarPorSupervisor`    | BE    | 1    | 005 | (new)       | ⛔ **deferred to Phase 3** — blocked on G-HOR-3 (`Employee` master); no `supervisor_id` column on cost/WO/quote to filter on |
 | P1.8  | Migration: extend `WorkOrder` w/ liberation-form fields          | BE    | 2    | —   | G-OT-2      | ✅ model-side; FE still renders mock values |
 | P1.9  | Migration: extend `Quote` (cotRef, ocCliente, T/C, otNumber, tipo) | BE  | 1    | —   | G-COT-5     | ✅     |
 | P1.10 | Migration: extend `MaterialCost` (IVA/ret/subtotal split)        | BE    | 1    | —   | G-MAT-4     | ✅     |
@@ -289,6 +291,7 @@ Build what the mockup shows but the backend has never had.
 | P3.16 | Model + migration: `Employee` (Control-de-Empleados columns)      | BE    | 1    | G-HOR-3     |
 | P3.17 | Route: `/api/employees` CRUD + import-from-seed                   | BE    | 1    | G-HOR-3     |
 | P3.18 | FE: sub-tab 7.2 Control de Empleados                              | FE    | 1    | G-HOR-3     |
+| P3.18b| **Per-record ACL (deferred from P1.7):** pick ownership semantic (OT-level via `work_orders.supervisor_id` vs labor-cost via `empleado.supervisor_id`); migration + wire `filtrarPorSupervisor` into list endpoints | BE | 1.5 | G-HOR-3 |
 | P3.19 | Model + migration: `WorkOrderApproval`                            | BE    | 1    | G-OT-4      |
 | P3.20 | Routes: approval-transition endpoints + role checks               | BE    | 2    | G-OT-4      |
 | P3.21 | FE: Flujo de Liberación with per-row transition buttons           | FE    | 2    | G-OT-4      |
