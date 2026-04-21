@@ -27,6 +27,10 @@ app.use(helmet({
     directives: {
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'", "'unsafe-inline'", 'https://cdnjs.cloudflare.com'],
+      // The SPA uses ~35 inline on* attributes (onclick, onchange, oninput…).
+      // Helmet's default for script-src-attr is 'none', which blocks them.
+      // Tech debt: migrate to addEventListener during Phase-2 FE wiring.
+      scriptSrcAttr: ["'unsafe-inline'"],
       styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
       fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
       imgSrc: ["'self'", 'data:', 'blob:'],

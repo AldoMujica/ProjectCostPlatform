@@ -36,6 +36,12 @@ describe('Phase-1 smoke', () => {
       expect(csp).toMatch(/connect-src[^;]*'self'/);
       expect(csp).toMatch(/connect-src[^;]*cdnjs\.cloudflare\.com/);
     });
+
+    it('script-src-attr allows unsafe-inline (SPA uses on* attributes pre-Phase-2)', async () => {
+      const res = await request(app).get('/api/health');
+      const csp = res.headers['content-security-policy'] || '';
+      expect(csp).toMatch(/script-src-attr[^;]*'unsafe-inline'/);
+    });
   });
 
   describe('JWT enforcement', () => {
