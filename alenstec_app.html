@@ -212,7 +212,9 @@ select.fi{cursor:pointer}
   <div class="login-card">
     <div class="login-logo">Alenstec SA de CV</div>
     <div class="login-sub">Gestión de Costos</div>
-    <form id="login-form" autocomplete="on">
+    <!-- method="post" is defense-in-depth: if JS fails to load, native submit
+         POSTs to the current URL instead of leaking credentials via GET query. -->
+    <form id="login-form" method="post" autocomplete="on">
       <label for="login-email">Correo</label>
       <input type="email" id="login-email" name="email" autocomplete="username" required>
       <label for="login-password">Contraseña</label>

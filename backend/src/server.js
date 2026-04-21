@@ -18,7 +18,26 @@ const conciliacionRoutes = require('./routes/conciliacionRoutes');
 
 const app = express();
 
-app.use(helmet());
+// CSP tuned for the single-file SPA (alenstec_app.html): inline <script>/<style>
+// blocks, jsPDF + html2canvas from cdnjs, DM Sans + DM Mono from Google Fonts.
+// LAN-only on-prem deployment — we keep defaultSrc tight and widen only where
+// the SPA actually needs it.
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", 'https://cdnjs.cloudflare.com'],
+      styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+      fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
+      imgSrc: ["'self'", 'data:', 'blob:'],
+      connectSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      frameAncestors: ["'self'"],
+      formAction: ["'self'"],
+      upgradeInsecureRequests: null,
+    },
+  },
+}));
 app.use(cors({
   origin: process.env.FRONTEND_URL || true,
   credentials: true,

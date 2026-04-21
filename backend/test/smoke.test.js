@@ -14,6 +14,23 @@ describe('Phase-1 smoke', () => {
     });
   });
 
+  describe('CSP (must allow the SPA\'s actual needs — cdnjs + inline scripts + Google Fonts)', () => {
+    it('script-src allows self, unsafe-inline, and cdnjs.cloudflare.com', async () => {
+      const res = await request(app).get('/api/health');
+      const csp = res.headers['content-security-policy'] || '';
+      expect(csp).toMatch(/script-src[^;]*'self'/);
+      expect(csp).toMatch(/script-src[^;]*'unsafe-inline'/);
+      expect(csp).toMatch(/script-src[^;]*cdnjs\.cloudflare\.com/);
+    });
+
+    it('style-src allows fonts.googleapis.com; font-src allows fonts.gstatic.com', async () => {
+      const res = await request(app).get('/api/health');
+      const csp = res.headers['content-security-policy'] || '';
+      expect(csp).toMatch(/style-src[^;]*fonts\.googleapis\.com/);
+      expect(csp).toMatch(/font-src[^;]*fonts\.gstatic\.com/);
+    });
+  });
+
   describe('JWT enforcement', () => {
     it('rejects /api/work-orders with no token', async () => {
       const res = await request(app).get('/api/work-orders');
