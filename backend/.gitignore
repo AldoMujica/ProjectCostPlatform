@@ -1,7 +1,9 @@
 node_modules/
 .env
 .env.local
+.env.test
 .env.*.local
+coverage/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -9,6 +11,9 @@ yarn-error.log*
 .DS_Store
 dist/
 build/
+
+# multer upload landing zone — runtime artifact, not source
+uploads/
 .vscode/
 .idea/
 *.swp

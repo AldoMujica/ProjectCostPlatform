@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alenstec — Guía de Usuario</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#111110;--surface:#1A1917;--surface2:#242320;
+  --border:#2E2C28;--border2:#3D3B36;
+  --text:#F0EDE8;--text2:#A8A49E;--text3:#6B6863;
+  --green:#2E9E5A;--green-lt:#0F2A1A;--green-md:#38B86A;
+  --amber:#D4820A;--amber-lt:#2A1A05;
+  --red:#E05252;--red-lt:#2A0F0F;
+  --blue:#5B8FD4;--blue-lt:#0F1E35;
+  --sw:280px;
+}
+html,body{height:100%;font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.55}
+body{display:flex}
+
+/* SIDEBAR */
+.sidebar{width:var(--sw);min-width:var(--sw);background:var(--surface);border-right:1px solid var(--border);height:100vh;overflow-y:auto;position:sticky;top:0;padding:18px 14px 30px}
+.sidebar::-webkit-scrollbar{width:5px}
+.sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.brand{display:flex;align-items:center;gap:11px;padding:4px 6px 16px;border-bottom:1px solid var(--border);margin-bottom:10px}
+.mark{width:36px;height:36px;border-radius:10px;background:var(--green);display:flex;align-items:center;justify-content:center}
+.mark svg{width:19px;height:19px;fill:#fff}
+.brand-name{font-size:13px;font-weight:600;letter-spacing:-.2px}
+.brand-sub{font-size:10px;color:var(--text3);margin-top:1px}
+.sec{font-size:10px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--text3);padding:14px 8px 6px}
+.nav a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:7px;color:var(--text2);font-size:13px;text-decoration:none;transition:background .12s,color .12s;margin-bottom:1px}
+.nav a:hover{background:var(--surface2);color:var(--text)}
+.nav a.active{background:var(--green-lt);color:var(--green);font-weight:500}
+.nav svg{width:16px;height:16px;flex-shrink:0;opacity:.7}
+.nav a.active svg{opacity:1}
+.badge-sm{margin-left:auto;font-size:9px;padding:1px 7px;border-radius:30px;font-weight:600}
+.b-ready{background:var(--green-lt);color:var(--green)}
+.b-soon{background:var(--amber-lt);color:var(--amber)}
+
+/* MAIN */
+.main{flex:1;min-width:0;padding:44px 56px 80px;max-width:940px}
+h1{font-size:32px;font-weight:600;letter-spacing:-.8px;margin-bottom:6px;line-height:1.15}
+h2{font-size:22px;font-weight:600;letter-spacing:-.5px;margin:44px 0 14px;padding-top:20px;border-top:1px solid var(--border);line-height:1.2}
+h2:first-of-type{border-top:none;padding-top:0;margin-top:32px}
+h3{font-size:17px;font-weight:600;letter-spacing:-.2px;margin:28px 0 10px;color:var(--text)}
+h4{font-size:14px;font-weight:600;margin:18px 0 8px;color:var(--text)}
+p{margin-bottom:12px;color:var(--text)}
+p.lead{font-size:16px;color:var(--text2);margin-bottom:22px;line-height:1.55}
+ul,ol{margin:10px 0 16px 22px}
+li{margin-bottom:6px;color:var(--text)}
+strong{font-weight:600;color:var(--text)}
+em{color:var(--text2);font-style:normal;font-weight:500}
+a{color:var(--green-md);text-decoration:none;border-bottom:1px solid transparent;transition:border-color .12s}
+a:hover{border-color:var(--green-md)}
+code{font-family:'DM Mono',monospace;font-size:.9em;background:var(--surface2);padding:1px 6px;border-radius:4px;color:var(--text)}
+
+/* CARDS & CALLOUTS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:16px 18px;margin:14px 0}
+.card h3{margin-top:0}
+.callout{border-left:3px solid var(--blue);background:var(--blue-lt);border-radius:7px;padding:12px 16px;margin:16px 0;color:var(--text)}
+.callout.warn{border-left-color:var(--amber);background:var(--amber-lt)}
+.callout.success{border-left-color:var(--green);background:var(--green-lt)}
+.callout.danger{border-left-color:var(--red);background:var(--red-lt)}
+.callout strong{display:block;margin-bottom:4px;font-size:12px;letter-spacing:.4px;text-transform:uppercase;color:var(--text2)}
+
+/* TABLES */
+.tw{overflow-x:auto;margin:14px 0}
+table{width:100%;border-collapse:collapse;font-size:13px;background:var(--surface);border:1px solid var(--border);border-radius:11px;overflow:hidden}
+th{background:var(--surface2);padding:9px 14px;text-align:left;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);white-space:nowrap;border-bottom:1px solid var(--border)}
+td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:top}
+tbody tr:last-child td{border-bottom:none}
+.mono{font-family:'DM Mono',monospace;font-size:12px}
+
+/* STATUS PILLS */
+.pill{display:inline-block;padding:2px 9px;border-radius:30px;font-size:10.5px;font-weight:600;letter-spacing:.2px}
+.p-ready{background:var(--green-lt);color:var(--green)}
+.p-soon{background:var(--amber-lt);color:var(--amber)}
+.p-info{background:var(--blue-lt);color:var(--blue)}
+
+/* STEP LIST */
+ol.steps{list-style:none;margin-left:0;counter-reset:step}
+ol.steps > li{counter-increment:step;position:relative;padding:10px 0 10px 44px;border-bottom:1px solid var(--border);margin-bottom:0}
+ol.steps > li:last-child{border-bottom:none}
+ol.steps > li::before{content:counter(step);position:absolute;left:0;top:10px;width:28px;height:28px;border-radius:50%;background:var(--green-lt);color:var(--green);font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace}
+
+/* KBD */
+kbd{font-family:'DM Mono',monospace;font-size:.85em;background:var(--surface2);border:1px solid var(--border);border-bottom-width:2px;border-radius:5px;padding:1px 6px;color:var(--text)}
+
+/* TOC */
+.toc{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:14px 18px;margin:20px 0 32px;font-size:13px}
+.toc-title{font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);margin-bottom:8px}
+.toc ul{list-style:none;margin:0}
+.toc li{margin-bottom:4px}
+.toc a{color:var(--text2);border:none}
+.toc a:hover{color:var(--green-md)}
+
+/* KPI mini row */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin:14px 0}
+.kpi-mini{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+.kpi-lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);margin-bottom:4px}
+.kpi-val{font-size:18px;font-weight:600;letter-spacing:-.3px}
+.kpi-sub{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* MOCK UI */
+.mock{background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:14px;margin:14px 0;font-size:12.5px}
+.mock-head{display:flex;align-items:center;gap:10px;padding:0 2px 10px;border-bottom:1px solid var(--border);margin-bottom:10px}
+.mock-title{font-weight:600;font-size:13px}
+.mock-sub{font-size:11px;color:var(--text3)}
+.mock-btn{padding:4px 11px;border-radius:6px;font-size:11.5px;background:var(--green);color:#fff;font-weight:500;display:inline-block;margin-left:auto}
+
+/* FOOTER */
+.footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--border);font-size:12px;color:var(--text3);display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+
+@media (max-width:960px){
+  body{flex-direction:column}
+  .sidebar{width:100%;min-width:0;height:auto;position:relative;border-right:none;border-bottom:1px solid var(--border)}
+  .main{padding:28px 22px 80px}
+}
+
+@media print{
+  .sidebar{display:none}
+  .main{padding:20px;max-width:none}
+  h2{page-break-before:always}
+  h2:first-of-type{page-break-before:auto}
+}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="brand">
+    <div class="mark">
+      <svg viewBox="0 0 24 24"><path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"/></svg>
+    </div>
+    <div>
+      <div class="brand-name">Alenstec</div>
+      <div class="brand-sub">Guía de Usuario v1.0</div>
+    </div>
+  </div>
+
+  <div class="sec">Antes de empezar</div>
+  <nav class="nav">
+    <a href="#introduccion" class="active">Introducción</a>
+    <a href="#acceso">Acceso al sistema</a>
+    <a href="#roles">Roles y permisos</a>
+    <a href="#glosario">Glosario</a>
+  </nav>
+
+  <div class="sec">Módulos</div>
+  <nav class="nav">
+    <a href="#dashboard">1. Dashboard <span class="badge-sm b-soon">MVP</span></a>
+    <a href="#ot">2. Orden de Trabajo <span class="badge-sm b-soon">MVP</span></a>
+    <a href="#cotizaciones">3. Cotizaciones y Ventas <span class="badge-sm b-soon">MVP</span></a>
+    <a href="#pronostico">4. Pronóstico del Costo <span class="badge-sm b-soon">v0.4</span></a>
+    <a href="#material">5. Costo de Material <span class="badge-sm b-soon">MVP</span></a>
+    <a href="#entregas">6. Entregas de Material <span class="badge-sm b-soon">v0.2</span></a>
+    <a href="#horas">7. Horas de Mano de Obra <span class="badge-sm b-soon">MVP</span></a>
+    <a href="#nomina">8. Nómina / CFDI <span class="badge-sm b-soon">v0.3</span></a>
+    <a href="#conciliacion">9. Conciliación <span class="badge-sm b-ready">Listo</span></a>
+    <a href="#costo-mo">10. Costo de Mano de Obra <span class="badge-sm b-soon">v0.4</span></a>
+  </nav>
+
+  <div class="sec">Tareas comunes</div>
+  <nav class="nav">
+    <a href="#workflow-ot">Abrir una OT</a>
+    <a href="#workflow-mat">Capturar material</a>
+    <a href="#workflow-conc">Cerrar una semana</a>
+    <a href="#workflow-export">Exportar reportes</a>
+  </nav>
+
+  <div class="sec">Ayuda</div>
+  <nav class="nav">
+    <a href="#troubleshooting">Problemas frecuentes</a>
+    <a href="#soporte">Soporte técnico</a>
+  </nav>
+</aside>
+
+<main class="main">
+
+<h1>Guía de Usuario — Sistema de Gestión de Costos</h1>
+<p class="lead">Esta guía explica, módulo por módulo, cómo usar la plataforma de gestión de costos de Alenstec. Está escrita para el personal operativo (Supervisores, Jefes de Área, RH, Compras, Ventas, Administración) y no requiere conocimientos técnicos.</p>
+
+<div class="callout">
+  <strong>Estado del producto</strong>
+  La plataforma se entrega en fases. Cada módulo marca su estado: <span class="pill p-ready">Listo</span> ya está conectado al servidor; <span class="pill p-soon">MVP</span>, <span class="pill p-soon">v0.2</span>… estarán disponibles en las siguientes entregas. Consulta el plan en el documento técnico <code>docs/implementation-roadmap.md</code>.
+</div>
+
+<h2 id="introduccion">Introducción</h2>
+
+<p>El sistema unifica el ciclo completo de costos de un proyecto de manufactura, desde la cotización hasta la conciliación de nómina, con cumplimiento fiscal mexicano (CFDI, IMSS, ISR, INFONAVIT).</p>
+
+<h3>¿Qué resuelve?</h3>
+<ul>
+  <li>Seguimiento en tiempo real del costo real vs. presupuestado de cada Orden de Trabajo (OT).</li>
+  <li>Captura estructurada de materiales, horas y CFDIs por OT.</li>
+  <li>Conciliación entre el checador (reloj físico) y las horas clasificadas por supervisor.</li>
+  <li>Aprobación y liberación de OTs con trazabilidad (quién aprobó, cuándo).</li>
+  <li>Exportación de todos los reportes a Excel y PDF para auditoría.</li>
+</ul>
+
+<h3>¿Qué <em>no</em> cubre esta versión?</h3>
+<ul>
+  <li>Aplicación móvil — el sistema es para escritorio (≥ 1100 px) con degradación a tablet.</li>
+  <li>Control biométrico / reconocimiento facial — el checador se importa por CSV / XLSX.</li>
+  <li>Integración directa con SAT en esta primera entrega; la validación fiscal llega en v1.0.</li>
+</ul>
+
+<h2 id="acceso">Acceso al sistema</h2>
+
+<ol class="steps">
+  <li>Abre el navegador (Chrome, Edge o Firefox recientes) en un equipo conectado a la red de Alenstec.</li>
+  <li>Visita <code>http://alenstec-costos.local:3000</code>. Si no carga, consulta <a href="#troubleshooting">Problemas frecuentes</a>.</li>
+  <li>Ingresa tu correo <em>@alenstec.mx</em> y la contraseña inicial que te proporcionó RH. En tu primera sesión se te pedirá cambiarla.</li>
+  <li>Si olvidaste tu contraseña, contacta al área de Administración — ver <a href="#soporte">Soporte</a>.</li>
+</ol>
+
+<div class="callout warn">
+  <strong>Seguridad</strong>
+  Nunca compartas tu contraseña. Cada acción queda registrada con tu usuario — aprobaciones, cierres de semana y forzados de conciliación son auditables en el historial.
+</div>
+
+<h2 id="roles">Roles y permisos</h2>
+
+<p>El sistema reconoce seis roles. Tu rol determina qué puedes ver y modificar.</p>
+
+<div class="tw">
+<table>
+  <thead><tr><th>Rol</th><th>Alcance principal</th><th>Puede crear</th><th>Puede aprobar / cerrar</th></tr></thead>
+  <tbody>
+    <tr><td><strong>admin</strong></td><td>Administración general, configuración</td><td>Todo</td><td>Todo</td></tr>
+    <tr><td><strong>jefe_area</strong></td><td>Área productiva</td><td>OTs, ajustes de horas</td><td>Liberaciones, forzados menores</td></tr>
+    <tr><td><strong>rh</strong></td><td>Recursos Humanos / Nómina</td><td>Empleados, líneas de nómina</td><td>Cierres de semana, forzados de conciliación</td></tr>
+    <tr><td><strong>supervisor</strong></td><td>Cuadrilla asignada</td><td>Horas clasificadas, incidencias</td><td>Justificaciones propias</td></tr>
+    <tr><td><strong>ventas</strong></td><td>Cotizaciones, OCs cliente</td><td>Cotizaciones, OTs de tipo Nuevo</td><td>—</td></tr>
+    <tr><td><strong>compras</strong></td><td>Proveedores, OCPs</td><td>Proveedores, OCPs, requisiciones</td><td>Recepción de entregas</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Los Supervisores solo ven datos de los empleados asignados a ellos. Jefe de área, RH y admin ven toda la información productiva.</p>
+
+<h2 id="glosario">Glosario</h2>
+
+<div class="tw">
+<table>
+  <thead><tr><th>Término</th><th>Significado</th></tr></thead>
+  <tbody>
+    <tr><td><strong>OT</strong></td><td>Orden de Trabajo — proyecto individual, numerado <code>OT-AL-XXXX</code>. Unidad central del sistema.</td></tr>
+    <tr><td><strong>COT</strong></td><td>Cotización. Formato <code>COT-AL-NNNXXX-YYT</code>.</td></tr>
+    <tr><td><strong>OC</strong></td><td>Orden de Compra del cliente hacia Alenstec.</td></tr>
+    <tr><td><strong>OCP / OCA</strong></td><td>OC que Alenstec emite a sus proveedores.</td></tr>
+    <tr><td><strong>CFDI</strong></td><td>Comprobante Fiscal Digital por Internet. Factura electrónica SAT.</td></tr>
+    <tr><td><strong>UUID fiscal</strong></td><td>Folio único asignado al CFDI al timbrarse.</td></tr>
+    <tr><td><strong>T/C</strong></td><td>Tipo de cambio (USD → MXN), referencia del Diario Oficial.</td></tr>
+    <tr><td><strong>Requisición</strong></td><td>Material solicitado para una OT específica.</td></tr>
+    <tr><td><strong>Checador</strong></td><td>Reloj de entrada/salida. Sus registros se importan en CSV o XLSX.</td></tr>
+    <tr><td><strong>Conciliación</strong></td><td>Cruce entre horas del checador y horas clasificadas por supervisor.</td></tr>
+    <tr><td><strong>Cierre de semana</strong></td><td>Cierre irreversible de la semana de nómina. Solo RH / admin.</td></tr>
+    <tr><td><strong>S.D / S.D.I</strong></td><td>Salario Diario / Salario Diario Integrado (base IMSS).</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2 id="dashboard">1. Dashboard</h2>
+
+<p class="lead">Tu pantalla de bienvenida. Resume lo que está pasando en planta <em>ahora</em>.</p>
+
+<div class="kpi-row">
+  <div class="kpi-mini"><div class="kpi-lbl">OTs Activas</div><div class="kpi-val">18</div><div class="kpi-sub">en ejecución</div></div>
+  <div class="kpi-mini"><div class="kpi-lbl">Costo Total</div><div class="kpi-val">$1.2M</div><div class="kpi-sub">presupuestado acumulado</div></div>
+  <div class="kpi-mini"><div class="kpi-lbl">Cotizaciones Abiertas</div><div class="kpi-val">7</div><div class="kpi-sub">pendientes de respuesta</div></div>
+  <div class="kpi-mini"><div class="kpi-lbl">Material en Tránsito</div><div class="kpi-val">$85k</div><div class="kpi-sub">MXN</div></div>
+</div>
+
+<h3>Qué puedes hacer</h3>
+<ul>
+  <li>Ver las 4 métricas clave (KPIs): OTs activas, costo total, cotizaciones abiertas, material en tránsito.</li>
+  <li>Revisar la tabla de <strong>OTs recientes</strong> con progreso, estado y cliente.</li>
+  <li>Ver la barra de <strong>costo por OT</strong> para detectar desbordes rápidos.</li>
+  <li>Consultar la <strong>línea de tiempo de proveedores</strong> con movimientos recientes.</li>
+</ul>
+
+<div class="callout">
+  <strong>Pestañas de filtro</strong>
+  Encima del contenido hay pestañas <em>Hoy / Semana / Mes</em>. Cambian el periodo de los KPIs sin recargar.
+</div>
+
+<h2 id="ot">2. Orden de Trabajo (OT)</h2>
+
+<p class="lead">La pantalla más importante del sistema. Aquí nace, se ejecuta y se cierra cada proyecto.</p>
+
+<h3 id="workflow-ot">Flujo: abrir una OT nueva</h3>
+
+<ol class="steps">
+  <li>Haz clic en <strong>+ Nueva OT</strong> en la esquina superior derecha del módulo.</li>
+  <li>Llena los <strong>Datos Generales</strong>: número de OT (sugerido automático), cliente, descripción, tipo (<em>Nuevo / Refurbish / Servicio</em>).</li>
+  <li>En <strong>Liberado a</strong> asigna jefatura y fecha de liberación.</li>
+  <li>En <strong>Presupuestos</strong> captura el monto cotizado, moneda, tipo de cambio y referencias de OC cliente.</li>
+  <li>Opcionalmente, en <strong>Horas Estimadas</strong> desglosa horas por actividad (A–M).</li>
+  <li>Guarda. La OT aparecerá en el selector y en el Dashboard.</li>
+</ol>
+
+<h3>Flujo de Liberación</h3>
+<p>Una OT avanza por cinco estados:</p>
+<ol>
+  <li><strong>Borrador</strong> — en captura, aún editable.</li>
+  <li><strong>En revisión</strong> — esperando aprobación de Jefe de Área.</li>
+  <li><strong>En ejecución</strong> — aprobada, se pueden capturar costos.</li>
+  <li><strong>En revisión de cierre</strong> — producción terminada, verificando costos.</li>
+  <li><strong>Cerrada</strong> — bloqueada, no se pueden agregar más costos.</li>
+</ol>
+
+<div class="callout success">
+  <strong>Exportación PDF</strong>
+  Con una OT seleccionada, el botón <strong>⬇ Exportar PDF</strong> genera un reporte completo: datos generales, resumen de costos reales vs. presupuestados, lista de materiales y horas. Listo para archivarse o enviarse al cliente.
+</div>
+
+<h2 id="cotizaciones">3. Cotizaciones y Ventas</h2>
+
+<p>Control de cotizaciones emitidas a clientes, su estado (<em>Pendiente / Aprobada / Rechazada / Expirada</em>) y la conversión a OT cuando el cliente confirma.</p>
+
+<h3>Qué puedes hacer</h3>
+<ul>
+  <li>Registrar una nueva cotización con <strong>+ Nueva cotización</strong>.</li>
+  <li>Asociar una cotización aprobada a una OT (campo <strong>OT #</strong>).</li>
+  <li>Exportar el tablero de ventas a Excel (<strong>⬇ Descargar XLSX</strong>).</li>
+  <li>Consultar KPIs: cotizaciones abiertas, tasa de cierre, monto pipeline.</li>
+</ul>
+
+<h2 id="pronostico">4. Pronóstico del Costo</h2>
+
+<p>Cruza el presupuesto con el costo real capturado hasta la fecha y proyecta el desenlace de cada OT activa.</p>
+
+<div class="card">
+  <h3>Semáforo</h3>
+  <p>Cada fila muestra un indicador de color:</p>
+  <ul>
+    <li><span class="pill p-ready">Verde</span> — desviación &lt; 5 % respecto al presupuesto.</li>
+    <li><span class="pill p-soon">Ámbar</span> — desviación entre 5 % y 15 %.</li>
+    <li><span class="pill" style="background:var(--red-lt);color:var(--red)">Rojo</span> — desviación &gt; 15 % o proyección deficitaria.</li>
+  </ul>
+</div>
+
+<h2 id="material">5. Costo de Material</h2>
+
+<p class="lead">Captura cada línea de material consumida por OT, con desglose fiscal.</p>
+
+<h3 id="workflow-mat">Flujo: registrar material</h3>
+
+<ol class="steps">
+  <li>Haz clic en <strong>+ Registrar material</strong>.</li>
+  <li>Selecciona la OT de destino. Si no aparece, confirma que esté en estado <em>En ejecución</em>.</li>
+  <li>Captura: descripción, cantidad, costo unitario, proveedor, fecha de entrega.</li>
+  <li>El sistema calcula automáticamente <strong>Subtotal / IVA / Retención / Total</strong>. Ajusta si tu factura tiene un IVA distinto al 16 % o retenciones especiales.</li>
+  <li>Estado inicial: <em>Pendiente</em>. Cambia a <em>En tránsito</em> al despacho y a <em>Entregado</em> cuando llegue al almacén.</li>
+  <li>Guarda. La línea aparecerá en la Requisición de esa OT y el costo acumulado del Dashboard se actualizará.</li>
+</ol>
+
+<h2 id="entregas">6. Entregas de Material</h2>
+
+<p>Módulo de procura y logística. Dividido en cinco sub-pestañas:</p>
+
+<div class="tw">
+<table>
+  <thead><tr><th>Sub-pestaña</th><th>Para qué sirve</th></tr></thead>
+  <tbody>
+    <tr><td><strong>6.1 Proveedores</strong></td><td>Alta, baja y edición del catálogo de proveedores, con saldo pendiente y categorías.</td></tr>
+    <tr><td><strong>6.2 OCPs</strong></td><td>Órdenes de compra que Alenstec emite al proveedor.</td></tr>
+    <tr><td><strong>6.3 Inventario</strong></td><td>Existencias físicas en almacén tras la recepción de materiales.</td></tr>
+    <tr><td><strong>6.4 Facturas</strong></td><td>Facturas CFDI recibidas de proveedores. Se pueden importar por XML (arrastra el archivo) o capturar manualmente.</td></tr>
+    <tr><td><strong>6.5 Entregas e Incidencias</strong></td><td>Registro de recepciones y reportes de incidencias (material dañado, incompleto, fuera de especificación).</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout">
+  <strong>Importar un CFDI</strong>
+  En sub-pestaña 6.4, arrastra el archivo <code>.xml</code> del CFDI sobre la zona punteada. El sistema extrae RFC emisor, UUID, fecha y monto. Revisa y confirma.
+</div>
+
+<h2 id="horas">7. Horas de Mano de Obra</h2>
+
+<p>Captura diaria (o semanal) de horas trabajadas por empleado, asignadas a una OT.</p>
+
+<h3>Capturar horas</h3>
+<ol class="steps">
+  <li>Pestaña <strong>Resumen</strong> → botón <strong>+ Capturar horas</strong>.</li>
+  <li>Selecciona empleado (solo aparecen los asignados a ti si eres Supervisor).</li>
+  <li>Selecciona OT, actividad (código A–M o indirecto), tipo de hora (<em>Normal / Extra / Doble / Triple</em>) y cantidad.</li>
+  <li>La captura queda marcada como <em>pendiente de conciliación</em> hasta que se cruce con el checador.</li>
+</ol>
+
+<p>La pestaña <strong>Control de Empleados</strong> muestra la lista maestra de colaboradores con turno, área y supervisor asignado. Solo RH / admin puede editarla.</p>
+
+<h2 id="nomina">8. Nómina / CFDI</h2>
+
+<p class="lead">Captura semanal de la nómina con cálculo automático de IMSS, ISR, INFONAVIT y FONACOT, más importación de CFDI-nómina.</p>
+
+<h3>Sub-pestañas</h3>
+<ul>
+  <li><strong>Captura</strong> — tabla de 86 columnas por empleado con percepciones, deducciones y totales.</li>
+  <li><strong>CFDI</strong> — carga el XML del CFDI-nómina timbrado por Alenstec. El sistema extrae datos del complemento 1.2.</li>
+  <li><strong>Resumen</strong> — KPIs de la semana: total pagado, deducciones, empleados pagados.</li>
+</ul>
+
+<div class="callout warn">
+  <strong>Antes de capturar</strong>
+  Confirma que la semana esté creada en Conciliación y que las horas clasificadas estén validadas. El cálculo usa las horas conciliadas como insumo.
+</div>
+
+<h2 id="conciliacion">9. Conciliación <span class="pill p-ready" style="margin-left:6px;vertical-align:middle;font-size:12px;padding:3px 10px">Listo</span></h2>
+
+<p class="lead">Cruce entre las horas marcadas en el reloj (checador) y las horas clasificadas por el supervisor. Punto crítico del proceso nómina.</p>
+
+<h3 id="workflow-conc">Flujo semanal</h3>
+
+<ol class="steps">
+  <li><strong>Importar checador.</strong> Pestaña 9.1 → arrastra el archivo <em>.csv / .xlsx</em> del reloj. El sistema muestra un <em>preview</em>; revisa y confirma la importación.</li>
+  <li><strong>Revisar alertas.</strong> Pestaña 9.3 enumera anomalías: entradas faltantes, dobles checadas, diferencias mayores de tolerancia.</li>
+  <li><strong>Clasificar horas.</strong> Pestaña 9.4, por día y empleado, indica en qué OT y actividad se trabajó cada hora. El total no puede exceder el del checador salvo autorización de jefe de área.</li>
+  <li><strong>Justificar diferencias.</strong> Si sobran o faltan horas, el supervisor añade una justificación (texto libre) y adjunta la evidencia si aplica.</li>
+  <li><strong>Forzar (excepcional).</strong> Solo RH / admin, con motivo. Se registra en la bitácora.</li>
+  <li><strong>Cerrar la semana.</strong> Pestaña 9.5, cuando no hay conflictos abiertos. El cierre es irreversible y emite el <em>reporte de cierre</em> (PDF) + la lista de horas que alimenta la nómina.</li>
+</ol>
+
+<div class="callout danger">
+  <strong>El cierre es irreversible</strong>
+  Una vez cerrada, la semana no se puede re-editar ni re-importar. Cualquier corrección posterior se hace por ajuste manual en Nómina.
+</div>
+
+<h3>Exportar la conciliación</h3>
+<p>Pestaña 9.5 → <strong>⬇ Exportar Excel</strong> genera un libro XLSX con el detalle día-por-día de cada empleado, sus diferencias y justificaciones. Este archivo es la evidencia para auditoría y para conciliar con Contabilidad.</p>
+
+<h2 id="costo-mo">10. Costo de Mano de Obra</h2>
+
+<p>Agregado analítico de las horas capturadas. Muestra por OT el costo real de mano de obra, desglosado por actividad (A–M) y comparado con el presupuesto.</p>
+
+<ul>
+  <li>Filtra por OT o por rango de fechas.</li>
+  <li>Identifica actividades con mayor desviación.</li>
+  <li>Exporta el rollup a Excel para análisis posterior.</li>
+</ul>
+
+<h2 id="workflow-export">Tareas comunes: exportar reportes</h2>
+
+<div class="tw">
+<table>
+  <thead><tr><th>Qué necesitas</th><th>Módulo</th><th>Botón</th><th>Formato</th></tr></thead>
+  <tbody>
+    <tr><td>Reporte completo de una OT</td><td>2. OT</td><td><strong>⬇ Exportar PDF</strong></td><td>PDF</td></tr>
+    <tr><td>Tablero de cotizaciones</td><td>3. Cotizaciones</td><td>⬇ Descargar XLSX</td><td>Excel</td></tr>
+    <tr><td>Pronóstico de costos</td><td>4. Pronóstico</td><td>⬇ Descargar XLSX</td><td>Excel</td></tr>
+    <tr><td>Requisición por OT</td><td>5. Material</td><td>⬇ Descargar XLSX</td><td>Excel</td></tr>
+    <tr><td>Lista de proveedores</td><td>6.1 Proveedores</td><td>⬇ Descargar XLSX</td><td>Excel</td></tr>
+    <tr><td>Detalle de conciliación semanal</td><td>9. Conciliación</td><td>⬇ Exportar Excel</td><td>Excel</td></tr>
+    <tr><td>Nómina semanal</td><td>8. Nómina</td><td>⬇ Descargar XLSX</td><td>Excel</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2 id="troubleshooting">Problemas frecuentes</h2>
+
+<div class="card">
+  <h3>No puedo acceder al sistema</h3>
+  <ul>
+    <li><strong>Verifica la red.</strong> El sistema solo está disponible dentro de la red de Alenstec. Confirma que estás conectado al Wi-Fi corporativo.</li>
+    <li><strong>Revisa el URL.</strong> Debe ser <code>http://alenstec-costos.local:3000</code>. Si tu navegador te redirige a <code>https</code>, quita la <em>s</em>.</li>
+    <li><strong>Usuario o contraseña incorrectos.</strong> Tras 5 intentos fallidos el sistema bloquea temporalmente. Contacta a Administración.</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h3>No aparece mi OT en el selector</h3>
+  <ul>
+    <li>Si eres Supervisor, solo verás OTs del área asignada a ti. Pide a tu Jefe de Área que revise la asignación.</li>
+    <li>OTs en estado <em>Cerrada</em> se ocultan por defecto. Usa el filtro <em>Todas</em> en la pestaña de la OT.</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h3>Al importar el checador marca "empleado desconocido"</h3>
+  <p>El archivo del checador contiene números de lista que no coinciden con la tabla de Empleados. Pide a RH que sincronice el catálogo en <em>7. Horas → Control de Empleados</em> antes de reintentar.</p>
+</div>
+
+<div class="card">
+  <h3>El total de horas clasificadas no empata con el checador</h3>
+  <p>La tolerancia por defecto es 0.5 h. Diferencias mayores bloquean el cierre hasta que:</p>
+  <ul>
+    <li>El Supervisor ajuste la clasificación, o</li>
+    <li>Añada una justificación, o</li>
+    <li>RH fuerce la conciliación con un motivo registrado.</li>
+  </ul>
+</div>
+
+<h2 id="soporte">Soporte técnico</h2>
+
+<p>Para incidencias técnicas (el sistema no responde, una pantalla marca error, pérdida de datos):</p>
+<ul>
+  <li>Anota el módulo, la hora exacta y lo que estabas haciendo antes del error.</li>
+  <li>Si aparece un mensaje rojo con código, tómale captura.</li>
+  <li>Contacta al área de Sistemas / Administración con esa información.</li>
+</ul>
+
+<p>Para dudas de uso (cómo capturar tal cosa, qué significa tal campo):</p>
+<ul>
+  <li>Consulta primero esta guía — la navegación lateral tiene ancla por módulo.</li>
+  <li>Pregunta a tu Jefe de Área o a quien te capacitó.</li>
+</ul>
+
+<div class="callout">
+  <strong>Versión del documento</strong>
+  Guía v1.0 — generada el 21 de abril de 2026. Actualizaciones serán distribuidas junto con cada liberación del sistema.
+</div>
+
+<div class="footer">
+  <div>Alenstec SA de CV — Gestión de Costos de Proyecto</div>
+  <div>Guía de Usuario · v1.0 · 2026-04-21</div>
+</div>
+
+</main>
+
+<script>
+// Highlight active section in sidebar as user scrolls
+(function(){
+  const links = document.querySelectorAll('.nav a[href^="#"]');
+  const sections = Array.from(links).map(a => {
+    const id = a.getAttribute('href').slice(1);
+    return { link: a, section: document.getElementById(id) };
+  }).filter(s => s.section);
+
+  function onScroll(){
+    const y = window.scrollY + 120;
+    let current = sections[0];
+    for (const s of sections) {
+      if (s.section.offsetTop <= y) current = s;
+    }
+    links.forEach(l => l.classList.remove('active'));
+    if (current) current.link.classList.add('active');
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+})();
+</script>
+
+</body>
+</html>

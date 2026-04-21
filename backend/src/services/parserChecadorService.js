@@ -356,7 +356,7 @@ async function importarRegistrosABD(registros, semanaId, usuarioId) {
 
       if (result.rows.length > 0) {
         insertados.push(result.rows[0]);
-        if (record.rows[0].anomalia) {
+        if (result.rows[0].anomalia) {
           conAnomalias.push({
             empleado_id: result.rows[0].empleado_id,
             fecha: result.rows[0].fecha,

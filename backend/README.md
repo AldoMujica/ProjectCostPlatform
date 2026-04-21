@@ -1,121 +1,85 @@
-# Alenstec Backend Setup
+# Alenstec Backend
+
+Single Express app that serves the cost-management API, the conciliación-nómina API, and the frontend HTML/assets from one process. See [`../docs/implementation-roadmap.md`](../docs/implementation-roadmap.md) and [`../designs/00-architecture-decisions.md`](../designs/00-architecture-decisions.md) for the frozen architecture decisions.
 
 ## Prerequisites
-- Node.js (v16+)
-- PostgreSQL (v12+)
-- npm or yarn
 
-## Installation
+- Node.js 18+
+- PostgreSQL 15+
 
-1. **Install dependencies:**
+## Setup
+
 ```bash
 npm install
+cp .env.example .env      # then edit values
+npm run migrate            # apply all umzug migrations
+npm run seed               # 6-role users + cost fixtures + conciliación demo
+npm run dev                # nodemon on :3000
 ```
 
-2. **Configure database connection:**
-Edit `.env` with your PostgreSQL credentials:
-```
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=alenstec_db
-DB_USER=postgres
-DB_PASSWORD=your_password
-NODE_ENV=development
-PORT=3000
-```
+### Required environment variables
 
-3. **Create PostgreSQL database:**
+| Var                     | Purpose                                                    |
+|-------------------------|------------------------------------------------------------|
+| `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` | PostgreSQL   |
+| `JWT_SECRET`            | ≥ 32 chars, not a default. Boot fails if unset/weak.       |
+| `JWT_ACCESS_TTL`        | Access-token TTL (default `1h`).                           |
+| `JWT_REFRESH_TTL`       | Refresh-token TTL (default `14d`).                         |
+| `PORT`                  | HTTP port (default `3000`).                                |
+| `FRONTEND_URL`          | Optional CORS origin.                                      |
+| `SEED_DEFAULT_PASSWORD` | Password for seeded role users.                            |
+
+## API surface
+
+All `/api/*` routes except `/api/auth/*` and `/api/health` require a valid JWT in `Authorization: Bearer <token>`.
+
+- `POST /api/auth/login` — `{ email, password }` → `{ accessToken, refreshToken, user }`
+- `POST /api/auth/refresh` — `{ refreshToken }` → `{ accessToken }`
+- `GET  /api/auth/me` — current user
+- `/api/work-orders`, `/api/quotes`, `/api/costs/{material,labor}`, `/api/suppliers`, `/api/conciliacion/*`
+
+See [`implementation-roadmap.md`](../docs/implementation-roadmap.md) §Phase 2 for the full MVP endpoint list.
+
+## Roles
+
+Seeded users (Phase 1): `admin`, `jefe_area`, `rh`, `supervisor`, `ventas`, `compras`.
+
+## Migrations
+
+Managed by [umzug](https://github.com/sequelize/umzug). Files live in [`src/db/migrations/`](src/db/migrations/). Supports both `*.js` (Sequelize QueryInterface) and `*.sql` (raw SQL, forward-only).
+
+- `npm run migrate` — run all pending.
+- `npm run migrate:down` — revert the last migration (JS only; SQL migrations are forward-only).
+
+## Testing
+
 ```bash
-createdb alenstec_db
+# One-time: start a throwaway Postgres for tests
+docker compose -f docker-compose.test.yml up -d
+
+cp .env.test.example .env.test   # edit if your test DB differs
+npm run lint                      # eslint:recommended, warnings allowed
+npm test                          # jest smoke suite (health, auth, migrate/seed idempotence)
 ```
 
-4. **Start the server:**
-```bash
-npm start
+The smoke suite ([test/smoke.test.js](test/smoke.test.js)) is deliberately small — expand as Phase-2 wiring lands. It runs migrations once via jest `globalSetup`, and tests re-run `umzug.up()` / `seed()` to verify idempotence.
+
+CI runs the same sequence on every push ([.github/workflows/ci.yml](../.github/workflows/ci.yml)): lint → migrate ×2 → seed → test, with Postgres 15 as a service container.
+
+## Layout
+
 ```
-
-Or for development with auto-reload:
-```bash
-npm run dev
+src/
+├── db/
+│   ├── sequelize.js        # shared Sequelize instance
+│   ├── migrator.js         # umzug runner
+│   ├── config.js           # raw pg pool (ADR-003 escape hatch)
+│   └── migrations/
+├── middleware/auth.js      # assertJwtSecret, verificarJWT, verificarRol
+├── models/                 # Sequelize models + associations (models/index.js)
+├── routes/                 # auth, workOrders, quotes, costs, suppliers, conciliacionRoutes
+├── seed/index.js           # idempotent seed
+├── services/               # conciliacionService, parserChecadorService
+├── utils/excelExporter.js
+└── server.js               # single Express app on :3000
 ```
-
-5. **Seed sample data (optional):**
-```bash
-npm run seed
-```
-
-## API Endpoints
-
-### Work Orders
-- `GET /api/work-orders` - Get all work orders
-- `GET /api/work-orders/:id` - Get single work order
-- `POST /api/work-orders` - Create work order
-- `PUT /api/work-orders/:id` - Update work order
-- `DELETE /api/work-orders/:id` - Delete work order
-- `GET /api/work-orders/kpi/summary` - Get KPI data
-
-### Quotes
-- `GET /api/quotes` - Get all quotes
-- `GET /api/quotes/:id` - Get single quote
-- `POST /api/quotes` - Create quote
-- `PUT /api/quotes/:id` - Update quote
-- `GET /api/quotes/kpi/open-count` - Get open quotes count
-
-### Costs
-- `GET /api/costs/material` - Get material costs
-- `GET /api/costs/labor` - Get labor costs
-- `POST /api/costs/material` - Create material cost
-- `POST /api/costs/labor` - Create labor cost
-- `GET /api/costs/kpi/material-transit` - Get material in transit
-
-### Suppliers
-- `GET /api/suppliers` - Get all suppliers
-- `GET /api/suppliers/:id` - Get single supplier
-- `POST /api/suppliers` - Create supplier
-- `PUT /api/suppliers/:id` - Update supplier
-
-## Health Check
-```bash
-curl http://localhost:3000/api/health
-```
-
-## Database Schema
-
-### work_orders
-- id (UUID)
-- otNumber (STRING, unique)
-- client, description, type, progress, status
-- quotedCost, actualCost, currency
-- startDate, endDate, createdAt, updatedAt
-
-### quotes
-- id (UUID)
-- quoteNumber (STRING, unique)
-- client, description, amount, currency, status
-- validUntil, createdAt, updatedAt
-
-### material_costs
-- id (UUID)
-- otNumber, materialDescription, quantity
-- unitCost, totalCost, currency
-- supplier, status, deliveryDate
-- createdAt, updatedAt
-
-### labor_costs
-- id (UUID)
-- otNumber, employeeName, role
-- hoursWorked, hourlyRate, totalCost, currency
-- date, createdAt, updatedAt
-
-### suppliers
-- id (UUID)
-- supplierName, description, categories (array)
-- workOrders (array), status
-- contactEmail, contactPhone
-- createdAt, updatedAt
-
-## Notes
-- Uses Sequelize ORM for database operations
-- CORS enabled for frontend communication
-- All timestamps in UTC
-- Database automatically syncs on server startup
