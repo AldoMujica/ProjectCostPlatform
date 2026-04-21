@@ -51,6 +51,21 @@ Managed by [umzug](https://github.com/sequelize/umzug). Files live in [`src/db/m
 - `npm run migrate` — run all pending.
 - `npm run migrate:down` — revert the last migration (JS only; SQL migrations are forward-only).
 
+## Testing
+
+```bash
+# One-time: start a throwaway Postgres for tests
+docker compose -f docker-compose.test.yml up -d
+
+cp .env.test.example .env.test   # edit if your test DB differs
+npm run lint                      # eslint:recommended, warnings allowed
+npm test                          # jest smoke suite (health, auth, migrate/seed idempotence)
+```
+
+The smoke suite ([test/smoke.test.js](test/smoke.test.js)) is deliberately small — expand as Phase-2 wiring lands. It runs migrations once via jest `globalSetup`, and tests re-run `umzug.up()` / `seed()` to verify idempotence.
+
+CI runs the same sequence on every push ([.github/workflows/ci.yml](../.github/workflows/ci.yml)): lint → migrate ×2 → seed → test, with Postgres 15 as a service container.
+
 ## Layout
 
 ```

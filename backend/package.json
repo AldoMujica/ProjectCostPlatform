@@ -8,7 +8,16 @@
     "dev": "nodemon src/server.js",
     "migrate": "node src/db/migrator.js up",
     "migrate:down": "node src/db/migrator.js down",
-    "seed": "node src/seed/index.js"
+    "seed": "node src/seed/index.js",
+    "lint": "eslint src test",
+    "test": "jest --runInBand"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": ["<rootDir>/test/**/*.test.js"],
+    "globalSetup": "<rootDir>/test/globalSetup.js",
+    "globalTeardown": "<rootDir>/test/globalTeardown.js",
+    "testTimeout": 30000
   },
   "keywords": [],
   "author": "",
@@ -33,6 +42,9 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "nodemon": "^3.0.2"
+    "eslint": "^8.57.0",
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.2",
+    "supertest": "^6.3.4"
   }
 }

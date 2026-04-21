@@ -56,7 +56,7 @@ class ExcelExporter {
         if (detalle.horas_clasificadas > 0) {
           const diaFecha = new Date(detalle.fecha);
           const diaSemana = diaMap[diaFecha.getDay()];
-          if (horasPorDia.hasOwnProperty(diaSemana)) {
+          if (Object.hasOwn(horasPorDia, diaSemana)) {
             horasPorDia[diaSemana] += parseFloat(detalle.horas_clasificadas || 0);
           }
           totalHoras += parseFloat(detalle.horas_clasificadas || 0);

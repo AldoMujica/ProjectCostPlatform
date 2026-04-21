@@ -80,7 +80,7 @@ backend/src/
 
 ## Current state (2026-04-21)
 
-Phase-1 backend **done** ([docs/implementation-roadmap.md](docs/implementation-roadmap.md#progress-snapshot--2026-04-20)). Still open in Phase 1: P1.7 (wire `filtrarPorSupervisor` into resource routes), P1.15 (FE login), P1.16 (FE 401 interceptor), P1.17 (CI), P1.18 (ephemeral-Postgres test harness).
+Phase-1 backend **done**; Phase-1 QA harness **done** (CI + ephemeral-Postgres jest suite). See [docs/implementation-roadmap.md](docs/implementation-roadmap.md#progress-snapshot--2026-04-20). Still open in Phase 1: **P1.15** (FE login page + token/refresh) and **P1.16** (FE 401 interceptor). P1.7 deferred to Phase 3 (P3.18b) pending the `Employee` master.
 
 ~20 % of mockup features wired end-to-end (audit headline). Next milestone: `v0.1-mvp` at end of Phase 2 (~week 6).
 
