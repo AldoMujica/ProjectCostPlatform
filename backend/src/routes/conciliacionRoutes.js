@@ -143,74 +143,98 @@ router.get('/:semana_id', verificarJWT, async (req, res) => {
     const usuario_id = req.user.id;
     const usuario_rol = req.user.rol;
 
-    // Verificar acceso (supervisores solo ven sus empleados)
-    let filtroSupervisor = '';
-    if (usuario_rol === 'supervisor') {
-      filtroSupervisor = ` AND e.supervisor_id = ${usuario_id}`;
-    }
-
-    let whereClause = `WHERE sn.id = $1 ${filtroSupervisor}`;
+    // Build param list + optional supervisor/area clauses inside the CTE.
+    // The estado filter is applied via a FILTER clause on the outer json_agg
+    // because it depends on cd_resume rollup, not raw empleado columns.
     const params = [semana_id];
-
+    let supervisorClause = '';
+    if (usuario_rol === 'supervisor') {
+      params.push(usuario_id);
+      supervisorClause = `AND e.supervisor_id = $${params.length}`;
+    }
+    let areaClause = '';
     if (area) {
-      whereClause += ` AND e.area = $${params.length + 1}`;
       params.push(area);
+      areaClause = `AND e.area = $${params.length}`;
     }
-
+    let estadoFilter = '';
     if (estado && ['ok', 'alerta', 'conflicto'].includes(estado)) {
-      whereClause += ` AND cd_resume.estado = $${params.length + 1}`;
       params.push(estado);
+      estadoFilter = `AND COALESCE(cdr.estado_general, 'pendiente') = $${params.length}`;
     }
 
+    // Per-employee aggregates live in a CTE so the outer json_agg isn't
+    // nested inside SUM/COUNT — Postgres rejects that ("no se pueden
+    // anidar llamadas a funciones de agregación").
     const query = `
-      SELECT 
-        sn.id as semana_id,
+      WITH stats AS (
+        SELECT
+          e.id AS empleado_id,
+          e.numero_lista,
+          e.nombre,
+          e.turno,
+          e.area,
+          e.supervisor_id,
+          COALESCE(SUM(rc.horas_real), 0)::numeric AS total_horas_checador,
+          COALESCE(SUM(hc.horas), 0)::numeric      AS total_horas_clasificadas,
+          COUNT(DISTINCT i.id)                     AS incidencias
+        FROM empleados e
+        LEFT JOIN registros_checador  rc ON rc.empleado_id = e.id AND rc.semana_id = $1
+        LEFT JOIN horas_clasificadas  hc ON hc.empleado_id = e.id AND hc.semana_id = $1
+        LEFT JOIN incidencias          i ON  i.empleado_id = e.id AND  i.semana_id = $1
+        WHERE e.activo = TRUE
+          ${supervisorClause}
+          ${areaClause}
+        GROUP BY e.id
+      ),
+      cd_resume AS (
+        SELECT
+          empleado_id,
+          CASE
+            WHEN COUNT(CASE WHEN estado = 'ok' THEN 1 END) = COUNT(*)         THEN 'ok'
+            WHEN COUNT(CASE WHEN estado = 'conflicto' THEN 1 END) > 0         THEN 'conflicto'
+            WHEN COUNT(CASE WHEN estado = 'alerta' THEN 1 END) > 0            THEN 'alerta'
+            ELSE 'pendiente'
+          END AS estado_general,
+          COUNT(CASE WHEN estado = 'ok'        THEN 1 END) AS dias_ok,
+          COUNT(CASE WHEN estado = 'alerta'    THEN 1 END) AS dias_alerta,
+          COUNT(CASE WHEN estado = 'conflicto' THEN 1 END) AS dias_conflicto
+        FROM conciliacion_detalle
+        WHERE semana_id = $1
+        GROUP BY empleado_id
+      )
+      SELECT
+        sn.id          AS semana_id,
         sn.fecha_inicio,
         sn.fecha_fin,
         sn.descripcion,
         sn.cerrada,
-        json_agg(
-          json_build_object(
-            'empleado_id', e.id,
-            'numero_lista', e.numero_lista,
-            'nombre', e.nombre,
-            'turno', e.turno,
-            'area', e.area,
-            'supervisor_id', e.supervisor_id,
-            'total_horas_checador', COALESCE(SUM(rc.horas_real), 0),
-            'total_horas_clasificadas', COALESCE(SUM(hc.horas), 0),
-            'diferencia', ABS(COALESCE(SUM(rc.horas_real), 0) - COALESCE(SUM(hc.horas), 0)),
-            'incidencias', COUNT(DISTINCT i.id),
-            'estado', COALESCE(cd_resume.estado_general, 'pendiente'),
-            'dias_ok', COALESCE(cd_resume.dias_ok, 0),
-            'dias_alerta', COALESCE(cd_resume.dias_alerta, 0),
-            'dias_conflicto', COALESCE(cd_resume.dias_conflicto, 0)
-          ) ORDER BY e.numero_lista
-        ) as empleados
+        COALESCE(
+          json_agg(
+            json_build_object(
+              'empleado_id',               s.empleado_id,
+              'numero_lista',              s.numero_lista,
+              'nombre',                    s.nombre,
+              'turno',                     s.turno,
+              'area',                      s.area,
+              'supervisor_id',             s.supervisor_id,
+              'total_horas_checador',      s.total_horas_checador,
+              'total_horas_clasificadas',  s.total_horas_clasificadas,
+              'diferencia',                ABS(s.total_horas_checador - s.total_horas_clasificadas),
+              'incidencias',               s.incidencias,
+              'estado',                    COALESCE(cdr.estado_general, 'pendiente'),
+              'dias_ok',                   COALESCE(cdr.dias_ok, 0),
+              'dias_alerta',               COALESCE(cdr.dias_alerta, 0),
+              'dias_conflicto',            COALESCE(cdr.dias_conflicto, 0)
+            ) ORDER BY s.numero_lista
+          ) FILTER (WHERE s.empleado_id IS NOT NULL ${estadoFilter}),
+          '[]'::json
+        ) AS empleados
       FROM semanas_nomina sn
-      LEFT JOIN empleados e ON TRUE
-      LEFT JOIN registros_checador rc ON rc.empleado_id = e.id AND rc.semana_id = sn.id
-      LEFT JOIN horas_clasificadas hc ON hc.empleado_id = e.id AND hc.semana_id = sn.id
-      LEFT JOIN incidencias i ON i.empleado_id = e.id AND i.semana_id = sn.id
-      LEFT JOIN (
-        SELECT 
-          empleado_id,
-          CASE 
-            WHEN COUNT(CASE WHEN estado = 'ok' THEN 1 END) = COUNT(*) THEN 'ok'
-            WHEN COUNT(CASE WHEN estado = 'conflicto' THEN 1 END) > 0 THEN 'conflicto'
-            WHEN COUNT(CASE WHEN estado = 'alerta' THEN 1 END) > 0 THEN 'alerta'
-            ELSE 'pendiente'
-          END as estado_general,
-          COUNT(CASE WHEN estado = 'ok' THEN 1 END) as dias_ok,
-          COUNT(CASE WHEN estado = 'alerta' THEN 1 END) as dias_alerta,
-          COUNT(CASE WHEN estado = 'conflicto' THEN 1 END) as dias_conflicto
-        FROM conciliacion_detalle
-        WHERE semana_id = $1
-        GROUP BY empleado_id
-      ) cd_resume ON cd_resume.empleado_id = e.id
-      ${whereClause}
-      GROUP BY sn.id, sn.fecha_inicio, sn.fecha_fin, sn.descripcion, sn.cerrada, cd_resume.estado_general,
-               cd_resume.dias_ok, cd_resume.dias_alerta, cd_resume.dias_conflicto
+      LEFT JOIN stats     s  ON TRUE
+      LEFT JOIN cd_resume cdr ON cdr.empleado_id = s.empleado_id
+      WHERE sn.id = $1
+      GROUP BY sn.id, sn.fecha_inicio, sn.fecha_fin, sn.descripcion, sn.cerrada
     `;
 
     const result = await pool.query(query, params);
