@@ -30,7 +30,8 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
       fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
       imgSrc: ["'self'", 'data:', 'blob:'],
-      connectSrc: ["'self'"],
+      // cdnjs allowed in connect-src so DevTools can fetch the jsPDF sourcemap.
+      connectSrc: ["'self'", 'https://cdnjs.cloudflare.com'],
       objectSrc: ["'none'"],
       frameAncestors: ["'self'"],
       formAction: ["'self'"],

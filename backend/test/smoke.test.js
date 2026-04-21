@@ -29,6 +29,13 @@ describe('Phase-1 smoke', () => {
       expect(csp).toMatch(/style-src[^;]*fonts\.googleapis\.com/);
       expect(csp).toMatch(/font-src[^;]*fonts\.gstatic\.com/);
     });
+
+    it('connect-src allows cdnjs (so DevTools can fetch vendor sourcemaps)', async () => {
+      const res = await request(app).get('/api/health');
+      const csp = res.headers['content-security-policy'] || '';
+      expect(csp).toMatch(/connect-src[^;]*'self'/);
+      expect(csp).toMatch(/connect-src[^;]*cdnjs\.cloudflare\.com/);
+    });
   });
 
   describe('JWT enforcement', () => {
