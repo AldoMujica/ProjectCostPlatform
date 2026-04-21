@@ -88,8 +88,8 @@ Counts above group related controls; see per-module feature docs for the full fl
 
 | Feature                        | Status | Backing                                 | Gap      |
 |--------------------------------|:------:|-----------------------------------------|----------|
-| KPI strip                      | ❌      | Open-count endpoint exists, not wired   | G-COT-4  |
-| Control-de-Ventas table        | ⚠️      | Model missing cotRef/OC/T-C/otNumber    | G-COT-2, G-COT-5 |
+| KPI strip                      | ✅      | Wired in P2.6 — derived from `/api/quotes` list (count, USD sum, last FX, distinct clients) | ~~G-COT-4~~ |
+| Control-de-Ventas table        | ✅      | Wired in P2.5 — `loadCotizaciones`; model extensions from G-COT-5 already in place | ~~G-COT-2~~ |
 | `+ Nueva cotización`           | ❌      | No handler                              | G-COT-1  |
 | `⬇ Descargar XLSX`             | ❌      | Global no-op button                     | G-EXP-1 / G-COT-3 |
 

@@ -125,6 +125,18 @@ describe('Phase-1 smoke', () => {
         expect(Array.isArray(s.workOrders)).toBe(true);
       }
     });
+
+    it('GET /api/quotes returns quotes with Cotizaciones-module shape (P2.5/P2.6)', async () => {
+      const res = await request(app).get('/api/quotes').set('Authorization', `Bearer ${token}`);
+      expect(res.status).toBe(200);
+      expect(Array.isArray(res.body)).toBe(true);
+      if (res.body.length) {
+        const q = res.body[0];
+        ['quoteNumber', 'client', 'amount', 'status', 'currency', 'createdAt'].forEach((f) => {
+          expect(q).toHaveProperty(f);
+        });
+      }
+    });
   });
 
   describe('Seed', () => {

@@ -448,28 +448,17 @@ select.fi{cursor:pointer}
 <!-- COTIZACIONES -->
 <div class="mod" id="mod-cotizaciones">
   <div class="kg">
-    <div class="kpi"><div class="kl">Cotizaciones 2026</div><div class="kv" style="color:var(--blue)">18+</div><div class="ks">Registradas en control ventas</div></div>
-    <div class="kpi"><div class="kl">Monto cotizado</div><div class="kv">$218K</div><div class="ks">USD · sin IVA · acumulado</div></div>
-    <div class="kpi"><div class="kl">Tipo de cambio ref.</div><div class="kv" style="color:var(--green)">$17.34</div><div class="ks">USD · Diario Oficial</div></div>
-    <div class="kpi"><div class="kl">Clientes activos</div><div class="kv">6</div><div class="ks">F3, Avanzar, Autoliv, Adient…</div></div>
+    <div class="kpi"><div class="kl">Cotizaciones 2026</div><div class="kv" id="kpi-cot-count" style="color:var(--blue)">—</div><div class="ks">Registradas en control ventas</div></div>
+    <div class="kpi"><div class="kl">Monto cotizado</div><div class="kv" id="kpi-cot-amount">—</div><div class="ks">USD · sin IVA · acumulado</div></div>
+    <div class="kpi"><div class="kl">Tipo de cambio ref.</div><div class="kv" id="kpi-cot-fx" style="color:var(--green)">—</div><div class="ks">USD · última cotización</div></div>
+    <div class="kpi"><div class="kl">Clientes activos</div><div class="kv" id="kpi-cot-clients">—</div><div class="ks">Distintos en control ventas</div></div>
   </div>
   <div class="card">
     <div class="ch"><div><div class="ct">Control de Ventas 2026</div><div class="cs">Datos reales · Hoja Control Ventas 2026</div></div><button class="btn p sm">+ Nueva cotización</button></div>
     <div class="tw"><table>
       <thead><tr><th>Item</th><th>Cliente</th><th>COT Ref.</th><th>COT Alenstec</th><th>Fecha COT</th><th>Costo (USD s/IVA)</th><th>OC Cliente</th><th>T/C</th><th>No. OT</th><th>Tipo</th><th>Estado</th></tr></thead>
-      <tbody>
-        <tr><td class="mono">1</td><td>F3</td><td class="mono">007F3-26</td><td class="mono">007F3-26</td><td>06/01/2026</td><td class="mono">$3,215.31</td><td class="mono">OC#20</td><td class="mono">—</td><td class="mono">—</td><td><span class="badge bb">Nuevo</span></td><td><span class="badge bg">Aprobada</span></td></tr>
-        <tr><td class="mono">2</td><td>Avanzar</td><td class="mono">058ADA-25C</td><td class="mono">004ADA-26</td><td>08/01/2026</td><td class="mono">$15,782.00</td><td class="mono">2310481395</td><td class="mono">—</td><td class="mono">OT-1934</td><td><span class="badge ba">Refurbish</span></td><td><span class="badge bg">Aprobada</span></td></tr>
-        <tr><td class="mono">5</td><td>Autoliv AMX</td><td class="mono">057AMX-24</td><td class="mono">057AMX-24</td><td>26/06/2024</td><td class="mono">$1,537.00</td><td class="mono">7569965 OM</td><td class="mono">—</td><td class="mono">OT-1941</td><td><span class="badge bb">Nuevo</span></td><td><span class="badge bg">Aprobada</span></td></tr>
-        <tr><td class="mono">10</td><td>Autoliv AMX</td><td class="mono">GIPU 0817</td><td class="mono">GIPU 0817</td><td>14/01/2026</td><td class="mono">$1,027.00</td><td class="mono">7569967 OM</td><td class="mono">$20.22</td><td class="mono">OT-1941</td><td><span class="badge bg">MECR</span></td><td><span class="badge bg">Aprobada</span></td></tr>
-        <tr><td class="mono">11</td><td>Autoliv AMX</td><td class="mono">GIPU 0817</td><td class="mono">GIPU 0817</td><td>29/01/2026</td><td class="mono">$1,048.00</td><td class="mono">7571148 OM</td><td class="mono">$20.22</td><td class="mono">OT-1942</td><td><span class="badge bg">MECR</span></td><td><span class="badge bg">Aprobada</span></td></tr>
-        <tr><td class="mono">13</td><td>Adient</td><td class="mono">TERM. Y COND.</td><td class="mono">2301481897</td><td>04/02/2026</td><td class="mono">$22,855.00</td><td class="mono">2301481897</td><td class="mono">$17.81</td><td class="mono">OT-1943</td><td><span class="badge ba">Refurbish</span></td><td><span class="badge bg">Aprobada</span></td></tr>
-        <tr><td class="mono">14</td><td>—</td><td class="mono">OC#23</td><td class="mono">N/A</td><td>19/02/2026</td><td class="mono">$217.00</td><td class="mono">OC#23</td><td class="mono">$17.13</td><td class="mono">OT-1944</td><td><span class="badge bn">Corte</span></td><td><span class="badge ba">En revisión</span></td></tr>
-        <tr><td class="mono">15</td><td>—</td><td class="mono">OC#22</td><td class="mono">N/A</td><td>19/02/2026</td><td class="mono">$5,886.51</td><td class="mono">OC#22</td><td class="mono">$17.13</td><td class="mono">OT-1945</td><td><span class="badge bb">Fabricación</span></td><td><span class="badge bg">Aprobada</span></td></tr>
-        <tr><td class="mono">16</td><td>Adient</td><td class="mono">TERM. Y COND.</td><td class="mono">2301492124</td><td>25/02/2026</td><td class="mono">$16,020.00</td><td class="mono">2301492124</td><td class="mono">$17.23</td><td class="mono">OT-1946</td><td><span class="badge bb">Manufactura</span></td><td><span class="badge bg">Aprobada</span></td></tr>
-        <tr><td class="mono">17</td><td>Adient</td><td class="mono">GIPU 0817</td><td class="mono">GIPU 0817</td><td>—</td><td class="mono">$8,990.00</td><td class="mono">—</td><td class="mono">$17.21</td><td class="mono">OT-1947</td><td><span class="badge ba">Fabricación</span></td><td><span class="badge ba">En revisión</span></td></tr>
-        <tr style="background:var(--green-lt)"><td class="mono">18</td><td>Adient Lerma</td><td class="mono">TERM. Y COND.</td><td class="mono">COT-AL-027ADL-26C</td><td>10/03/2026</td><td class="mono" style="font-weight:600">$6,789.00</td><td class="mono">2301498137</td><td class="mono">$17.34</td><td class="mono" style="font-weight:700">OT-1948</td><td><span class="badge ba">Refurbish</span></td><td><span class="badge bg">Aprobada</span></td></tr>
-        <tr><td class="mono">19</td><td>Adient</td><td class="mono">TERM. Y COND.</td><td class="mono">2301504802</td><td>24/03/2026</td><td class="mono">$8,407.00</td><td class="mono">2301504802</td><td class="mono">$17.54</td><td class="mono">OT-1951</td><td><span class="badge ba">Refurbish</span></td><td><span class="badge ba">En revisión</span></td></tr>
+      <tbody id="cot-tbody">
+        <tr><td colspan="11" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
       </tbody>
     </table></div>
   </div>
@@ -1351,6 +1340,83 @@ async function refreshDashboard() {
   ]);
 }
 
+// ===== Cotizaciones (P2.5 + P2.6) =====
+function quoteTipoBadge(tipo) {
+  if (!tipo) return '<span class="mono">—</span>';
+  return `<span class="badge ${otTypeBadgeClass(tipo)}">${esc(tipo)}</span>`;
+}
+function quoteStatusBadge(status) {
+  // Quote.status enum: Pendiente / Aprobada / Rechazada / Expirada
+  let cls = 'bn';
+  if (status === 'Aprobada')  cls = 'bg';
+  if (status === 'Pendiente') cls = 'ba';
+  return `<span class="badge ${cls}">${esc(status || '—')}</span>`;
+}
+function fmtDateDMY(s) {
+  if (!s) return '—';
+  const d = new Date(s);
+  if (isNaN(d.getTime())) return '—';
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  return `${dd}/${mm}/${d.getFullYear()}`;
+}
+
+async function loadCotizaciones() {
+  const tbody = document.getElementById('cot-tbody');
+  const setKpi = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  try {
+    const res = await apiFetch(`${API_URL}/quotes`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const quotes = await res.json();
+
+    // Table (P2.5)
+    if (tbody) {
+      if (!quotes.length) {
+        tbody.innerHTML = '<tr><td colspan="11" style="padding:16px;color:var(--text3);text-align:center">Sin cotizaciones registradas.</td></tr>';
+      } else {
+        tbody.innerHTML = quotes.map((q, i) => {
+          const amount = Number(q.amount) || 0;
+          const fx = q.exchangeRate != null ? `$${Number(q.exchangeRate).toFixed(2)}` : '—';
+          return `<tr>
+            <td class="mono">${i + 1}</td>
+            <td>${esc(q.client) || '—'}</td>
+            <td class="mono">${esc(q.cotRef) || '—'}</td>
+            <td class="mono">${esc(q.quoteNumber) || '—'}</td>
+            <td>${fmtDateDMY(q.createdAt)}</td>
+            <td class="mono">${fmtCurrency(amount, q.currency || 'USD')}</td>
+            <td class="mono">${esc(q.ocCliente) || '—'}</td>
+            <td class="mono">${fx}</td>
+            <td class="mono">${esc(q.otNumber) || '—'}</td>
+            <td>${quoteTipoBadge(q.tipo)}</td>
+            <td>${quoteStatusBadge(q.status)}</td>
+          </tr>`;
+        }).join('');
+      }
+    }
+
+    // KPIs (P2.6) — derived from the same list so we don't need a new endpoint.
+    setKpi('kpi-cot-count', String(quotes.length));
+
+    // Sum only USD quotes — mixing currencies would require an FX pass.
+    const usdTotal = quotes
+      .filter((q) => (q.currency || 'USD') === 'USD')
+      .reduce((sum, q) => sum + (Number(q.amount) || 0), 0);
+    setKpi('kpi-cot-amount', fmtCurrencyCompact(usdTotal, 'USD'));
+
+    // Most recent quote with an exchangeRate (by createdAt DESC).
+    const withFx = quotes
+      .filter((q) => q.exchangeRate != null)
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    setKpi('kpi-cot-fx', withFx.length ? `$${Number(withFx[0].exchangeRate).toFixed(2)}` : '—');
+
+    const clients = new Set(quotes.map((q) => q.client).filter(Boolean));
+    setKpi('kpi-cot-clients', String(clients.size));
+  } catch (err) {
+    console.warn('⚠ loadCotizaciones:', err);
+    if (tbody) tbody.innerHTML = '<tr><td colspan="11" style="padding:16px;color:var(--red);text-align:center">No se pudieron cargar las cotizaciones.</td></tr>';
+  }
+}
+
 async function bootstrapAuth() {
   if (!AUTH.accessToken()) { showLogin(); return false; }
   try {
@@ -1622,6 +1688,7 @@ function goMod(id) {
   if (m) m.classList.add('active');
   if (n) n.classList.add('active');
   if (id === 'dashboard') refreshDashboard();
+  if (id === 'cotizaciones') loadCotizaciones();
   const c = CFG[id] || {};
   document.getElementById('ttitle').textContent = c.title || id;
   document.getElementById('tcrumb').textContent = c.crumb || '';
