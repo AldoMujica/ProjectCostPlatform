@@ -188,6 +188,23 @@ select.fi{cursor:pointer}
 @media(max-width:1100px){.kg{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1fr 1fr}}
 @media(max-width:800px){:root{--sw:52px}.s-name,.s-sub,.ni span,.u-name,.u-role{display:none}.ni{justify-content:center;padding:9px}.ni-badge{display:none}.g2{grid-template-columns:1fr}}
 
+/* MODAL (P2.8 — reusable for future creation modals) */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.55);display:none;align-items:center;justify-content:center;z-index:9998;font-family:'DM Sans',sans-serif}
+.modal-overlay.open{display:flex}
+.modal-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px 26px;width:520px;max-width:calc(100vw - 40px);max-height:calc(100vh - 60px);overflow-y:auto;box-shadow:0 10px 40px rgba(0,0,0,0.5)}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.modal-title{font-size:15px;font-weight:600;color:var(--text)}
+.modal-close{background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;padding:0 4px;line-height:1}
+.modal-close:hover{color:var(--text)}
+.modal-card .fg{margin-bottom:10px}
+.modal-card label{display:block;font-size:10px;color:var(--text2);margin:0 0 5px;letter-spacing:0.5px;text-transform:uppercase;font-weight:500}
+.modal-card input,.modal-card select,.modal-card textarea{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:var(--bg);color:var(--text);font-family:inherit;outline:none;box-sizing:border-box}
+.modal-card input:focus,.modal-card select:focus,.modal-card textarea:focus{border-color:var(--green)}
+.modal-card textarea{min-height:70px;resize:vertical}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.modal-actions .btn{padding:8px 16px;font-size:13px}
+.modal-error{color:var(--red);font-size:12px;margin-top:10px;min-height:14px}
+
 /* LOGIN (P1.15) */
 .login-overlay{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9999;font-family:'DM Sans',sans-serif}
 .login-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:36px 40px;width:360px;box-shadow:0 10px 40px rgba(0,0,0,0.4)}
@@ -208,6 +225,17 @@ select.fi{cursor:pointer}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
+
+<!-- MODAL SHELL (P2.8 — reusable) -->
+<div id="modal-overlay" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div id="modal-title" class="modal-title">—</div>
+      <button type="button" class="modal-close" id="modal-close" aria-label="Cerrar">✕</button>
+    </div>
+    <div id="modal-body"></div>
+  </div>
+</div>
 
 <!-- LOGIN OVERLAY (P1.15) -->
 <div id="login-overlay" class="login-overlay">
@@ -298,8 +326,8 @@ select.fi{cursor:pointer}
       <!-- OT selector: shown on OT module -->
       <div id="ctrl-ot-sel" style="display:none;align-items:center;gap:8px">
         <label style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);white-space:nowrap">Seleccione OT</label>
-        <select class="fi" style="max-width:180px;font-family:'DM Mono',monospace" onchange="updateOTBanner(this.value)">
-          <option>OT-AL-1948</option><option>OT-AL-1947</option><option>OT-AL-1946</option><option>OT-AL-1945</option><option>OT-AL-1944</option><option>OT-AL-1943</option><option>OT-AL-1942</option><option>OT-AL-1941</option><option>OT-AL-1940</option><option>OT-AL-1939</option><option>OT-AL-1938</option><option>OT-AL-1937</option><option>OT-AL-1936</option>
+        <select id="ot-selector" class="fi" style="max-width:180px;font-family:'DM Mono',monospace" onchange="onOTSelectorChange(this.value)">
+          <option value="">Cargando…</option>
         </select>
       </div>
       <!-- Date filter + download: shown on all modules except dashboard & OT -->
@@ -389,15 +417,15 @@ select.fi{cursor:pointer}
     <div class="card">
       <div class="ch"><div class="ct">Datos Generales</div></div>
       <div class="cb">
-        <div class="fg"><div class="fgg"><label class="fl">No. de OT</label><input class="fi" value="OT-AL-1948"></div><div class="fgg"><label class="fl">Fecha de liberación</label><input class="fi" value="3 de marzo de 2026"></div></div>
-        <div class="fg"><div class="fgg"><label class="fl">Cliente</label><input class="fi" value="ADIENT LERMA"></div><div class="fgg"><label class="fl">Área Requisitora</label><input class="fi" value="Coordinator Proyect"></div></div>
-        <div class="fg"><div class="fgg"><label class="fl">Requisitor</label><input class="fi" value="Ing. Alejandro García"></div><div class="fgg"><label class="fl">E-mail</label><input class="fi" value="j.garcia.calzada@adient.com"></div></div>
-        <div class="fg"><div class="fgg"><label class="fl"># OC Cliente</label><input class="fi" value="2301498137"></div><div class="fgg"><label class="fl">COT Ref. Alenstec</label><input class="fi" value="COT-AL-027ADL-26C"></div></div>
-        <div class="fg"><div class="fgg"><label class="fl">Fecha de emisión</label><input class="fi" value="10 de marzo de 2026"></div><div class="fgg"><label class="fl">F. Entrega Compromiso</label><input class="fi" value="7 de abril de 2026"></div></div>
-        <div class="fg" style="margin-bottom:10px"><div class="fgg"><label class="fl">Tipo de proyecto</label><select class="fi"><option>Refurbish</option><option>Nuevo</option><option>MECR</option></select></div><div class="fgg"><label class="fl">Cantidad</label><input class="fi" value="1"></div></div>
+        <div class="fg"><div class="fgg"><label class="fl">No. de OT</label><input class="fi" data-ot-field="otNumber" readonly></div><div class="fgg"><label class="fl">Fecha de liberación</label><input class="fi" data-ot-field="liberationDate" type="date"></div></div>
+        <div class="fg"><div class="fgg"><label class="fl">Cliente</label><input class="fi" data-ot-field="client"></div><div class="fgg"><label class="fl">Área Requisitora</label><input class="fi" placeholder="—"></div></div>
+        <div class="fg"><div class="fgg"><label class="fl">Requisitor</label><input class="fi" placeholder="—"></div><div class="fgg"><label class="fl">E-mail</label><input class="fi" placeholder="—"></div></div>
+        <div class="fg"><div class="fgg"><label class="fl"># OC Cliente</label><input class="fi" data-ot-field="customerPO"></div><div class="fgg"><label class="fl">COT Ref. Alenstec</label><input class="fi" data-ot-field="quoteRef"></div></div>
+        <div class="fg"><div class="fgg"><label class="fl">Fecha de emisión</label><input class="fi" data-ot-field="startDate" type="date"></div><div class="fgg"><label class="fl">F. Entrega Compromiso</label><input class="fi" data-ot-field="endDate" type="date"></div></div>
+        <div class="fg" style="margin-bottom:10px"><div class="fgg"><label class="fl">Tipo de proyecto</label><select class="fi" data-ot-field="type"><option value="">—</option><option value="Nuevo">Nuevo</option><option value="Refurbish">Refurbish</option><option value="Servicio">Servicio</option></select></div><div class="fgg"><label class="fl">Progreso (%)</label><input class="fi" data-ot-field="progress" type="number" min="0" max="100"></div></div>
         <div style="background:var(--surface2);border-radius:7px;padding:10px 12px">
           <div class="fl" style="margin-bottom:5px">Descripción del trabajo</div>
-          <div style="font-size:12.5px;font-weight:500;line-height:1.5">TRAB. ADIC. POR CAMBIO DE UBIC. DE BOTÓN EN VESTIDURA, PARA MAQ. EXIS. DEL PROY. RIVIAN Y TOYOTA, PARA LA PLANTA DE ADIENT LERMA</div>
+          <div id="ot-description-text" style="font-size:12.5px;font-weight:500;line-height:1.5">—</div>
         </div>
       </div>
     </div>
@@ -412,8 +440,8 @@ select.fi{cursor:pointer}
       <div class="card">
         <div class="ch"><div class="ct">Presupuestos</div></div>
         <div class="cb">
-          <div class="g3f" style="margin-bottom:10px"><div class="fgg"><label class="fl">Tipo de Cambio</label><input class="fi" value="$17.34 USD"></div><div class="fgg"><label class="fl">Ppto. MO (MXN)</label><input class="fi" value="$21,263"></div><div class="fgg"><label class="fl">Ppto. MO (USD)</label><input class="fi" value="$1,226"></div></div>
-          <div class="fg" style="margin-bottom:0"><div class="fgg"><label class="fl">Ppto. Material (MXN)</label><input class="fi" value="$12,050"></div><div class="fgg"><label class="fl">Ppto. Material (USD)</label><input class="fi" value="$695"></div></div>
+          <div class="g3f" style="margin-bottom:10px"><div class="fgg"><label class="fl">Tipo de Cambio</label><input class="fi" data-ot-field="exchangeRate" type="number" step="0.0001" placeholder="—"></div><div class="fgg"><label class="fl">Costo cotizado</label><input class="fi" data-ot-field="quotedCost" type="number" step="0.01" placeholder="—"></div><div class="fgg"><label class="fl">Moneda</label><input class="fi" data-ot-field="currency" readonly placeholder="—"></div></div>
+          <div class="fg" style="margin-bottom:0"><div class="fgg"><label class="fl">Ppto. Material (MXN)</label><input class="fi" placeholder="—"></div><div class="fgg"><label class="fl">Ppto. Material (USD)</label><input class="fi" placeholder="—"></div></div>
         </div>
       </div>
     </div>
@@ -1361,6 +1389,162 @@ function fmtDateDMY(s) {
   return `${dd}/${mm}/${d.getFullYear()}`;
 }
 
+// ===== Generic modal helper (P2.8 — reused by future creation modals) =====
+let _modalState = { onClose: null, keyHandler: null };
+
+function openModal({ title, bodyHtml, onClose }) {
+  const overlay = document.getElementById('modal-overlay');
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-body').innerHTML = bodyHtml;
+  overlay.classList.add('open');
+  _modalState.onClose = onClose || null;
+  _modalState.keyHandler = (e) => { if (e.key === 'Escape') closeModal(); };
+  document.addEventListener('keydown', _modalState.keyHandler);
+}
+
+function closeModal() {
+  const overlay = document.getElementById('modal-overlay');
+  overlay.classList.remove('open');
+  if (_modalState.keyHandler) document.removeEventListener('keydown', _modalState.keyHandler);
+  const fn = _modalState.onClose;
+  _modalState = { onClose: null, keyHandler: null };
+  if (fn) fn();
+}
+
+// ===== OT module (P2.7 + P2.8) =====
+let _otCache = [];
+let _selectedOtId = null;
+
+async function loadOTSelector(preferId) {
+  const sel = document.getElementById('ot-selector');
+  if (!sel) return;
+  try {
+    const res = await apiFetch(`${API_URL}/work-orders`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const orders = await res.json();
+    _otCache = orders;
+    sel.innerHTML = orders.length
+      ? orders.map((o) => `<option value="${esc(o.id)}">${esc(o.otNumber)}</option>`).join('')
+      : '<option value="">Sin órdenes</option>';
+
+    const target = (preferId && orders.find((o) => o.id === preferId)) ? preferId
+                 : (orders[0]?.id || '');
+    if (target) {
+      sel.value = target;
+      await loadOTDetail(target);
+    } else {
+      clearOTForm();
+    }
+  } catch (err) {
+    console.warn('⚠ loadOTSelector:', err);
+    sel.innerHTML = '<option value="">(error)</option>';
+  }
+}
+
+function onOTSelectorChange(id) {
+  if (id) loadOTDetail(id);
+}
+
+function clearOTForm() {
+  document.querySelectorAll('#mod-ot [data-ot-field]').forEach((el) => { el.value = ''; });
+  const banner = document.querySelector('.ot-num');
+  const bdesc  = document.querySelector('.ot-desc');
+  const desc   = document.getElementById('ot-description-text');
+  if (banner) banner.textContent = '—';
+  if (bdesc)  bdesc.textContent  = '';
+  if (desc)   desc.textContent   = '—';
+}
+
+async function loadOTDetail(id) {
+  _selectedOtId = id;
+  try {
+    const res = await apiFetch(`${API_URL}/work-orders/${encodeURIComponent(id)}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const ot = await res.json();
+
+    // Banner
+    const banner = document.querySelector('.ot-num');
+    const bdesc  = document.querySelector('.ot-desc');
+    if (banner) banner.textContent = ot.otNumber || '—';
+    if (bdesc)  bdesc.textContent  = [ot.client, ot.description].filter(Boolean).join(' · ');
+
+    // Description block
+    const desc = document.getElementById('ot-description-text');
+    if (desc) desc.textContent = ot.description || '—';
+
+    // data-ot-field inputs
+    document.querySelectorAll('#mod-ot [data-ot-field]').forEach((el) => {
+      const field = el.dataset.otField;
+      let val = ot[field];
+      if (val == null) { el.value = ''; return; }
+      if (el.type === 'date' && typeof val === 'string') val = val.slice(0, 10);
+      el.value = val;
+    });
+  } catch (err) {
+    console.warn('⚠ loadOTDetail:', err);
+    clearOTForm();
+  }
+}
+
+function showNewOTModal() {
+  openModal({
+    title: '+ Nueva OT',
+    bodyHtml: `
+      <form id="new-ot-form">
+        <div class="fg"><label>No. de OT *</label><input name="otNumber" required placeholder="OT-AL-####"></div>
+        <div class="fg"><label>Cliente *</label><input name="client" required></div>
+        <div class="fg"><label>Descripción *</label><textarea name="description" required></textarea></div>
+        <div class="fg"><label>Tipo *</label>
+          <select name="type" required>
+            <option value="">Selecciona…</option>
+            <option value="Nuevo">Nuevo</option>
+            <option value="Refurbish">Refurbish</option>
+            <option value="Servicio">Servicio</option>
+          </select>
+        </div>
+        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div><label>Costo cotizado *</label><input name="quotedCost" type="number" step="0.01" min="0" required></div>
+          <div><label>Moneda</label>
+            <select name="currency"><option value="USD" selected>USD</option><option value="MXN">MXN</option></select>
+          </div>
+        </div>
+        <div class="modal-error" id="new-ot-error"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn sm" onclick="closeModal()">Cancelar</button>
+          <button type="submit" class="btn p sm" id="new-ot-submit">Crear OT</button>
+        </div>
+      </form>
+    `,
+  });
+
+  const form = document.getElementById('new-ot-form');
+  const err  = document.getElementById('new-ot-error');
+  const submitBtn = document.getElementById('new-ot-submit');
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    err.textContent = '';
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Creando…';
+    try {
+      const data = Object.fromEntries(new FormData(form).entries());
+      data.quotedCost = Number(data.quotedCost);
+      const res = await apiFetch(`${API_URL}/work-orders`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || body.mensaje || `HTTP ${res.status}`);
+      closeModal();
+      await loadOTSelector(body.id); // refresh selector and pick the new OT
+    } catch (e2) {
+      err.textContent = e2.message;
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Crear OT';
+    }
+  });
+}
+
 async function loadCotizaciones() {
   const tbody = document.getElementById('cot-tbody');
   const setKpi = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
@@ -1689,6 +1873,7 @@ function goMod(id) {
   if (n) n.classList.add('active');
   if (id === 'dashboard') refreshDashboard();
   if (id === 'cotizaciones') loadCotizaciones();
+  if (id === 'ot') loadOTSelector(_selectedOtId);
   const c = CFG[id] || {};
   document.getElementById('ttitle').textContent = c.title || id;
   document.getElementById('tcrumb').textContent = c.crumb || '';
@@ -1713,6 +1898,7 @@ document.querySelectorAll('.pill-tab').forEach(t => {
     t.classList.add('active');
   });
 });
+// Retained for any legacy inline handler; real behavior is in onOTSelectorChange/loadOTDetail.
 function updateOTBanner(val) {
   document.querySelector('.ot-num').textContent = val;
 }
@@ -1756,10 +1942,9 @@ function handleGlobalAction() {
 }
 
 function handleNewAction() {
-  if (getCurrentModule() === 'conciliacion') {
-    cerrarSemana();
-    return;
-  }
+  const mod = getCurrentModule();
+  if (mod === 'conciliacion') { cerrarSemana(); return; }
+  if (mod === 'ot') { showNewOTModal(); return; }
   alert('Funcionalidad no disponible para este módulo.');
 }
 
@@ -2182,6 +2367,12 @@ function handleXMLUpload(event) {
     }
   });
   document.getElementById('logout-link').addEventListener('click', logout);
+
+  // Modal wiring (P2.8): close via X button or by clicking outside the card.
+  document.getElementById('modal-close').addEventListener('click', closeModal);
+  document.getElementById('modal-overlay').addEventListener('click', (e) => {
+    if (e.target.id === 'modal-overlay') closeModal();
+  });
 
   // Health check — unauthenticated, so stays as raw fetch
   fetch(`${API_URL}/health`)

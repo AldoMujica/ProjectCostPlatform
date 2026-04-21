@@ -75,14 +75,14 @@ Counts above group related controls; see per-module feature docs for the full fl
 
 | Feature                         | Status | Backing                                             | Gap     |
 |---------------------------------|:------:|-----------------------------------------------------|---------|
-| OT banner + selector            | ⚠️      | Dropdown changes label only; no data reload         | G-OT-1  |
+| OT banner + selector            | ✅      | Wired in P2.7 — selector populated from `/api/work-orders`; change fires `loadOTDetail` | ~~G-OT-1~~ |
 | Datos Generales form            | ⚠️      | Model lacks ~12 fields the form captures            | G-OT-2  |
 | Liberado a (Jefaturas) card     | ❌      | 4 fields not in `WorkOrder` model                   | G-OT-2  |
 | Presupuestos card               | ❌      | 5 fields not in model                                | G-OT-2  |
 | Horas Estimadas table           | ❌      | No `HoursEstimate` table                             | G-OT-2  |
 | Flujo de Liberación             | ❌      | No approval state machine                           | G-OT-4  |
 | PDF export                      | ✅      | `generateOTPDF()` fully wired                        | —       |
-| `+ Nueva OT` button             | ❌      | No handler                                           | G-OT-3  |
+| `+ Nueva OT` button             | ✅      | Wired in P2.8 — reusable modal shell + `showNewOTModal`; POSTs then refreshes selector | ~~G-OT-3~~ |
 
 ### Cotizaciones y Ventas (module 3)
 

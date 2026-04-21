@@ -137,6 +137,46 @@ describe('Phase-1 smoke', () => {
         });
       }
     });
+
+    it('GET /api/work-orders/:id returns a single OT (P2.7)', async () => {
+      const list = await request(app).get('/api/work-orders').set('Authorization', `Bearer ${token}`);
+      if (!list.body.length) return; // nothing to look up on empty DB
+      const id = list.body[0].id;
+      const res = await request(app).get(`/api/work-orders/${id}`).set('Authorization', `Bearer ${token}`);
+      expect(res.status).toBe(200);
+      expect(res.body.id).toBe(id);
+      expect(res.body).toHaveProperty('otNumber');
+    });
+
+    it('POST /api/work-orders accepts minimal payload and persists (P2.8)', async () => {
+      const payload = {
+        otNumber: `OT-TEST-${Date.now()}`,
+        client: 'Test Client',
+        description: 'Created by smoke test',
+        type: 'Nuevo',
+        quotedCost: 1234.56,
+        currency: 'USD',
+      };
+      const res = await request(app)
+        .post('/api/work-orders')
+        .set('Authorization', `Bearer ${token}`)
+        .send(payload);
+      expect(res.status).toBe(201);
+      expect(res.body.otNumber).toBe(payload.otNumber);
+      expect(res.body.id).toBeDefined();
+
+      // Clean up so re-seed idempotence isn't disturbed
+      const { WorkOrder } = require('../src/models');
+      await WorkOrder.destroy({ where: { id: res.body.id } });
+    });
+
+    it('POST /api/work-orders rejects payload missing required fields (P2.8)', async () => {
+      const res = await request(app)
+        .post('/api/work-orders')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ otNumber: 'OT-BAD-001' }); // missing client, description, type, quotedCost
+      expect(res.status).toBe(400);
+    });
   });
 
   describe('Seed', () => {
