@@ -229,9 +229,9 @@ All Priority-3 gaps from the audit. Each is a small `fetch+render` per module.
 | ID    | Item                                                                | Owner  | Days | Gap closed |
 |-------|---------------------------------------------------------------------|--------|-----:|------------|
 | P2.1  | Dashboard — wire 4 KPIs to `/api/*/kpi/*`                           | FE     | 1    | G-DASH-1   | ✅ |
-| P2.2  | Dashboard — wire Recent-OT table to `/api/work-orders`              | FE     | 0.5  | G-DASH-2   |
-| P2.3  | Dashboard — derive cost-per-OT bars                                 | FE     | 0.5  | G-DASH-3   |
-| P2.4  | Dashboard — wire Proveedores timeline to `/api/suppliers`           | FE     | 0.5  | G-DASH-4   |
+| P2.2  | Dashboard — wire Recent-OT table to `/api/work-orders`              | FE     | 0.5  | G-DASH-2   | ✅ |
+| P2.3  | Dashboard — derive cost-per-OT bars                                 | FE     | 0.5  | G-DASH-3   | ✅ |
+| P2.4  | Dashboard — wire Proveedores timeline to `/api/suppliers`           | FE     | 0.5  | G-DASH-4   | ✅ |
 | P2.5  | Cotizaciones — wire table to `/api/quotes`                          | FE     | 1    | G-COT-2    |
 | P2.6  | Cotizaciones — wire KPI strip                                       | FE     | 0.5  | G-COT-4    |
 | P2.7  | OT — OT selector repopulates form via `GET /api/work-orders/:id`    | FE     | 1    | G-OT-1     |

@@ -101,6 +101,30 @@ describe('Phase-1 smoke', () => {
       expect(res.status).toBe(200);
       expect(typeof res.body.openCount).toBe('number');
     });
+
+    it('GET /api/work-orders returns an array with the shape the dashboard renders', async () => {
+      const res = await request(app).get('/api/work-orders').set('Authorization', `Bearer ${token}`);
+      expect(res.status).toBe(200);
+      expect(Array.isArray(res.body)).toBe(true);
+      if (res.body.length) {
+        const o = res.body[0];
+        ['otNumber', 'client', 'description', 'type', 'progress', 'status', 'quotedCost'].forEach((f) => {
+          expect(o).toHaveProperty(f);
+        });
+      }
+    });
+
+    it('GET /api/suppliers returns suppliers with workOrders[] included', async () => {
+      const res = await request(app).get('/api/suppliers').set('Authorization', `Bearer ${token}`);
+      expect(res.status).toBe(200);
+      expect(Array.isArray(res.body)).toBe(true);
+      if (res.body.length) {
+        const s = res.body[0];
+        expect(s).toHaveProperty('supplierName');
+        expect(s).toHaveProperty('status');
+        expect(Array.isArray(s.workOrders)).toBe(true);
+      }
+    });
   });
 
   describe('Seed', () => {
