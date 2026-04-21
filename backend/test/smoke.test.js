@@ -70,6 +70,39 @@ describe('Phase-1 smoke', () => {
     });
   });
 
+  describe('Dashboard KPI endpoints (P2.1 — FE depends on these)', () => {
+    let token;
+    beforeAll(async () => {
+      // Seed ensures the admin user + fixture rows exist regardless of
+      // how this describe block is ordered relative to the Seed block below.
+      await seed();
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({ email: 'admin@alenstec.mx', password: process.env.SEED_DEFAULT_PASSWORD });
+      token = res.body.accessToken;
+    });
+
+    it('GET /api/work-orders/kpi/summary returns {activeCount, totalCost}', async () => {
+      const res = await request(app).get('/api/work-orders/kpi/summary').set('Authorization', `Bearer ${token}`);
+      expect(res.status).toBe(200);
+      expect(typeof res.body.activeCount).toBe('number');
+      expect(res.body.totalCost).toBeDefined();
+    });
+
+    it('GET /api/costs/kpi/material-transit returns {total, count}', async () => {
+      const res = await request(app).get('/api/costs/kpi/material-transit').set('Authorization', `Bearer ${token}`);
+      expect(res.status).toBe(200);
+      expect(res.body.total).toBeDefined();
+      expect(typeof res.body.count).toBe('number');
+    });
+
+    it('GET /api/quotes/kpi/open-count returns {openCount}', async () => {
+      const res = await request(app).get('/api/quotes/kpi/open-count').set('Authorization', `Bearer ${token}`);
+      expect(res.status).toBe(200);
+      expect(typeof res.body.openCount).toBe('number');
+    });
+  });
+
   describe('Seed', () => {
     it('creates all six role users', async () => {
       await seed();
