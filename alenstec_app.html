@@ -324,10 +324,10 @@ select.fi{cursor:pointer}
 <!-- DASHBOARD -->
 <div class="mod active" id="mod-dashboard">
   <div class="kg">
-    <div class="kpi"><div class="kl">OTs Activas</div><div class="kv" style="color:var(--green)">18</div><div class="ks">En proceso · 2026</div><div class="kb bg">↑ 5 nuevas en marzo</div></div>
-    <div class="kpi"><div class="kl">Costo Total Cotizado</div><div class="kv">$218K</div><div class="ks">USD · acumulado 2026</div><div class="kb bb">T/C ref. $17.34</div></div>
-    <div class="kpi"><div class="kl">Material en Tránsito</div><div class="kv" style="color:var(--amber)">$36K</div><div class="ks">MXN · OCs pendientes</div><div class="kb ba">3 entregas pendientes</div></div>
-    <div class="kpi"><div class="kl">Cotizaciones Abiertas</div><div class="kv" style="color:var(--blue)">11</div><div class="ks">Pendientes de aprobación</div><div class="kb bb">Vigentes 2026</div></div>
+    <div class="kpi"><div class="kl">OTs Activas</div><div class="kv" id="kpi-ots-active" style="color:var(--green)">—</div><div class="ks">En proceso · 2026</div><div class="kb bg">En ejecución</div></div>
+    <div class="kpi"><div class="kl">Costo Total Cotizado</div><div class="kv" id="kpi-cost-total">—</div><div class="ks">USD · acumulado</div><div class="kb bb">Suma sobre OTs</div></div>
+    <div class="kpi"><div class="kl">Material en Tránsito</div><div class="kv" id="kpi-material-transit" style="color:var(--amber)">—</div><div class="ks" id="kpi-material-transit-sub">MXN · OCs pendientes</div><div class="kb ba">En tránsito</div></div>
+    <div class="kpi"><div class="kl">Cotizaciones Abiertas</div><div class="kv" id="kpi-quotes-open" style="color:var(--blue)">—</div><div class="ks">Pendientes</div><div class="kb bb">Estado pendiente</div></div>
   </div>
   <div class="g2">
     <div class="card">
@@ -1198,6 +1198,44 @@ async function performLogin(email, password) {
   return data.user;
 }
 
+// ===== Dashboard (P2.1) =====
+function fmtCurrencyCompact(amount, currency) {
+  const n = Number(amount) || 0;
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency,
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  }).format(n);
+}
+
+async function loadDashboardKpis() {
+  const endpoints = [
+    ['wo', `${API_URL}/work-orders/kpi/summary`],
+    ['mt', `${API_URL}/costs/kpi/material-transit`],
+    ['q',  `${API_URL}/quotes/kpi/open-count`],
+  ];
+  try {
+    const responses = await Promise.all(endpoints.map(([, url]) => apiFetch(url)));
+    const allOk = responses.every((r) => r.ok);
+    if (!allOk) {
+      console.warn('⚠ Some dashboard KPI endpoints returned non-OK');
+      return;
+    }
+    const [wo, mt, q] = await Promise.all(responses.map((r) => r.json()));
+
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    set('kpi-ots-active',      wo.activeCount ?? '—');
+    set('kpi-cost-total',      fmtCurrencyCompact(wo.totalCost, 'USD'));
+    set('kpi-material-transit', fmtCurrencyCompact(mt.total, 'MXN'));
+    set('kpi-material-transit-sub',
+        `MXN · ${mt.count ?? 0} OC${(mt.count ?? 0) === 1 ? '' : 's'} pendiente${(mt.count ?? 0) === 1 ? '' : 's'}`);
+    set('kpi-quotes-open',     q.openCount ?? '—');
+  } catch (err) {
+    console.warn('⚠ Failed to load dashboard KPIs:', err);
+  }
+}
+
 async function bootstrapAuth() {
   if (!AUTH.accessToken()) { showLogin(); return false; }
   try {
@@ -1468,6 +1506,7 @@ function goMod(id) {
   const n = document.querySelector(`[data-mod="${id}"]`);
   if (m) m.classList.add('active');
   if (n) n.classList.add('active');
+  if (id === 'dashboard') loadDashboardKpis();
   const c = CFG[id] || {};
   document.getElementById('ttitle').textContent = c.title || id;
   document.getElementById('tcrumb').textContent = c.crumb || '';
@@ -1969,7 +2008,10 @@ function handleXMLUpload(event) {
     .catch(() => console.warn('⚠ Backend not available.'));
 
   // Bootstrap session before revealing the app
-  await bootstrapAuth();
+  const authed = await bootstrapAuth();
+
+  // Kick off live data for the landing dashboard as soon as we know we're authed
+  if (authed) loadDashboardKpis();
 
   const tabs   = document.getElementById('ctrl-tabs');
   const dates  = document.getElementById('ctrl-dates');

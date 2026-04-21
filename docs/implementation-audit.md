@@ -63,7 +63,7 @@ Counts above group related controls; see per-module feature docs for the full fl
 
 | Feature              | Status | Backing                                     | Gap        |
 |----------------------|:------:|---------------------------------------------|------------|
-| 4-KPI strip          | ⚠️      | Endpoints exist, UI not wired               | G-DASH-1   |
+| 4-KPI strip          | ✅      | Wired in P2.1 — `apiFetch` parallel to 3 endpoints; compact currency format | ~~G-DASH-1~~ |
 | Recent-OT table      | ⚠️      | `GET /api/work-orders` exists, UI not wired | G-DASH-2   |
 | Cost-per-OT bars     | ⚠️      | Derivable from `/api/work-orders`           | G-DASH-3   |
 | Proveedores timeline | ⚠️      | `GET /api/suppliers` exists, UI not wired   | G-DASH-4   |
