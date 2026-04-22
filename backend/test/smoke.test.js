@@ -177,6 +177,47 @@ describe('Phase-1 smoke', () => {
         .send({ otNumber: 'OT-BAD-001' }); // missing client, description, type, quotedCost
       expect(res.status).toBe(400);
     });
+
+    it('GET /api/costs/material returns rows with Requisición-table shape (P2.9)', async () => {
+      const res = await request(app).get('/api/costs/material').set('Authorization', `Bearer ${token}`);
+      expect(res.status).toBe(200);
+      expect(Array.isArray(res.body)).toBe(true);
+      if (res.body.length) {
+        const m = res.body[0];
+        ['otNumber', 'materialDescription', 'quantity', 'unitCost', 'totalCost', 'currency', 'supplier', 'status'].forEach((f) => {
+          expect(m).toHaveProperty(f);
+        });
+      }
+    });
+
+    it('POST /api/costs/material resolves otNumber→workOrderId and persists (P2.10)', async () => {
+      const woList = await request(app).get('/api/work-orders').set('Authorization', `Bearer ${token}`);
+      if (!woList.body.length) return;
+      const targetOt = woList.body[0].otNumber;
+      const payload = {
+        otNumber: targetOt,
+        supplier: 'Test Supplier',
+        materialDescription: 'Smoke-test material',
+        quantity: 2,
+        unitCost: 50,
+        subtotal: 100,
+        iva: 16,
+        retencion: 0,
+        totalCost: 116,
+        currency: 'MXN',
+        status: 'Pendiente',
+      };
+      const res = await request(app)
+        .post('/api/costs/material')
+        .set('Authorization', `Bearer ${token}`)
+        .send(payload);
+      expect(res.status).toBe(201);
+      expect(res.body.materialDescription).toBe('Smoke-test material');
+      expect(res.body.workOrderId).toBeDefined();
+
+      const { MaterialCost } = require('../src/models');
+      await MaterialCost.destroy({ where: { id: res.body.id } });
+    });
   });
 
   describe('Seed', () => {

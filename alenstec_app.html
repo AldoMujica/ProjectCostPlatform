@@ -525,21 +525,11 @@ select.fi{cursor:pointer}
     <div class="kpi"><div class="kl">Costo gral. real</div><div class="kv" style="color:var(--green)">$44,491</div><div class="ks">MXN · OT-1936</div></div>
   </div>
   <div class="card">
-    <div class="ch"><div><div class="ct">Requisición de Material Comercial por OT</div><div class="cs">Base de Datos OC · ERP Open Source · 2026</div></div><button class="btn p sm">+ Registrar material</button></div>
+    <div class="ch"><div><div class="ct">Requisición de Material Comercial por OT</div><div class="cs">Base de Datos OC · ERP Open Source · 2026</div></div><button class="btn p sm" id="mat-new-btn">+ Registrar material</button></div>
     <div class="tw"><table>
-      <thead><tr><th>No. Prov.</th><th>Proveedor</th><th>Moneda</th><th>Clave</th><th>Descripción</th><th>OT</th><th>Pzas</th><th>Precio Unit.</th><th>IVA</th><th>Ret. ISR</th><th>Subtotal</th><th>IVA $</th><th>Total</th></tr></thead>
-      <tbody>
-        <tr><td class="mono">37</td><td>Misumi Mexico</td><td><span class="badge bb">USD</span></td><td class="mono">DBB3-3-3</td><td>Tornillo escalado</td><td class="mono">1928</td><td class="mono">2</td><td class="mono">$6.19</td><td>16%</td><td>—</td><td class="mono">$12.38</td><td class="mono">$1.98</td><td class="mono" style="font-weight:600">$14.36</td></tr>
-        <tr><td class="mono">28</td><td>Ecosy Engineering</td><td><span class="badge bn">MXN</span></td><td class="mono">KQ2L04-M5A</td><td>Conex. instantáneo</td><td class="mono">1928</td><td class="mono">6</td><td class="mono">$31.68</td><td>16%</td><td>—</td><td class="mono">$190.08</td><td class="mono">$30.41</td><td class="mono" style="font-weight:600">$220.49</td></tr>
-        <tr><td class="mono">28</td><td>Ecosy Engineering</td><td><span class="badge bn">MXN</span></td><td class="mono">MH22-20D</td><td>Pinza neumática ×2</td><td class="mono">1928</td><td class="mono">2</td><td class="mono">$2,361.92</td><td>16%</td><td>—</td><td class="mono">$4,723.84</td><td class="mono">$755.81</td><td class="mono" style="font-weight:600">$5,479.65</td></tr>
-        <tr><td class="mono">28</td><td>Ecosy Engineering</td><td><span class="badge bn">MXN</span></td><td class="mono">MH22-20D</td><td>Pinza neumática ×6</td><td class="mono">1928</td><td class="mono">6</td><td class="mono">$2,361.92</td><td>16%</td><td>—</td><td class="mono">$14,171.52</td><td class="mono">$2,267.44</td><td class="mono" style="font-weight:600">$16,438.96</td></tr>
-        <tr><td class="mono">28</td><td>Ecosy Engineering</td><td><span class="badge bn">MXN</span></td><td class="mono">D-MBPL</td><td>Detector elemento ×18</td><td class="mono">1928</td><td class="mono">18</td><td class="mono">$270.10</td><td>16%</td><td>—</td><td class="mono">$4,861.80</td><td class="mono">$777.89</td><td class="mono" style="font-weight:600">$5,639.69</td></tr>
-        <tr><td class="mono">3</td><td>Pei Equipos</td><td><span class="badge bb">USD</span></td><td class="mono">40-4040</td><td>Perfil 40×40mm</td><td class="mono">1934</td><td class="mono">1</td><td class="mono">$80.81</td><td>16%</td><td>1.25%</td><td class="mono">$161.62</td><td class="mono">$25.86</td><td class="mono" style="font-weight:600">$187.48</td></tr>
-        <tr><td class="mono">254</td><td>CORTELASER (A.U. Ceballos)</td><td><span class="badge bn">MXN</span></td><td class="mono">CORTELASER</td><td>Corte láser ×11</td><td class="mono">1904</td><td class="mono">11</td><td class="mono">$249.47</td><td>16%</td><td>1.25%</td><td class="mono">$2,744.17</td><td class="mono">$438.67</td><td class="mono" style="font-weight:600">$3,182.84</td></tr>
-        <tr><td class="mono">254</td><td>CORTELASER (A.U. Ceballos)</td><td><span class="badge bn">MXN</span></td><td class="mono">CORTELASER</td><td>Corte láser ×22</td><td class="mono">1904</td><td class="mono">22</td><td class="mono">$244.65</td><td>16%</td><td>1.25%</td><td class="mono">$5,382.30</td><td class="mono">$860.77</td><td class="mono" style="font-weight:600">$6,243.07</td></tr>
-        <tr><td class="mono">20</td><td>Servicio Industrial</td><td><span class="badge bb">USD</span></td><td class="mono">PLACA C4140</td><td>Placa acero</td><td class="mono">1928</td><td class="mono">1</td><td class="mono">$48.18</td><td>16%</td><td>—</td><td class="mono">$48.18</td><td class="mono">$7.71</td><td class="mono" style="font-weight:600">$55.89</td></tr>
-        <tr><td class="mono">14</td><td>Aceros Argenis</td><td><span class="badge bn">MXN</span></td><td class="mono">PLÁFENE-1/2-6</td><td>Placa aluminio ×4</td><td class="mono">1937</td><td class="mono">4</td><td class="mono">$155.00</td><td>16%</td><td>—</td><td class="mono">$620.00</td><td class="mono">$99.20</td><td class="mono" style="font-weight:600">$719.20</td></tr>
-        <tr><td class="mono">14</td><td>Aceros Argenis</td><td><span class="badge bn">MXN</span></td><td class="mono">PLÁFENE-1/2-6</td><td>Placa aluminio ×5</td><td class="mono">1937</td><td class="mono">5</td><td class="mono">$155.00</td><td>16%</td><td>—</td><td class="mono">$775.00</td><td class="mono">$124.00</td><td class="mono" style="font-weight:600">$899.00</td></tr>
+      <thead><tr><th>Proveedor</th><th>Moneda</th><th>Descripción</th><th>OT</th><th>Pzas</th><th>Precio Unit.</th><th>Subtotal</th><th>IVA</th><th>Retención</th><th>Total</th><th>Estado</th></tr></thead>
+      <tbody id="mat-tbody">
+        <tr><td colspan="11" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
       </tbody>
     </table></div>
   </div>
@@ -1545,6 +1535,152 @@ function showNewOTModal() {
   });
 }
 
+// ===== Material module (P2.9 + P2.10) =====
+function materialStatusBadge(status) {
+  let cls = 'bn';
+  if (status === 'Entregado')   cls = 'bg';
+  if (status === 'En tránsito') cls = 'ba';
+  return `<span class="badge ${cls}">${esc(status || '—')}</span>`;
+}
+function moneyBadge(currency) {
+  const cls = currency === 'USD' ? 'bb' : 'bn';
+  return `<span class="badge ${cls}">${esc(currency || 'MXN')}</span>`;
+}
+
+async function loadMaterialCosts() {
+  const tbody = document.getElementById('mat-tbody');
+  if (!tbody) return;
+  try {
+    const res = await apiFetch(`${API_URL}/costs/material`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const rows = await res.json();
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="11" style="padding:16px;color:var(--text3);text-align:center">Sin material registrado.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map((r) => {
+      const qty = Number(r.quantity) || 0;
+      const unit = Number(r.unitCost) || 0;
+      const subtotal = r.subtotal != null ? Number(r.subtotal) : (qty * unit);
+      const iva = Number(r.iva) || 0;
+      const ret = Number(r.retencion) || 0;
+      const total = r.totalCost != null ? Number(r.totalCost) : (subtotal + iva - ret);
+      const cur = r.currency || 'MXN';
+      return `<tr>
+        <td>${esc(r.supplier) || '—'}</td>
+        <td>${moneyBadge(cur)}</td>
+        <td>${esc(r.materialDescription) || '—'}</td>
+        <td class="mono">${esc(r.otNumber) || '—'}</td>
+        <td class="mono">${qty}</td>
+        <td class="mono">${fmtCurrency(unit, cur)}</td>
+        <td class="mono">${fmtCurrency(subtotal, cur)}</td>
+        <td class="mono">${fmtCurrency(iva, cur)}</td>
+        <td class="mono">${fmtCurrency(ret, cur)}</td>
+        <td class="mono" style="font-weight:600">${fmtCurrency(total, cur)}</td>
+        <td>${materialStatusBadge(r.status)}</td>
+      </tr>`;
+    }).join('');
+  } catch (err) {
+    console.warn('⚠ loadMaterialCosts:', err);
+    tbody.innerHTML = '<tr><td colspan="11" style="padding:16px;color:var(--red);text-align:center">No se pudo cargar la requisición.</td></tr>';
+  }
+}
+
+async function showNewMaterialModal() {
+  // Fetch OT options for the dropdown (re-using cache when possible).
+  let options = _otCache;
+  if (!options.length) {
+    try {
+      const res = await apiFetch(`${API_URL}/work-orders`);
+      if (res.ok) { options = await res.json(); _otCache = options; }
+    } catch { /* continue with empty — user can still type otNumber free-form below */ }
+  }
+  const otOptions = options.map((o) => `<option value="${esc(o.otNumber)}">${esc(o.otNumber)} · ${esc(o.client)}</option>`).join('');
+
+  openModal({
+    title: '+ Registrar material',
+    bodyHtml: `
+      <form id="new-mat-form">
+        <div class="fg"><label>OT *</label>
+          <select name="otNumber" required>
+            <option value="">Selecciona…</option>
+            ${otOptions}
+          </select>
+        </div>
+        <div class="fg"><label>Proveedor *</label><input name="supplier" required></div>
+        <div class="fg"><label>Descripción del material *</label><input name="materialDescription" required></div>
+        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div><label>Cantidad *</label><input name="quantity" type="number" step="0.01" min="0" required></div>
+          <div><label>Precio unitario *</label><input name="unitCost" type="number" step="0.01" min="0" required></div>
+        </div>
+        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+          <div><label>Subtotal</label><input name="subtotal" type="number" step="0.01" min="0" placeholder="qty × unit"></div>
+          <div><label>IVA</label><input name="iva" type="number" step="0.01" min="0" value="0"></div>
+          <div><label>Retención</label><input name="retencion" type="number" step="0.01" min="0" value="0"></div>
+        </div>
+        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+          <div><label>Total *</label><input name="totalCost" type="number" step="0.01" min="0" required placeholder="auto"></div>
+          <div><label>Moneda</label>
+            <select name="currency"><option value="MXN" selected>MXN</option><option value="USD">USD</option></select>
+          </div>
+          <div><label>Estado</label>
+            <select name="status"><option value="Pendiente" selected>Pendiente</option><option value="En tránsito">En tránsito</option><option value="Entregado">Entregado</option></select>
+          </div>
+        </div>
+        <div class="modal-error" id="new-mat-error"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn sm" onclick="closeModal()">Cancelar</button>
+          <button type="submit" class="btn p sm" id="new-mat-submit">Registrar</button>
+        </div>
+      </form>
+    `,
+  });
+
+  const form = document.getElementById('new-mat-form');
+  const err  = document.getElementById('new-mat-error');
+  const submitBtn = document.getElementById('new-mat-submit');
+
+  // Auto-fill subtotal and total as the user types amounts.
+  const syncTotals = () => {
+    const qty = Number(form.quantity.value) || 0;
+    const unit = Number(form.unitCost.value) || 0;
+    const subtotal = qty * unit;
+    const iva = Number(form.iva.value) || 0;
+    const ret = Number(form.retencion.value) || 0;
+    if (!form.subtotal.value) form.subtotal.value = subtotal.toFixed(2);
+    if (!form.totalCost.value) form.totalCost.value = (subtotal + iva - ret).toFixed(2);
+  };
+  ['quantity', 'unitCost', 'iva', 'retencion'].forEach((n) => {
+    form.elements[n].addEventListener('input', () => { form.subtotal.value = ''; form.totalCost.value = ''; syncTotals(); });
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    err.textContent = '';
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Registrando…';
+    try {
+      const data = Object.fromEntries(new FormData(form).entries());
+      ['quantity', 'unitCost', 'subtotal', 'iva', 'retencion', 'totalCost'].forEach((k) => {
+        if (data[k] !== '' && data[k] != null) data[k] = Number(data[k]);
+      });
+      const res = await apiFetch(`${API_URL}/costs/material`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || body.mensaje || `HTTP ${res.status}`);
+      closeModal();
+      await loadMaterialCosts();
+    } catch (e2) {
+      err.textContent = e2.message;
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Registrar';
+    }
+  });
+}
+
 async function loadCotizaciones() {
   const tbody = document.getElementById('cot-tbody');
   const setKpi = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
@@ -1874,6 +2010,7 @@ function goMod(id) {
   if (id === 'dashboard') refreshDashboard();
   if (id === 'cotizaciones') loadCotizaciones();
   if (id === 'ot') loadOTSelector(_selectedOtId);
+  if (id === 'material') loadMaterialCosts();
   const c = CFG[id] || {};
   document.getElementById('ttitle').textContent = c.title || id;
   document.getElementById('tcrumb').textContent = c.crumb || '';
@@ -2373,6 +2510,9 @@ function handleXMLUpload(event) {
   document.getElementById('modal-overlay').addEventListener('click', (e) => {
     if (e.target.id === 'modal-overlay') closeModal();
   });
+
+  // Module-local "+ …" buttons (P2.10: "+ Registrar material").
+  document.getElementById('mat-new-btn')?.addEventListener('click', showNewMaterialModal);
 
   // Health check — unauthenticated, so stays as raw fetch
   fetch(`${API_URL}/health`)

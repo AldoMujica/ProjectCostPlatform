@@ -107,9 +107,9 @@ Counts above group related controls; see per-module feature docs for the full fl
 | Feature                 | Status | Backing                                        | Gap      |
 |-------------------------|:------:|------------------------------------------------|----------|
 | KPI strip               | ⚠️      | `/api/costs/kpi/material-transit` exists; rest unimplemented | G-MAT-3 |
-| Requisición table       | ⚠️      | `GET /api/costs/material` exists, UI not wired | G-MAT-2  |
+| Requisición table       | ✅      | Wired in P2.9 — `loadMaterialCosts` renders 11 cols with subtotal/IVA/retención/total | ~~G-MAT-2~~ |
 | Table columns           | ⚠️      | Model lacks IVA/Ret./subtotal split            | G-MAT-4  |
-| `+ Registrar material`  | ❌      | No handler                                     | G-MAT-1  |
+| `+ Registrar material`  | ✅      | Wired in P2.10 — reuses shared modal; auto-fills subtotal + total | ~~G-MAT-1~~ |
 | XLSX export             | ❌      | Global no-op                                   | G-EXP-1  |
 
 ### Entregas de Material (module 6)
