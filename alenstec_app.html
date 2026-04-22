@@ -551,7 +551,7 @@ select.fi{cursor:pointer}
       <div class="ch">
         <div><div class="ct">Proveedores</div><div class="cs">Catálogo de proveedores activos</div></div>
         <div style="display:flex;gap:7px;align-items:center">
-          <button class="btn p sm">+ Agregar proveedor</button>
+          <button class="btn p sm" id="prov-new-btn">+ Agregar proveedor</button>
           <button class="btn sm" id="btn-dl-prov" disabled style="opacity:.45">⬇ Descargar XLSX</button>
         </div>
       </div>
@@ -560,15 +560,9 @@ select.fi{cursor:pointer}
         <label>Hasta:</label><input type="date" id="prov-hasta" oninput="checkDl('prov')">
       </div>
       <div class="tw"><table>
-        <thead><tr><th>No. Prov.</th><th>Nombre</th><th>Moneda</th><th>Contacto</th><th>OTs asociadas</th><th>Saldo pendiente</th><th>Estado</th></tr></thead>
-        <tbody>
-          <tr><td class="mono">28</td><td>Ecosy Engineering</td><td><span class="badge bb">MXN</span></td><td>—</td><td class="mono">1928</td><td class="mono">$0.00</td><td><span class="badge bg">Activo</span></td></tr>
-          <tr><td class="mono">37</td><td>Misumi Mexico</td><td><span class="badge bb">USD</span></td><td>—</td><td class="mono">1928, 1934</td><td class="mono">$0.00</td><td><span class="badge bg">Activo</span></td></tr>
-          <tr><td class="mono">254</td><td>CORTELASER (A.U. Ceballos Cruz)</td><td><span class="badge bn">MXN</span></td><td>Alexis Uriel Ceballos</td><td class="mono">1904, 1934</td><td class="mono">$1,206.41</td><td><span class="badge ba">Entrega pend.</span></td></tr>
-          <tr><td class="mono">3</td><td>Pei Equipos</td><td><span class="badge bb">USD</span></td><td>—</td><td class="mono">1934</td><td class="mono">$0.00</td><td><span class="badge bg">Activo</span></td></tr>
-          <tr><td class="mono">20</td><td>Servicio Industrial</td><td><span class="badge bb">USD</span></td><td>—</td><td class="mono">1928, 1940</td><td class="mono">$48.18</td><td><span class="badge ba">Entrega pend.</span></td></tr>
-          <tr><td class="mono">14</td><td>Aceros Argenis</td><td><span class="badge bn">MXN</span></td><td>—</td><td class="mono">1937</td><td class="mono">$0.00</td><td><span class="badge bg">Activo</span></td></tr>
-          <tr><td class="mono">32</td><td>Propimex</td><td><span class="badge bn">MXN</span></td><td>—</td><td class="mono">1928</td><td class="mono">$650.00</td><td><span class="badge bg">Activo</span></td></tr>
+        <thead><tr><th>Nombre</th><th>Categorías</th><th>Contacto</th><th>OTs asociadas</th><th>Saldo pendiente</th><th>Estado</th></tr></thead>
+        <tbody id="prov-tbody">
+          <tr><td colspan="6" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
         </tbody>
       </table></div>
     </div>
@@ -1535,6 +1529,136 @@ function showNewOTModal() {
   });
 }
 
+// ===== Proveedores (P2.11) =====
+function supplierStatusBadge(status) {
+  let cls = 'bn';
+  if (status === 'Activo')        cls = 'bg';
+  if (status === 'Entrega pend.' || status === 'Pendiente') cls = 'ba';
+  if (status === 'Inactivo')      cls = 'bn';
+  return `<span class="badge ${cls}">${esc(status || '—')}</span>`;
+}
+
+async function loadProveedores() {
+  const tbody = document.getElementById('prov-tbody');
+  if (!tbody) return;
+  try {
+    const res = await apiFetch(`${API_URL}/suppliers`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const suppliers = await res.json();
+    if (!suppliers.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="padding:16px;color:var(--text3);text-align:center">Sin proveedores registrados.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = suppliers.map((s) => {
+      const cats = Array.isArray(s.categories) ? s.categories.join(', ') : '';
+      const ots = Array.isArray(s.workOrders) ? s.workOrders.map((w) => w.otNumber).join(', ') : '';
+      const contact = [s.contactEmail, s.contactPhone].filter(Boolean).join(' · ') || '—';
+      const saldo = s.saldoPendiente != null ? fmtCurrency(Number(s.saldoPendiente), 'MXN') : '—';
+      return `<tr>
+        <td>${esc(s.supplierName) || '—'}</td>
+        <td>${esc(cats) || '—'}</td>
+        <td>${esc(contact)}</td>
+        <td class="mono">${esc(ots) || '—'}</td>
+        <td class="mono">${saldo}</td>
+        <td>${supplierStatusBadge(s.status)}</td>
+      </tr>`;
+    }).join('');
+  } catch (err) {
+    console.warn('⚠ loadProveedores:', err);
+    tbody.innerHTML = '<tr><td colspan="6" style="padding:16px;color:var(--red);text-align:center">No se pudieron cargar los proveedores.</td></tr>';
+  }
+}
+
+async function showNewProveedorModal() {
+  // OT options — pre-cache if necessary so the dropdown renders immediately.
+  let orders = _otCache;
+  if (!orders.length) {
+    try {
+      const res = await apiFetch(`${API_URL}/work-orders`);
+      if (res.ok) { orders = await res.json(); _otCache = orders; }
+    } catch { /* continue empty */ }
+  }
+  const otCheckboxes = orders.map((o) => `
+    <label style="display:flex;align-items:center;gap:8px;font-size:12px;padding:4px 0;text-transform:none;letter-spacing:0">
+      <input type="checkbox" name="workOrderNumbers" value="${esc(o.otNumber)}" style="width:auto;margin:0">
+      <span class="mono">${esc(o.otNumber)}</span> · ${esc(o.client)}
+    </label>`).join('');
+
+  openModal({
+    title: '+ Agregar proveedor',
+    bodyHtml: `
+      <form id="new-prov-form">
+        <div class="fg"><label>Nombre *</label><input name="supplierName" required></div>
+        <div class="fg"><label>Descripción</label><input name="description" placeholder="Categoría general, actividad…"></div>
+        <div class="fg"><label>Categorías (separadas por coma)</label><input name="categoriesRaw" placeholder="Conectores, Detectores, Componentes"></div>
+        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div><label>Email</label><input name="contactEmail" type="email" placeholder="—"></div>
+          <div><label>Teléfono</label><input name="contactPhone" placeholder="—"></div>
+        </div>
+        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div><label>Saldo pendiente (MXN)</label><input name="saldoPendiente" type="number" step="0.01" min="0" value="0"></div>
+          <div><label>Estado</label>
+            <select name="status"><option value="Activo" selected>Activo</option><option value="Pendiente">Pendiente</option><option value="Inactivo">Inactivo</option></select>
+          </div>
+        </div>
+        <div class="fg"><label>OTs asociadas</label>
+          <div style="max-height:160px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;padding:6px 10px;background:var(--bg)">
+            ${otCheckboxes || '<div style="color:var(--text3);font-size:12px">Sin OTs disponibles.</div>'}
+          </div>
+        </div>
+        <div class="modal-error" id="new-prov-error"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn sm" onclick="closeModal()">Cancelar</button>
+          <button type="submit" class="btn p sm" id="new-prov-submit">Agregar</button>
+        </div>
+      </form>
+    `,
+  });
+
+  const form = document.getElementById('new-prov-form');
+  const err  = document.getElementById('new-prov-error');
+  const submitBtn = document.getElementById('new-prov-submit');
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    err.textContent = '';
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Agregando…';
+    try {
+      const fd = new FormData(form);
+      const categoriesRaw = fd.get('categoriesRaw');
+      const categories = categoriesRaw
+        ? String(categoriesRaw).split(',').map((c) => c.trim()).filter(Boolean)
+        : [];
+      const workOrderNumbers = fd.getAll('workOrderNumbers');
+      const payload = {
+        supplierName: fd.get('supplierName'),
+        description: fd.get('description') || null,
+        categories,
+        contactEmail: fd.get('contactEmail') || null,
+        contactPhone: fd.get('contactPhone') || null,
+        saldoPendiente: Number(fd.get('saldoPendiente')) || 0,
+        status: fd.get('status'),
+        workOrderNumbers,
+      };
+      const res = await apiFetch(`${API_URL}/suppliers`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || body.mensaje || `HTTP ${res.status}`);
+      closeModal();
+      await loadProveedores();
+      // The dashboard's timeline also lists suppliers — refresh silently if visible.
+      if (getCurrentModule() === 'dashboard') loadDashboardSuppliers();
+    } catch (e2) {
+      err.textContent = e2.message;
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Agregar';
+    }
+  });
+}
+
 // ===== Material module (P2.9 + P2.10) =====
 function materialStatusBadge(status) {
   let cls = 'bn';
@@ -2011,6 +2135,7 @@ function goMod(id) {
   if (id === 'cotizaciones') loadCotizaciones();
   if (id === 'ot') loadOTSelector(_selectedOtId);
   if (id === 'material') loadMaterialCosts();
+  if (id === 'entregas') loadProveedores(); // sub-tab 6.1 is the default on module entry
   const c = CFG[id] || {};
   document.getElementById('ttitle').textContent = c.title || id;
   document.getElementById('tcrumb').textContent = c.crumb || '';
@@ -2513,6 +2638,7 @@ function handleXMLUpload(event) {
 
   // Module-local "+ …" buttons (P2.10: "+ Registrar material").
   document.getElementById('mat-new-btn')?.addEventListener('click', showNewMaterialModal);
+  document.getElementById('prov-new-btn')?.addEventListener('click', showNewProveedorModal);
 
   // Health check — unauthenticated, so stays as raw fetch
   fetch(`${API_URL}/health`)

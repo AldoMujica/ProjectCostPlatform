@@ -238,7 +238,7 @@ All Priority-3 gaps from the audit. Each is a small `fetch+render` per module.
 | P2.8  | OT — `+ Nueva OT` creation modal → `POST`                           | FE     | 2    | G-OT-3     | ✅ |
 | P2.9  | Material — wire Requisición table to `/api/costs/material`          | FE     | 1    | G-MAT-2    | ✅ |
 | P2.10 | Material — `+ Registrar material` modal → `POST`                    | FE     | 1    | G-MAT-1    | ✅ |
-| P2.11 | Entregas/Proveedores — wire table + `+ Agregar proveedor` modal      | FE     | 1.5  | G-PROV-1,2 |
+| P2.11 | Entregas/Proveedores — wire table + `+ Agregar proveedor` modal      | FE     | 1.5  | G-PROV-1,2 | ✅ |
 | P2.12 | Horas — wire Resumen table to `/api/costs/labor`                    | FE     | 1    | G-HOR-2    |
 | P2.13 | Horas — `+ Capturar horas` modal → `POST`                           | FE     | 1    | G-HOR-1    |
 | P2.14 | Conciliación/Alertas — wire to `GET /api/conciliacion/:id/alertas`  | FE     | 0.5  | G-CONC-1   |

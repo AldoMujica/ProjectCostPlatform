@@ -116,8 +116,8 @@ Counts above group related controls; see per-module feature docs for the full fl
 
 | Sub-tab / Feature              | Status | Backing                                     | Gap      |
 |--------------------------------|:------:|---------------------------------------------|----------|
-| 6.1 Proveedores table          | ⚠️      | `/api/suppliers` exists, UI not wired       | G-PROV-2 |
-| 6.1 `+ Agregar proveedor`      | ❌      | No handler                                  | G-PROV-1 |
+| 6.1 Proveedores table          | ✅      | Wired in P2.11 — `loadProveedores`; shows categories, contacto, saldo, OTs | ~~G-PROV-2~~ |
+| 6.1 `+ Agregar proveedor`      | ✅      | Wired in P2.11 — reusable modal with OT checklist and comma-separated categories | ~~G-PROV-1~~ |
 | 6.1 `Saldo pendiente` field    | ❌      | Not in model                                | G-PROV-4 |
 | 6.2 OCP table                  | ❌      | No model, no routes                         | G-OCA-1,2 |
 | 6.2 `+ Capturar OCP`           | ❌      | No handler                                  | G-OCA-3  |
