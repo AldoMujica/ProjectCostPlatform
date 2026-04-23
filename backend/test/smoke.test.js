@@ -190,6 +190,23 @@ describe('Phase-1 smoke', () => {
       }
     });
 
+    it('XLSX export endpoints serve spreadsheet content (P2.17)', async () => {
+      const endpoints = [
+        '/api/work-orders/export',
+        '/api/quotes/export',
+        '/api/costs/material/export',
+        '/api/costs/labor/export',
+        '/api/suppliers/export',
+      ];
+      for (const path of endpoints) {
+        const res = await request(app).get(path).set('Authorization', `Bearer ${token}`);
+        expect(res.status).toBe(200);
+        expect(res.headers['content-type']).toMatch(/spreadsheetml\.sheet/);
+        expect(res.headers['content-disposition']).toMatch(/attachment/);
+        expect(res.body.length).toBeGreaterThan(0); // non-empty xlsx buffer
+      }
+    });
+
     it('POST /api/costs/material resolves otNumber→workOrderId and persists (P2.10)', async () => {
       const woList = await request(app).get('/api/work-orders').set('Authorization', `Bearer ${token}`);
       if (!woList.body.length) return;

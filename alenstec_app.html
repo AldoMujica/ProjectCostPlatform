@@ -1355,6 +1355,50 @@ function fmtDateDMY(s) {
   return `${dd}/${mm}/${d.getFullYear()}`;
 }
 
+// ===== XLSX download helper (P2.17 / ADR-004) =====
+async function downloadXlsx(url, fallbackName) {
+  try {
+    const res = await apiFetch(url);
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(`${res.status}: ${text.slice(0, 160) || 'descarga rechazada'}`);
+    }
+    const blob = await res.blob();
+    // Prefer filename from Content-Disposition when the server supplied one.
+    const disp = res.headers.get('content-disposition') || '';
+    const match = disp.match(/filename="?([^";]+)"?/i);
+    const filename = match ? match[1] : fallbackName;
+    const href = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = href;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(href);
+  } catch (err) {
+    alert(`No se pudo descargar: ${err.message}`);
+  }
+}
+
+// Map: module → XLSX export URL (null = not yet available — mockup module).
+const XLSX_EXPORTS = {
+  ot:           `${API_URL}/work-orders/export`,
+  cotizaciones: `${API_URL}/quotes/export`,
+  material:     `${API_URL}/costs/material/export`,
+  horas:        `${API_URL}/costs/labor/export`,
+  // dashboard / pronostico / nomina / costomo: no backing yet — button stays disabled.
+  // conciliacion: existing handleGlobalAction routes to cierre export.
+};
+
+function downloadCurrentModuleXlsx() {
+  const mod = getCurrentModule();
+  if (mod === 'conciliacion') { exportConciliacionExcel(); return; }
+  const url = XLSX_EXPORTS[mod];
+  if (!url) { alert('Descarga XLSX no disponible para este módulo (módulo en mockup).'); return; }
+  downloadXlsx(url, 'export.xlsx');
+}
+
 // ===== Generic modal helper (P2.8 — reused by future creation modals) =====
 let _modalState = { onClose: null, keyHandler: null };
 
@@ -2238,6 +2282,7 @@ function goMod(id) {
   if (id === 'entregas') loadProveedores(); // sub-tab 6.1 is the default on module entry
   if (id === 'horas') loadLaborCosts();
   if (id === 'conciliacion') loadConciliacionSemanas();
+  refreshAllDlButtons();
   const c = CFG[id] || {};
   document.getElementById('ttitle').textContent = c.title || id;
   document.getElementById('tcrumb').textContent = c.crumb || '';
@@ -2277,15 +2322,22 @@ function goSub(mod, sub, el) {
   if (mod === 'conciliacion' && sub === 'alertas') loadConciliacionAlertas();
 }
 function checkDl(prefix) {
-  const d = document.getElementById((prefix||'g') + '-desde');
-  const h = document.getElementById((prefix||'g') + '-hasta');
+  // P2.17: dates are optional filters, not prerequisites for export. Keep the
+  // hook for future "download range" behavior but enable the button by default
+  // whenever the current module has a wired export endpoint.
   const btn = document.getElementById('btn-dl-' + (prefix||'global'));
   if (!btn) return;
-  const ok = d && h && d.value && h.value;
-  btn.disabled = !ok;
-  btn.style.opacity = ok ? '1' : '.45';
+  const mod = getCurrentModule();
+  const canExport = prefix === 'prov'
+    ? true
+    : Boolean(XLSX_EXPORTS[mod] || mod === 'conciliacion');
+  btn.disabled = !canExport;
+  btn.style.opacity = canExport ? '1' : '.45';
 }
 function checkGlobalDates() { checkDl(); }
+function refreshAllDlButtons() {
+  ['global', 'prov', 'ocp', 'inv', 'fact', 'entr'].forEach(checkDl);
+}
 
 const conciliacionState = {
   semanaId: '',
@@ -2376,11 +2428,8 @@ function getCurrentModule() {
 }
 
 function handleGlobalAction() {
-  if (getCurrentModule() === 'conciliacion') {
-    exportConciliacionExcel();
-    return;
-  }
-  alert('Acción no disponible en este módulo.');
+  // P2.17: route the topbar "⬇ Descargar XLSX" button per module.
+  downloadCurrentModuleXlsx();
 }
 
 function handleNewAction() {
@@ -2857,6 +2906,20 @@ function handleXMLUpload(event) {
   document.getElementById('mat-new-btn')?.addEventListener('click', showNewMaterialModal);
   document.getElementById('prov-new-btn')?.addEventListener('click', showNewProveedorModal);
   document.getElementById('hrs-new-btn')?.addEventListener('click', showNewHorasModal);
+
+  // P2.17 — Proveedores download; the other Entregas sub-tabs stay disabled
+  // because their tables are still mockup.
+  const provDlBtn = document.getElementById('btn-dl-prov');
+  if (provDlBtn) {
+    provDlBtn.disabled = false;
+    provDlBtn.style.opacity = '1';
+    provDlBtn.addEventListener('click', () => downloadXlsx(`${API_URL}/suppliers/export`, 'proveedores.xlsx'));
+  }
+  // Disabled buttons get an explanatory title so the user knows why.
+  ['ocp', 'inv', 'fact', 'entr'].forEach((sub) => {
+    const btn = document.getElementById('btn-dl-' + sub);
+    if (btn) btn.title = 'Pendiente: módulo en mockup (sin modelo backend)';
+  });
 
   // Health check — unauthenticated, so stays as raw fetch
   fetch(`${API_URL}/health`)

@@ -2,8 +2,36 @@ const express = require('express');
 const { Op } = require('sequelize');
 const { WorkOrder } = require('../models');
 const { verificarRol } = require('../middleware/auth');
+const { sendTableXlsx } = require('../utils/xlsxTable');
 
 const router = express.Router();
+
+router.get('/export', async (req, res) => {
+  try {
+    const rows = await WorkOrder.findAll({ order: [['createdAt', 'DESC']], raw: true });
+    await sendTableXlsx(res, {
+      filename: `ordenes-trabajo-${new Date().toISOString().slice(0, 10)}.xlsx`,
+      sheetName: 'Órdenes de Trabajo',
+      columns: [
+        { header: 'No. OT', key: 'otNumber', width: 16 },
+        { header: 'Cliente', key: 'client', width: 24 },
+        { header: 'Descripción', key: 'description', width: 48 },
+        { header: 'Tipo', key: 'type', width: 12 },
+        { header: 'Estado', key: 'status', width: 14 },
+        { header: 'Avance (%)', key: 'progress', width: 12 },
+        { header: 'Costo cotizado', key: 'quotedCost', width: 16, fmt: (v) => Number(v) },
+        { header: 'Costo real', key: 'actualCost', width: 16, fmt: (v) => Number(v) },
+        { header: 'Moneda', key: 'currency', width: 10 },
+        { header: 'Fecha inicio', key: 'startDate', width: 14 },
+        { header: 'Fecha fin', key: 'endDate', width: 14 },
+        { header: 'Creado', key: 'createdAt', width: 20 },
+      ],
+      rows,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 router.get('/', async (req, res) => {
   try {

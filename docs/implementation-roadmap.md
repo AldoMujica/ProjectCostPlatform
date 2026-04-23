@@ -244,7 +244,7 @@ All Priority-3 gaps from the audit. Each is a small `fetch+render` per module.
 | P2.14 | Conciliación/Alertas — wire to `GET /api/conciliacion/:id/alertas`  | FE     | 0.5  | G-CONC-1   | ✅ |
 | P2.15 | Conciliación/Clasificación — wire form to `POST /horas-clasificadas` | FE    | 1    | G-CONC-2   | ✅ |
 | P2.16 | Conciliación — populate week selector from DB                       | FE     | 0.5  | G-CONC-5   | ✅ |
-| P2.17 | **XLSX export: shared helper + 11 endpoints + UI wiring** (ADR-004)  | BE+FE | 4    | G-EXP-1    |
+| P2.17 | **XLSX export: shared helper + 5 endpoints + UI wiring** (ADR-004)   | BE+FE | 4    | G-EXP-1    | ✅ (partial — 5 of ~11 tables; 6 buttons for mockup modules stay disabled) |
 
 ### Regression track
 

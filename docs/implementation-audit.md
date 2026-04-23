@@ -186,7 +186,7 @@ Counts above group related controls; see per-module feature docs for the full fl
 | OT PDF (jsPDF)              | ✅      | —        |
 | Conciliación XLSX (exceljs) | ✅      | —        |
 | Facturas CFDI XML import    | ✅      | —        |
-| 11 XLSX no-op buttons       | ❌      | G-EXP-1  |
+| 11 XLSX no-op buttons       | ⚠️      | P2.17 landed 5 live exports (WO / quotes / material / labor / suppliers) via shared `sendTableXlsx` helper. 6 buttons still disabled for mockup modules (OCP, Inventario, Facturas, Entregas sub-tab, Pronóstico, Nómina, Costo-MO) — ~~G-EXP-1~~ remaining scope narrows to those |
 | Nómina CFDI import misrouted| ⚠️      | G-NOM-3  |
 | html2canvas loaded, unused  | ⚠️      | decision required |
 
