@@ -109,6 +109,19 @@ async function seedDatabase() {
   const woCount = await WorkOrder.count();
   if (woCount > 0) {
     console.log(`✓ Work orders already present (${woCount}), skipping fixture data`);
+    // Backfill exchangeRate on seed OTs that predate its inclusion (so the
+    // Pronóstico USD-normalization works in demos). Only touches rows whose
+    // FX is NULL — user-entered OTs are left alone.
+    const demoFx = {
+      'OT-AL-1948': 17.34, 'OT-AL-1947': 17.81, 'OT-AL-1946': 17.23,
+      'OT-AL-1945': 17.54, 'OT-AL-1944': 17.80, 'OT-AL-1936': 17.95,
+    };
+    for (const [otNumber, fx] of Object.entries(demoFx)) {
+      await WorkOrder.update(
+        { exchangeRate: fx },
+        { where: { otNumber, exchangeRate: null } }
+      );
+    }
     // Still attempt Phase-3 fixtures if their tables are empty (legacy DB upgrade).
     const existingByOt = {};
     for (const w of await WorkOrder.findAll()) existingByOt[w.otNumber] = w;
@@ -119,12 +132,12 @@ async function seedDatabase() {
   }
 
   const wos = await WorkOrder.bulkCreate([
-    { otNumber: 'OT-AL-1948', client: 'Adient Lerma', description: 'Camb. botón vestidura Rivian/Toyota', type: 'Refurbish', progress: 15, status: 'En ejecución', quotedCost: 6789, actualCost: 2000, currency: 'USD', startDate: new Date('2026-03-15') },
-    { otNumber: 'OT-AL-1947', client: 'Adient Lerma', description: 'Fab. 10 pzas. punch T226038E', type: 'Nuevo', progress: 40, status: 'En ejecución', quotedCost: 8990, actualCost: 3500, currency: 'USD', startDate: new Date('2026-03-10') },
-    { otNumber: 'OT-AL-1946', client: 'Autoliv AMX', description: 'Manuf. 2 Hand to Hand Tacoma 736D', type: 'Nuevo', progress: 60, status: 'En ejecución', quotedCost: 16020, actualCost: 9500, currency: 'USD', startDate: new Date('2026-03-05') },
-    { otNumber: 'OT-AL-1945', client: 'Avanzar', description: 'Refurbish e integración', type: 'Refurbish', progress: 100, status: 'Liberada', quotedCost: 12500, actualCost: 12200, currency: 'USD', startDate: new Date('2026-02-20'), endDate: new Date('2026-03-20') },
-    { otNumber: 'OT-AL-1944', client: 'Avanzar', description: 'Corte láser y programación', type: 'Servicio', progress: 78, status: 'En revisión', quotedCost: 9250, actualCost: 7200, currency: 'USD', startDate: new Date('2026-03-01') },
-    { otNumber: 'OT-AL-1936', client: 'Adient/Toyota', description: 'Manuf. 2 Brazos Neumáticos Tacoma', type: 'Nuevo', progress: 100, status: 'Cerrada', quotedCost: 8520, actualCost: 8320, currency: 'USD', startDate: new Date('2026-02-01'), endDate: new Date('2026-02-28') },
+    { otNumber: 'OT-AL-1948', client: 'Adient Lerma', description: 'Camb. botón vestidura Rivian/Toyota', type: 'Refurbish', progress: 15, status: 'En ejecución', quotedCost: 6789, actualCost: 2000, currency: 'USD', exchangeRate: 17.34, startDate: new Date('2026-03-15') },
+    { otNumber: 'OT-AL-1947', client: 'Adient Lerma', description: 'Fab. 10 pzas. punch T226038E', type: 'Nuevo', progress: 40, status: 'En ejecución', quotedCost: 8990, actualCost: 3500, currency: 'USD', exchangeRate: 17.81, startDate: new Date('2026-03-10') },
+    { otNumber: 'OT-AL-1946', client: 'Autoliv AMX', description: 'Manuf. 2 Hand to Hand Tacoma 736D', type: 'Nuevo', progress: 60, status: 'En ejecución', quotedCost: 16020, actualCost: 9500, currency: 'USD', exchangeRate: 17.23, startDate: new Date('2026-03-05') },
+    { otNumber: 'OT-AL-1945', client: 'Avanzar', description: 'Refurbish e integración', type: 'Refurbish', progress: 100, status: 'Liberada', quotedCost: 12500, actualCost: 12200, currency: 'USD', exchangeRate: 17.54, startDate: new Date('2026-02-20'), endDate: new Date('2026-03-20') },
+    { otNumber: 'OT-AL-1944', client: 'Avanzar', description: 'Corte láser y programación', type: 'Servicio', progress: 78, status: 'En revisión', quotedCost: 9250, actualCost: 7200, currency: 'USD', exchangeRate: 17.80, startDate: new Date('2026-03-01') },
+    { otNumber: 'OT-AL-1936', client: 'Adient/Toyota', description: 'Manuf. 2 Brazos Neumáticos Tacoma', type: 'Nuevo', progress: 100, status: 'Cerrada', quotedCost: 8520, actualCost: 8320, currency: 'USD', exchangeRate: 17.95, startDate: new Date('2026-02-01'), endDate: new Date('2026-02-28') },
   ]);
   console.log(`✓ Created ${wos.length} work orders`);
 

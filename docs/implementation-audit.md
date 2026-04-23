@@ -5,7 +5,7 @@
 >
 > **Method:** Every visible UI element in `alenstec_app.html` was inventoried. For each, the backend (models + routes) and client JS wiring were inspected. Each element is classified **Implemented / Partial / Mockup** with a gap ID (`G-<MODULE>-<N>`) when work remains.
 >
-> **Headline:** After Phase 3 + the 2026-04-23 carry-over sweep (G-OT-2 / G-CONC-3,4 / G-COT-1 / G-DASH-5,6 / html2canvas), roughly **92 %** of the ~72 grouped features are fully wired end-to-end. Remaining: Pronóstico (module 4), Nómina (module 8), Costo-MO (module 10), and a handful of nice-to-haves (Horas Estimadas table, G-MAT-3 KPI extras, G-HOR-4 activity codes). All gated on Phase-4/5/6 work.
+> **Headline:** After Phase 3 + the 2026-04-23 sweep (G-OT-2 / G-CONC-3,4 / G-COT-1 / G-DASH-5,6 / G-PRON-1,2,3 / html2canvas), roughly **94 %** of the ~72 grouped features are fully wired end-to-end. Remaining: Nómina (module 8 — entire module, Phase-4), Costo-MO (module 10 — blocked on client signoff of Costo/Real rule), and a handful of nice-to-haves (Horas Estimadas table, G-MAT-3 KPI extras, G-HOR-4 activity codes).
 
 ## Phase-1 closures (2026-04-20)
 
@@ -94,15 +94,15 @@ Phase-3 schema change summary — 4 migrations added 7 new tables (`purchase_ord
 | 1. Dashboard                 | 6                | 6              | 0          | 0         | **Module complete** — 4 KPIs + Recent OT + cost bars + proveedores timeline + OCs Abiertas + Empleados en Campo all wired |
 | 2. Orden de Trabajo          | 7                | 7 (PDF, selector, form, Nueva OT, Flujo de Liberación, Datos Generales save, Presupuestos) | 0 | 0 | **Module complete** — only Horas Estimadas table remains on the "nice-to-have" backlog (separate `HoursEstimate` model, Phase-5 scope) |
 | 3. Cotizaciones y Ventas     | 3                | 3              | 0          | 0         | **Module complete** — table, KPIs, `+ Nueva cotización` modal, XLSX upload + download round-trip against master workbook |
-| 4. Pronóstico del Costo      | 2                | 0              | 0          | 2         | No forecasting endpoint; thresholds undefined (Phase-5) |
+| 4. Pronóstico del Costo      | 2                | 2              | 0          | 0         | **Module complete (Phase-5 P5.1–P5.3)** — rollup endpoint, KPIs, table, XLSX export, semáforo rules |
 | 5. Costo de Material         | 2                | 2              | 0          | 0         | Module complete (P2.9 + P2.10) |
 | 6. Entregas (5 sub-tabs)     | 12               | 12             | 0          | 0         | **Module complete (Phase-3)** — Proveedores / OCP / Inventario / Facturas / Entregas all wired with live CRUD + KPIs |
 | 7. Horas de Mano de Obra     | 4                | 4 (Resumen, Capturar, Control de Empleados wired)      | 0    | 0         | Activity codes (G-HOR-4) — Phase-5 |
 | 8. Nómina / CFDI             | 4                | 0              | 0          | 4         | No model at all — Phase-4 (the hardest phase) |
 | 9. Conciliación              | 15               | 12             | 1          | 2         | **Near-complete** — Ver detalle + Justificar/Forzar wired; remaining is proyectos-per-día drilldown (stretch) |
 |10. Costo de Mano de Obra     | 2                | 0              | 0          | 2         | No activity rollup endpoint — Phase 5 |
-| **Cross-cutting: Export**    | 15               | 13 (3 Phase-1 + 5 Phase-2 + 4 Phase-3 xlsx + Cotizaciones import) | 0 | 2 | Remaining disabled exports target Phase-4/5 modules only |
-| **Totals**                   | ~72 (grouped)    | **66**         | 1          | 5         | `v0.2-entregas` tag-ready · ~92 % features wired |
+| **Cross-cutting: Export**    | 15               | 14 (3 Phase-1 + 5 Phase-2 + 4 Phase-3 + 1 Phase-5 xlsx + Cotizaciones import) | 0 | 1 | Only Nómina + Costo-MO exports still disabled (blocked on Phase-4 models) |
+| **Totals**                   | ~72 (grouped)    | **68**         | 1          | 3         | ~94 % features wired · Module 4 Pronóstico now complete |
 
 Counts above group related controls; see per-module feature docs for the full flat list.
 
@@ -150,10 +150,10 @@ Counts above group related controls; see per-module feature docs for the full fl
 
 | Feature                        | Status | Backing                           | Gap         |
 |--------------------------------|:------:|-----------------------------------|-------------|
-| KPI strip                      | ❌      | No aggregate endpoint             | G-PRON-2    |
-| Pronóstico table               | ❌      | No `GET /api/forecasting`         | G-PRON-1    |
-| Variance/semáforo rules        | ❌      | Thresholds not codified           | G-PRON-3    |
-| XLSX export                    | ❌      | Global no-op                      | G-EXP-1     |
+| KPI strip                      | ✅      | Wired 2026-04-23 — 4 aggregate KPIs from `/api/forecasting`: totalQuotedUsd, totalActualUsd, avgVariancePct, alertCount | ~~G-PRON-2~~ |
+| Pronóstico table               | ✅      | Wired 2026-04-23 — `GET /api/forecasting` rolls up per-OT cost (material + labor) normalized to the OT's quoted currency; 11-col FE render with semáforo badges and row highlighting | ~~G-PRON-1~~ |
+| Variance/semáforo rules        | ✅      | Codified in `backend/src/routes/forecasting.js`: real ≤ 70% cot → OK (green); 70–100% → Atención (amber); > 100% → Crítico (red); real = 0 + active status → En ejecución (blue). Thresholds named constants, easy to retune post-client-signoff. | ~~G-PRON-3~~ |
+| XLSX export                    | ✅      | 2026-04-23 — `GET /api/forecasting/export` via shared `sendTableXlsx` helper; 14 cols incl. varianza % and semáforo | ~~G-EXP-1~~ |
 
 ### Costo de Material (module 5)
 
@@ -287,7 +287,7 @@ Every gap mentioned above, grouped by recommended fix-before-regression-test pri
 
 ### Priority 4 — New analytics
 
-- **G-PRON-1,2,3** — Pronóstico endpoint + rules. **Phase-5.**
+- ~~**G-PRON-1,2,3** — Pronóstico endpoint + rules.~~ **Closed 2026-04-23** — `/api/forecasting` rollup endpoint, codified semáforo thresholds, FE wired.
 - **G-MO-1,2** — Costo-MO activity-rollup endpoint + Real-cost computation rule. **Phase-5.**
 - **G-HOR-4** — Activity-code catalogue + colour map. **Phase-5.**
 - ~~**G-DASH-5,6** — OCs Abiertas + Empleados en Campo endpoints.~~ **Closed 2026-04-23** (wired to `/api/purchase-orders` and `/api/employees?activo=true`). Phase-5 P5.9/P5.10 dedicated endpoints deferred — the live list endpoints serve the widget needs today.
@@ -323,10 +323,10 @@ Every gap mentioned above, grouped by recommended fix-before-regression-test pri
 **Phase-4 (Nómina) — not started:**
 - G-NOM-1..6 — `PayrollWeek` / `PayrollLine` + IMSS/ISR/INFONAVIT/FONACOT calculators + CFDI-nómina parser.
 
-**Phase-5 (Analytics) — not started:**
-- G-PRON-1,2,3 — Pronóstico endpoint + variance/semáforo rules.
-- G-MO-1,2 — Costo-MO activity-rollup + Real-cost rule.
-- G-HOR-4 — Activity-code catalogue + colour map.
+**Phase-5 (Analytics) — partial (Pronóstico done; Costo-MO pending):**
+- ~~G-PRON-1,2,3~~ — Pronóstico endpoint + variance/semáforo rules. **Closed 2026-04-23.**
+- G-MO-1,2 — Costo-MO activity-rollup + Real-cost rule. **Still open** — blocked on client signoff of Costo/Real rule (roadmap P5.7).
+- G-HOR-4 — Activity-code catalogue + colour map. **Still open** — unlocks G-MO-1 rollup.
 
 **Phase-6 (External integrations) — not started:**
 - G-FACT-1 — Real SAT CFDI validation via PAC.

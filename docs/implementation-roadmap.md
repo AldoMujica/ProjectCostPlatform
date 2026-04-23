@@ -35,6 +35,10 @@
 
 **Cotizaciones Control-Ventas round-trip + follow-up wiring (2026-04-23).** Added `Quote` columns aligned with the client-supplied Control Ventas 2026 workbook (proyecto, celda, RFQ, MECR, fecha cotización, tipo contrato, fecha OC, costo OC, fecha compromiso); `POST /api/quotes/import` accepts the master XLSX via multer + ExcelJS (header-row auto-detection; survives the 1,048,576-row sparse-metadata trap by iterating `actualRowCount` with a 10k cap and 50-blank-row early-exit); `GET /api/quotes/export` emits the same Spanish-header block. Follow-up wiring closed **G-COT-1** (`+ Nueva cotización` modal), **G-DASH-5** (OCs Abiertas widget → `/api/purchase-orders`), **G-DASH-6** (Empleados en Campo widget → `/api/employees?activo=true`). Feature coverage now ~88 %.
 
+**Phase-3 carry-over sweep (2026-04-23).** Closed **G-OT-2** (9 new `work_orders` cols + `data-ot-field` wiring on Datos Generales / Liberado a / Presupuestos cards + 💾 Guardar button), **G-CONC-3** (Resumen → Ver detalle modal with 7-day breakdown; also fixed a pre-existing nested-aggregate SQL bug in `GET /api/conciliacion/:semana/:empleado`), **G-CONC-4** (inline Justificar / Forzar buttons, role-gated), and removed the unused `html2canvas` CDN include. Feature coverage now ~92 %. Committed as `04d0347`.
+
+**Phase-5 Pronóstico landed (2026-04-23).** Closed **G-PRON-1,2,3** in one slice. New `GET /api/forecasting` rollup endpoint aggregates material + labor costs per OT, normalized to the OT's quoted currency via its `exchangeRate`; KPIs (total cotizado USD, total real USD, avg variance %, alert count). Semáforo rules codified as named constants in `backend/src/routes/forecasting.js` — green ≤70% of cot, amber 70–100%, red >100%, blue for in-flight OTs with no real cost yet. Seed gains FX backfill so demo env shows meaningful variance. XLSX export via shared helper. FE replaces the hardcoded mockup with live KPIs + 11-col table + row highlighting + XLSX download. Module 4 now complete. Feature coverage now ~94 %.
+
 ---
 
 ## Frozen architecture decisions

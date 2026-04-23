@@ -497,22 +497,20 @@ select.fi{cursor:pointer}
 <!-- PRONÓSTICO -->
 <div class="mod" id="mod-pronostico">
   <div class="kg">
-    <div class="kpi"><div class="kl">Costo cotizado total</div><div class="kv">$218K</div><div class="ks">USD · acumulado 2026</div></div>
-    <div class="kpi"><div class="kl">Costo real (OT-1936)</div><div class="kv" style="color:var(--green)">$2,473</div><div class="ks">USD · vs $8,520 cotizado</div></div>
-    <div class="kpi"><div class="kl">Horas cotizadas</div><div class="kv" style="color:var(--blue)">413</div><div class="ks">hrs · OT-1936 labor directa</div></div>
-    <div class="kpi"><div class="kl">Horas reales</div><div class="kv" style="color:var(--green)">388</div><div class="ks">hrs · registradas en ERP</div></div>
+    <div class="kpi"><div class="kl">Costo cotizado total</div><div class="kv" id="kpi-pron-cotizado">—</div><div class="ks" id="kpi-pron-cotizado-sub">USD · activas + cerradas</div></div>
+    <div class="kpi"><div class="kl">Costo real acumulado</div><div class="kv" id="kpi-pron-real" style="color:var(--green)">—</div><div class="ks" id="kpi-pron-real-sub">USD · normalizado con T/C por OT</div></div>
+    <div class="kpi"><div class="kl">Varianza promedio</div><div class="kv" id="kpi-pron-variance" style="color:var(--blue)">—</div><div class="ks" id="kpi-pron-variance-sub">% · (real − cotizado) / cotizado</div></div>
+    <div class="kpi"><div class="kl">OTs en alerta</div><div class="kv" id="kpi-pron-alert" style="color:var(--amber)">—</div><div class="ks" id="kpi-pron-alert-sub">Atención + Crítico</div></div>
   </div>
   <div class="card">
-    <div class="ch"><div><div class="ct">Pronóstico del Costo por OT · Cotizado vs. Real</div><div class="cs">Datos reales del ERP Open Source · 2026</div></div></div>
+    <div class="ch">
+      <div><div class="ct">Pronóstico del Costo por OT · Cotizado vs. Real</div><div class="cs">Reglas de semáforo codificadas en backend · G-PRON-3</div></div>
+      <button class="btn sm" id="btn-dl-pron" onclick="downloadXlsx(`${API_URL}/forecasting/export`, 'pronostico.xlsx')">⬇ Descargar XLSX</button>
+    </div>
     <div class="tw"><table>
-      <thead><tr><th>No. OT</th><th>Cliente</th><th>Descripción</th><th>Cot. (USD)</th><th>Real (USD)</th><th>T/C</th><th>Cot. (MXN)</th><th>Varianza</th><th>Semáforo</th></tr></thead>
-      <tbody>
-        <tr><td class="mono">OT-1936</td><td>Adient/Toyota</td><td>Manuf. 2 Brazos Neumáticos Tacoma</td><td class="mono">$8,520.19</td><td class="mono">$2,473.59</td><td class="mono">$17.95</td><td class="mono">$152,937</td><td><span class="badge bg">−71% bajo presup.</span></td><td><span class="badge bg">✓ OK</span></td></tr>
-        <tr><td class="mono">OT-1937</td><td>Adient Lerma</td><td>Fab. 10 pzas. punch T226038E</td><td class="mono">$6,789.00</td><td class="mono">—</td><td class="mono">$17.34</td><td class="mono">$117,720</td><td><span class="badge bn">En proceso</span></td><td><span class="badge bb">En ejecución</span></td></tr>
-        <tr><td class="mono">OT-1943</td><td>Adient</td><td>Refurbish e integración grande</td><td class="mono">$22,855.00</td><td class="mono">$9,458.34</td><td class="mono">$17.81</td><td class="mono">$407,048</td><td><span class="badge ba">+41% avance</span></td><td><span class="badge ba">Atención</span></td></tr>
-        <tr><td class="mono">OT-1946</td><td>Adient</td><td>Manuf. 2 Hand to Hand Tacoma 736D</td><td class="mono">$16,020.00</td><td class="mono">—</td><td class="mono">$17.23</td><td class="mono">$275,965</td><td><span class="badge bn">En proceso</span></td><td><span class="badge bb">En ejecución</span></td></tr>
-        <tr style="background:var(--green-lt)"><td class="mono">OT-1948</td><td>Adient Lerma</td><td>Camb. botón vestidura Rivian/Toyota</td><td class="mono" style="font-weight:600">$6,789.00</td><td class="mono">$0.00</td><td class="mono">$17.34</td><td class="mono" style="font-weight:600">$117,720</td><td><span class="badge bg">Inicio</span></td><td><span class="badge bb">En ejecución</span></td></tr>
-        <tr><td class="mono">OT-1951</td><td>Adient</td><td>Refurbish a 1 máquina</td><td class="mono">$8,407.00</td><td class="mono">—</td><td class="mono">$17.54</td><td class="mono">$147,459</td><td><span class="badge bn">Cotizado</span></td><td><span class="badge bn">Sin iniciar</span></td></tr>
+      <thead><tr><th>No. OT</th><th>Cliente</th><th>Descripción</th><th>Cot.</th><th>Moneda</th><th>Real</th><th>T/C</th><th>Cot. (MXN)</th><th>Horas</th><th>Varianza</th><th>Semáforo</th></tr></thead>
+      <tbody id="pron-tbody">
+        <tr><td colspan="11" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
       </tbody>
     </table></div>
   </div>
@@ -1358,6 +1356,76 @@ async function loadDashboardEmpleadosEnCampo() {
   }
 }
 
+// G-PRON-2 — Pronóstico del Costo. KPIs + per-OT table driven by
+// /api/forecasting (rollup). Semáforo rules are codified server-side
+// (G-PRON-3); FE just maps `semaforoColor` → badge class.
+const PRON_SEMAFORO_CLASS = {
+  green:   'bg',
+  amber:   'ba',
+  red:     'br',
+  blue:    'bb',
+  neutral: 'bn',
+};
+
+async function loadPronostico() {
+  const tbody = document.getElementById('pron-tbody');
+  if (!tbody) return;
+  try {
+    const res = await apiFetch(`${API_URL}/forecasting`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const kpi = data.kpi || {};
+    const rows = data.rows || [];
+
+    // KPIs
+    const setKpi = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+    setKpi('kpi-pron-cotizado', kpi.totalQuotedUsd != null ? fmtCurrency(kpi.totalQuotedUsd, 'USD') : '—');
+    setKpi('kpi-pron-real',     kpi.totalActualUsd != null ? fmtCurrency(kpi.totalActualUsd, 'USD') : '—');
+    setKpi('kpi-pron-variance', kpi.avgVariancePct != null ? `${kpi.avgVariancePct > 0 ? '+' : ''}${kpi.avgVariancePct.toFixed(1)}%` : '—');
+    setKpi('kpi-pron-alert',    String(kpi.alertCount ?? '—'));
+    setKpi('kpi-pron-cotizado-sub', `USD · ${kpi.otCount || 0} OTs · ${kpi.activeCount || 0} activas`);
+    if (kpi.missingFxCount > 0) {
+      setKpi('kpi-pron-real-sub', `USD · ${kpi.missingFxCount} OTs sin T/C excluidas`);
+    }
+
+    // Table
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="11" style="padding:16px;color:var(--text3);text-align:center">Sin órdenes para pronosticar.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map((r) => {
+      const cls = PRON_SEMAFORO_CLASS[r.semaforoColor] || 'bn';
+      const varCls = r.varianza == null ? 'bn'
+                    : r.varianza <= -20 ? 'bg'
+                    : r.varianza <= 0   ? 'bg'
+                    : r.varianza <= 10  ? 'ba'
+                    : 'br';
+      const real = r.actualCost === 0 ? '—' : fmtCurrency(r.actualCost, r.quotedCurrency || 'USD');
+      const cotMxn = r.quotedCostMxn != null ? fmtCurrency(r.quotedCostMxn, 'MXN') : '—';
+      const highlight = r.semaforoColor === 'red'   ? 'background:var(--red-lt)'
+                      : r.semaforoColor === 'amber' ? 'background:var(--amber-lt)'
+                      : r.semaforoColor === 'green' && r.actualCost > 0 ? 'background:var(--green-lt)'
+                      : '';
+      return `<tr style="${highlight}">
+        <td class="mono">${esc(r.otNumber) || '—'}</td>
+        <td>${esc(r.client) || '—'}</td>
+        <td>${esc(r.description) || '—'}</td>
+        <td class="mono" style="font-weight:600">${fmtCurrency(r.quotedCost, r.quotedCurrency || 'USD')}</td>
+        <td>${moneyBadge(r.quotedCurrency || 'USD')}</td>
+        <td class="mono">${real}</td>
+        <td class="mono">${r.exchangeRate != null ? Number(r.exchangeRate).toFixed(2) : '—'}</td>
+        <td class="mono">${cotMxn}</td>
+        <td class="mono">${Number(r.hoursWorked || 0).toFixed(1)}</td>
+        <td><span class="badge ${varCls}">${esc(r.varianzaLabel)}</span></td>
+        <td><span class="badge ${cls}">${esc(r.semaforo)}</span></td>
+      </tr>`;
+    }).join('');
+  } catch (err) {
+    console.warn('⚠ loadPronostico:', err);
+    tbody.innerHTML = '<tr><td colspan="11" style="padding:16px;color:var(--red);text-align:center">No se pudo cargar el pronóstico.</td></tr>';
+  }
+}
+
 async function refreshDashboard() {
   await Promise.all([
     loadDashboardKpis(),
@@ -1422,7 +1490,8 @@ const XLSX_EXPORTS = {
   material:     `${API_URL}/costs/material/export`,
   horas:        `${API_URL}/costs/labor/export`,
   entregas:     `${API_URL}/deliveries/export`, // Phase-3 sub-tab default export
-  // dashboard / pronostico / nomina / costomo: no backing yet — button stays disabled.
+  pronostico:   `${API_URL}/forecasting/export`, // Phase-5 G-PRON-1
+  // dashboard / nomina / costomo: no backing yet — button stays disabled.
   // conciliacion: existing handleGlobalAction routes to cierre export.
 };
 
@@ -3163,6 +3232,7 @@ function goMod(id) {
   if (id === 'entregas') loadProveedores(); // sub-tab 6.1 is the default on module entry
   if (id === 'ot' && _selectedOtId) loadOTApprovals();
   if (id === 'horas') loadLaborCosts();
+  if (id === 'pronostico') loadPronostico();
   if (id === 'conciliacion') loadConciliacionSemanas();
   refreshAllDlButtons();
   const c = CFG[id] || {};
