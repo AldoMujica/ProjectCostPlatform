@@ -4,7 +4,7 @@
 >
 > **Purpose:** Sequence the closure of the ~28 gaps identified in the audit into phases with clear entry/exit gates, explicit dependencies, and a parallel regression-test track.
 
-## Progress snapshot — 2026-04-21
+## Progress snapshot — 2026-04-23
 
 | Phase | Scope                             | Status                                                                                                                                                                                                                                                                         |
 | ----- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -13,7 +13,8 @@
 | 1     | Code foundations — **QA harness** | ✅ **Done (P1.17 + P1.18)** — jest + supertest smoke suite (health, auth, migrate/seed idempotence); ESLint `:recommended`; GitHub Actions workflow runs lint → migrate ×2 → seed → test against a Postgres 15 service container; `docker-compose.test.yml` for local dev.      |
 | 1     | Code foundations — **frontend**   | ✅ **Done (P1.15 + P1.16)** — login overlay, `apiFetch` wrapper, `Authorization: Bearer` injection, single-flight refresh on 401, logout link; user chip renders current session. Existing wired fetches (work-orders, quotes, suppliers, conciliación) migrated to `apiFetch`. |
 | 2     | MVP wiring — **every module**     | ✅ **Done (P2.1–P2.17)** — Dashboard KPIs + Recent-OT + cost bars + proveedores timeline; Cotizaciones table + KPIs; OT selector + form + Nueva-OT modal; Material table + Registrar-material modal; Proveedores table + Agregar-proveedor modal; Horas Resumen + Capturar-horas modal; Conciliación alertas / clasif form / week selector; XLSX export (5 endpoints via shared `sendTableXlsx` helper). Reusable modal shell landed for future creation flows. |
-| 3+    | New core models                    | Not started                                                                                                                                                                                                                                                                    |
+| 3     | New core models                    | ✅ **Done (P3.1–P3.21 + P3.18b)** — Employee master (with RFC/CURP/IMSS/SD/SDI columns) + Control de Empleados wired; per-record supervisor ACL on OTs; OCP (PurchaseOrderAlenstec) CRUD + sub-tab 6.2; Inventory + StockMovement + sub-tab 6.3; SupplierInvoice + CFDI persistence + sub-tab 6.4; Delivery + Incident + KPI + sub-tab 6.5; WorkOrderApproval 5-step flow + Flujo de Liberación UI with role-gated transitions. 11 new tables (7 Phase-3 + empleados extensions + work_orders.supervisor_id). |
+| 4+    | Nómina / Analytics / Integrations  | Not started                                                                                                                                                                                                                                                                   |
 
 **Backend exit criteria for Phase 1 — met:**
 
@@ -28,7 +29,11 @@
 
 **Deferred from Phase 1:** P1.7 — the cost/WO/quote models have no `supervisor_id` column to filter on, and the ownership semantic ("supervisor owns OT" vs "supervisor owns employee → labor-cost") is cleanest to pick after `Employee` lands. Moved to Phase 3, blocked on P3.16–P3.18 (G-HOR-3). Phase-1 hard exit criteria are unaffected — `verificarRol` already restricts supervisor writes to `POST /api/costs/labor`.
 
-**Phase 2 — MVP Gate met.** Every Phase-2 work item landed via the cumulative squash of PRs #2 → #10. `v0.1-mvp` is tag-ready. Remaining XLSX buttons (6 of 11) are for modules that are still mockup (OCP / Inventario / Facturas / Entregas sub-tab / Pronóstico / Nómina / Costo-MO); their exports will land alongside the Phase-3 models those modules depend on.
+**Phase 2 — MVP Gate met.** Every Phase-2 work item landed via the cumulative squash of PRs #2 → #10. `v0.1-mvp` is tag-ready.
+
+**Phase 3 — Entregas + Approvals Gate met (2026-04-23).** All 21 Phase-3 work items landed in a single cumulative commit covering Employee master, OCP, Inventory, CFDI persistence, Deliveries+Incidents (with delivery→inventory rule), the OT approval flow, and P3.18b (per-record supervisor ACL deferred from P1.7). 4 more XLSX exports are now live (OCP, inventory, invoices, deliveries) — only Pronóstico / Nómina / Costo-MO remain disabled, as those modules still depend on Phase-4/5 models. `v0.2-entregas` is tag-ready.
+
+**Cotizaciones Control-Ventas round-trip + follow-up wiring (2026-04-23).** Added `Quote` columns aligned with the client-supplied Control Ventas 2026 workbook (proyecto, celda, RFQ, MECR, fecha cotización, tipo contrato, fecha OC, costo OC, fecha compromiso); `POST /api/quotes/import` accepts the master XLSX via multer + ExcelJS (header-row auto-detection; survives the 1,048,576-row sparse-metadata trap by iterating `actualRowCount` with a 10k cap and 50-blank-row early-exit); `GET /api/quotes/export` emits the same Spanish-header block. Follow-up wiring closed **G-COT-1** (`+ Nueva cotización` modal), **G-DASH-5** (OCs Abiertas widget → `/api/purchase-orders`), **G-DASH-6** (Empleados en Campo widget → `/api/employees?activo=true`). Feature coverage now ~88 %.
 
 ---
 
@@ -275,30 +280,30 @@ Build what the mockup shows but the backend has never had.
 
 ### Work items
 
-| ID    | Item                                                             | Owner | Days | Gap closed  |
-|-------|------------------------------------------------------------------|-------|-----:|-------------|
-| P3.1  | Model + migration: `PurchaseOrderAlenstec`                        | BE    | 1    | G-OCA-1     |
-| P3.2  | Routes: `/api/purchase-orders-alenstec` CRUD + filters           | BE    | 2    | G-OCA-2     |
-| P3.3  | FE: sub-tab 6.2 wired + `+ Capturar OCP` modal                   | FE    | 2    | G-OCA-3     |
-| P3.4  | Model + migration: `InventoryItem` + `StockMovement`              | BE    | 2    | G-INV-1     |
-| P3.5  | Routes: `/api/inventory` CRUD                                     | BE    | 2    | G-INV-2     |
-| P3.6  | FE: sub-tab 6.3 wired + `+ Agregar existencia` modal              | FE    | 2    | G-INV-3     |
-| P3.7  | Rule: `Delivery` create increments `InventoryItem.existencia`     | BE    | 1    | G-INV-4     |
-| P3.8  | Model + migration: `SupplierInvoice` (indexed UUID)               | BE    | 1    | G-FACT-2    |
-| P3.9  | Route: `POST /api/invoices/cfdi` (server-side XML persistence)    | BE    | 2    | G-FACT-2    |
-| P3.10 | FE: CFDI upload POSTs to backend, renders from response           | FE    | 1    | G-FACT-2    |
-| P3.11 | FE: `+ Agregar factura` manual form                               | FE    | 1    | G-FACT-3    |
-| P3.12 | Models + migrations: `Delivery`, `Incident`                       | BE    | 1    | G-ENTR-1    |
-| P3.13 | Routes: `/api/deliveries`, `/api/incidents`                       | BE    | 2    | G-ENTR-2    |
-| P3.14 | FE: sub-tab 6.5 + `+ Registrar entrega` / `+ Ingresar incidencia` | FE    | 2    | G-ENTR-2    |
-| P3.15 | KPI: `GET /api/deliveries/kpi`                                    | BE    | 1    | G-ENTR-3    |
-| P3.16 | Model + migration: `Employee` (Control-de-Empleados columns)      | BE    | 1    | G-HOR-3     |
-| P3.17 | Route: `/api/employees` CRUD + import-from-seed                   | BE    | 1    | G-HOR-3     |
-| P3.18 | FE: sub-tab 7.2 Control de Empleados                              | FE    | 1    | G-HOR-3     |
-| P3.18b| **Per-record ACL (deferred from P1.7):** pick ownership semantic (OT-level via `work_orders.supervisor_id` vs labor-cost via `empleado.supervisor_id`); migration + wire `filtrarPorSupervisor` into list endpoints | BE | 1.5 | G-HOR-3 |
-| P3.19 | Model + migration: `WorkOrderApproval`                            | BE    | 1    | G-OT-4      |
-| P3.20 | Routes: approval-transition endpoints + role checks               | BE    | 2    | G-OT-4      |
-| P3.21 | FE: Flujo de Liberación with per-row transition buttons           | FE    | 2    | G-OT-4      |
+| ID    | Item                                                             | Owner | Days | Gap closed  | Status |
+|-------|------------------------------------------------------------------|-------|-----:|-------------|:------:|
+| P3.1  | Model + migration: `PurchaseOrderAlenstec`                        | BE    | 1    | G-OCA-1     | ✅ |
+| P3.2  | Routes: `/api/purchase-orders` CRUD + filters                     | BE    | 2    | G-OCA-2     | ✅ |
+| P3.3  | FE: sub-tab 6.2 wired + `+ Capturar OCP` modal                   | FE    | 2    | G-OCA-3     | ✅ |
+| P3.4  | Model + migration: `InventoryItem` + `StockMovement`              | BE    | 2    | G-INV-1     | ✅ |
+| P3.5  | Routes: `/api/inventory` CRUD + `/:id/movements`                  | BE    | 2    | G-INV-2     | ✅ |
+| P3.6  | FE: sub-tab 6.3 wired + `+ Agregar existencia` modal              | FE    | 2    | G-INV-3     | ✅ |
+| P3.7  | Rule: `Delivery` create increments `InventoryItem.existencia`     | BE    | 1    | G-INV-4     | ✅ |
+| P3.8  | Model + migration: `SupplierInvoice` (indexed UUID)               | BE    | 1    | G-FACT-2    | ✅ |
+| P3.9  | Route: `POST /api/invoices/cfdi` (server-side XML persistence)    | BE    | 2    | G-FACT-2    | ✅ |
+| P3.10 | FE: CFDI upload POSTs to backend, renders from response           | FE    | 1    | G-FACT-2    | ✅ |
+| P3.11 | FE: `+ Agregar factura` manual form                               | FE    | 1    | G-FACT-3    | ✅ |
+| P3.12 | Models + migrations: `Delivery`, `Incident`                       | BE    | 1    | G-ENTR-1    | ✅ |
+| P3.13 | Routes: `/api/deliveries`, `/api/deliveries/incidents`            | BE    | 2    | G-ENTR-2    | ✅ |
+| P3.14 | FE: sub-tab 6.5 + `+ Registrar entrega` / `+ Ingresar incidencia` | FE    | 2    | G-ENTR-2    | ✅ |
+| P3.15 | KPI: `GET /api/deliveries/kpi`                                    | BE    | 1    | G-ENTR-3    | ✅ |
+| P3.16 | Migration: extend `empleados` (Control-de-Empleados columns)      | BE    | 1    | G-HOR-3     | ✅ |
+| P3.17 | Route: `/api/employees` CRUD + import-from-seed                   | BE    | 1    | G-HOR-3     | ✅ |
+| P3.18 | FE: sub-tab 7.2 Control de Empleados + `+ Nuevo empleado`         | FE    | 1    | G-HOR-3     | ✅ |
+| P3.18b| **Per-record ACL (deferred from P1.7):** OT-level ownership (`work_orders.supervisor_id`); `filtrarPorSupervisor` wired into `GET /api/work-orders` | BE | 1.5 | G-HOR-3 | ✅ |
+| P3.19 | Model + migration: `WorkOrderApproval`                            | BE    | 1    | G-OT-4      | ✅ |
+| P3.20 | Routes: approval-transition endpoints + role checks               | BE    | 2    | G-OT-4      | ✅ |
+| P3.21 | FE: Flujo de Liberación with per-row transition buttons           | FE    | 2    | G-OT-4      | ✅ |
 
 ### Regression track
 

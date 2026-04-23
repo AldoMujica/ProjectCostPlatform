@@ -1,11 +1,11 @@
 # Implementation Audit — Mockup vs. Implemented
 
 > **Audit date:** 2026-04-20 (original baseline against `alenstec_app.html` at commit `3c22899`).
-> **Last refresh:** 2026-04-21 — Phase-2 MVP wiring complete (every Phase-2 module live; XLSX export for 5 tables).
+> **Last refresh:** 2026-04-23 — Phase-3 complete (Entregas sub-tabs + Approvals + Employee master all wired).
 >
 > **Method:** Every visible UI element in `alenstec_app.html` was inventoried. For each, the backend (models + routes) and client JS wiring were inspected. Each element is classified **Implemented / Partial / Mockup** with a gap ID (`G-<MODULE>-<N>`) when work remains.
 >
-> **Headline:** After Phase 2, roughly **55 %** of the ~72 grouped features are fully wired end-to-end. The remaining ~45 % (Pronóstico, Nómina, Costo-MO, 4 of 5 Entregas sub-tabs, OT approval workflow, per-record supervisor ACL) depend on Phase-3 models or later phases.
+> **Headline:** After Phase 3 + the 2026-04-23 carry-over sweep (G-OT-2 / G-CONC-3,4 / G-COT-1 / G-DASH-5,6 / html2canvas), roughly **92 %** of the ~72 grouped features are fully wired end-to-end. Remaining: Pronóstico (module 4), Nómina (module 8), Costo-MO (module 10), and a handful of nice-to-haves (Horas Estimadas table, G-MAT-3 KPI extras, G-HOR-4 activity codes). All gated on Phase-4/5/6 work.
 
 ## Phase-1 closures (2026-04-20)
 
@@ -20,7 +20,7 @@ Gaps fully closed by the Phase-1 backend foundations landing:
 | D-fk      | `material_costs.work_order_id`, `labor_costs.work_order_id` (both `ON DELETE RESTRICT`) and `supplier_work_orders` join table in place; `Supplier.workOrders[]` array column removed. |
 | G-MAT-4   | `MaterialCost` now carries `subtotal`, `iva`, `retencion` columns.                            |
 | G-PROV-4  | `Supplier.saldo_pendiente` column added.                                                      |
-| G-COT-5   | `Quote` now carries `cotRef`, `ocCliente`, `exchangeRate`, `otNumber`, `tipo`.                |
+| G-COT-5   | `Quote` now carries `cotRef`, `ocCliente`, `exchangeRate`, `otNumber`, `tipo`, plus Control-Ventas round-trip columns (`proyecto`, `celda`, `rfq`, `mecr`, `fechaCotizacion`, `tipoContrato`, `fechaOC`, `costoOC`, `fechaCompromiso`). |
 
 Model-side work for **G-OT-2** (liberation-form fields on `WorkOrder`) is done; FE still renders mockup values — the audit entries remain ⚠️ until Phase-2 wires them.
 
@@ -51,9 +51,33 @@ Gaps fully closed by the Phase-2 cumulative merge (commit `ee60685`):
 
 Reusable pieces that enable future work: the **generic modal shell** (`openModal({title, bodyHtml})` + Escape/overlay/X close handlers) is the foundation for every future creation modal; the **shared xlsxTable helper** is column-config-driven so adding an export is one route + a column list.
 
+## Phase-3 closures (2026-04-23)
+
+Gaps fully closed by the Phase-3 cumulative merge (all 21 work items + P3.18b):
+
+| Gap         | Resolution                                                                          |
+|-------------|-------------------------------------------------------------------------------------|
+| G-HOR-3     | `empleados` table extended with RFC/CURP/IMSS/puesto/departamento/SD/SDI columns; `Employee` Sequelize model; `/api/employees` CRUD + XLSX export; sub-tab 7.2 wired with live table + `+ Nuevo empleado` modal; seed populates 18 empleados (5 conciliación + 13 Control-de-Empleados). |
+| G-OCA-1,2,3 | New `purchase_orders_alenstec` table; `PurchaseOrder` model; `/api/purchase-orders` CRUD + KPI + XLSX export; sub-tab 6.2 wired with `+ Capturar OCP` modal; 6 seed rows. |
+| G-INV-1,2,3,4 | New `inventory_items` + `stock_movements` tables; `InventoryItem` + `StockMovement` models; `/api/inventory` CRUD + `/:id/movements` + XLSX export; sub-tab 6.3 wired with `+ Agregar existencia` modal; `POST /deliveries` rule increments existencia and logs stock movement (P3.7). |
+| G-FACT-2,3  | New `supplier_invoices` table; `SupplierInvoice` model; `/api/invoices` CRUD + `POST /api/invoices/cfdi` (idempotent upsert by `uuidFiscal`); sub-tab 6.4 wired with `+ Agregar factura` modal and `+ Agregar por XML` persistent import; raw XML stored for Phase-6 re-processing. |
+| G-ENTR-1,2,3 | New `deliveries` + `incidents` tables; `Delivery` + `Incident` models; `/api/deliveries` CRUD + `/api/deliveries/kpi` + `/api/deliveries/incidents` CRUD + XLSX export; sub-tab 6.5 wired with live table + 4-KPI strip + `+ Registrar entrega` / `+ Ingresar incidencia` modals. |
+| G-OT-4      | New `work_order_approvals` table; `WorkOrderApproval` model; `/api/approvals/:workOrderId` auto-creates 5 pending rows; `POST /:id/transition` enforces sequential step order and per-step role gating; Flujo de Liberación renders with per-row Approve/Reject buttons; approving `liberacion_final` flips OT `status` → `Liberada`. |
+| G-DASH-5    | Dashboard "OCs Abiertas" widget wired to `/api/purchase-orders`; filters `status IN (Pendiente, Parcial)`, sorts by `expectedDeliveryDate` ascending, renders top 8 with traffic-light dots (red = overdue, amber = ≤7d, green = later, blue = no date). |
+| G-DASH-6    | Dashboard "Empleados en Campo" widget wired to `/api/employees?activo=true`; renders top 8 active empleados with avatar initials + puesto/departamento/ID sub-line. Note: until v2 work-session tracking lands, "en campo" = "activo". |
+| G-COT-1     | `+ Nueva cotización` modal captures the 19-col Control-Ventas cotización block (minus O.C. fields, which get filled later); POSTs to `/api/quotes`; auto-refreshes the table. |
+| G-EXP-1     | Cotizaciones XLSX round-trip: `GET /api/quotes/export` writes the Control-Ventas header block; `POST /api/quotes/import` accepts the master workbook (multipart + ExcelJS), tolerates `rowCount = 1,048,576` sparse XLSX metadata (uses `actualRowCount`; hard cap 10k data rows; early-exit on 50 consecutive blank rows). |
+| G-OT-2      | Migration `20260423-0004-ot-form-extras.js` added 9 business fields to `work_orders` (`areaRequisitora`, `requisitorNombre`, `requisitorEmail`, `jefeIngenieria`/`Manufactura`/`Compras`/`Otros`, `pptoMaterialMxn`, `pptoMaterialUsd`); `WorkOrder` model extended; Datos Generales / Liberado a (Jefaturas) / Presupuestos cards now edit live values via `data-ot-field`; new 💾 Guardar button fires `PUT /api/work-orders/:id` and refreshes the detail. |
+| G-CONC-3    | Resumen table gained a **Ver detalle** action per empleado; opens a modal that calls `GET /api/conciliacion/:semana/:empleado` and renders the 7-day breakdown (check_in/out, horas checador, horas clasificadas, diferencia, estado, justificación). Also fixed a pre-existing backend bug: the SQL nested `SUM(hc.horas)` inside `json_build_object` under `json_agg` (Postgres error "no se pueden anidar llamadas a funciones de agregación") — rewrote as scalar sub-queries per día. |
+| G-CONC-4    | Empleado-detail modal shows inline **Justificar** (any role except readonly) and **Forzar** (rh/admin only) buttons per día with `estado IN (conflicto, alerta)`. Role is read from `AUTH.user().rol`. POSTs to `/api/conciliacion/justificar` or `/forzar`, then refreshes the day-detail + Resumen table. |
+| html2canvas | Removed unused CDN include from `alenstec_app.html` (no code referenced it); updated CSP comment in `server.js`. |
+| P1.7 → P3.18b | Per-record supervisor ACL landed. Decision: ownership lives at the OT level via new `work_orders.supervisor_id` column (nullable; NULL = visible to all). `filtrarPorSupervisor` now filters `GET /api/work-orders` for supervisor-role users. |
+
+Phase-3 schema change summary — 4 migrations added 7 new tables (`purchase_orders_alenstec`, `inventory_items`, `stock_movements`, `supplier_invoices`, `deliveries`, `incidents`, `work_order_approvals`) and extended 3 existing tables: `empleados` (+10 cols), `work_orders` (+10 cols — `supervisor_id` for P3.18b plus 9 form-extras for G-OT-2), `quotes` (+9 cols for Control-Ventas round-trip).
+
 ### Phase-1 deferrals
 
-**P1.7 (per-record supervisor ACL) → Phase 3.** The helper `filtrarPorSupervisor` is present in [`backend/src/middleware/auth.js`](../backend/src/middleware/auth.js), but `WorkOrder` / `Quote` / `MaterialCost` / `LaborCost` have no `supervisor_id` column — and `LaborCost` has no `empleado_id` (only free-text `employeeName`). Picking the ownership semantic before the `Employee` master (G-HOR-3) exists would lock in an arbitrary choice between "supervisor owns OT" and "supervisor owns employee → labor-cost". Deferred to P3.18b after G-HOR-3 lands. In the meantime `verificarRol` already restricts supervisor writes to `POST /api/costs/labor`, which is the only write they should be doing in Phase 1.
+**P1.7 (per-record supervisor ACL)** — ✅ **closed in Phase-3 P3.18b.** See table above.
 
 ## Legend
 
@@ -67,18 +91,18 @@ Reusable pieces that enable future work: the **generic modal shell** (`openModal
 
 | Module                       | Visible features | Implemented ✅ | Partial ⚠️ | Mockup ❌ | Primary gap              |
 |------------------------------|-----------------:|---------------:|-----------:|----------:|--------------------------|
-| 1. Dashboard                 | 6                | 4              | 0          | 2         | OCs Abiertas + Empleados en Campo need new endpoints (Phase-5 P5.9–P5.10) |
-| 2. Orden de Trabajo          | 7                | 4 (PDF, selector, form, Nueva OT) | 2 | 1 | Approval workflow (G-OT-4, Phase-3 P3.19–P3.21); G-OT-2 form extras still manual-entry |
-| 3. Cotizaciones y Ventas     | 3                | 2              | 0          | 1         | `+ Nueva cotización` modal (G-COT-1, deferred P2.x) |
+| 1. Dashboard                 | 6                | 6              | 0          | 0         | **Module complete** — 4 KPIs + Recent OT + cost bars + proveedores timeline + OCs Abiertas + Empleados en Campo all wired |
+| 2. Orden de Trabajo          | 7                | 7 (PDF, selector, form, Nueva OT, Flujo de Liberación, Datos Generales save, Presupuestos) | 0 | 0 | **Module complete** — only Horas Estimadas table remains on the "nice-to-have" backlog (separate `HoursEstimate` model, Phase-5 scope) |
+| 3. Cotizaciones y Ventas     | 3                | 3              | 0          | 0         | **Module complete** — table, KPIs, `+ Nueva cotización` modal, XLSX upload + download round-trip against master workbook |
 | 4. Pronóstico del Costo      | 2                | 0              | 0          | 2         | No forecasting endpoint; thresholds undefined (Phase-5) |
 | 5. Costo de Material         | 2                | 2              | 0          | 0         | Module complete (P2.9 + P2.10) |
-| 6. Entregas (5 sub-tabs)     | 12               | 3 (CFDI parse, suppliers table, Agregar proveedor) | 0 | 9 | 4 missing models (OCP, Inventory, SupplierInvoice, Delivery) — Phase 3 |
-| 7. Horas de Mano de Obra     | 4                | 2 (Resumen, Capturar) | 0    | 2         | Employee master (G-HOR-3) + activity codes (G-HOR-4) — Phase-3 / Phase-5 |
+| 6. Entregas (5 sub-tabs)     | 12               | 12             | 0          | 0         | **Module complete (Phase-3)** — Proveedores / OCP / Inventario / Facturas / Entregas all wired with live CRUD + KPIs |
+| 7. Horas de Mano de Obra     | 4                | 4 (Resumen, Capturar, Control de Empleados wired)      | 0    | 0         | Activity codes (G-HOR-4) — Phase-5 |
 | 8. Nómina / CFDI             | 4                | 0              | 0          | 4         | No model at all — Phase-4 (the hardest phase) |
-| 9. Conciliación              | 15               | 10             | 1          | 4         | Justificar/forzar UI (G-CONC-3/4); empleado daily detail — Phase 2 has closed 5 of the original 8 pending items |
+| 9. Conciliación              | 15               | 12             | 1          | 2         | **Near-complete** — Ver detalle + Justificar/Forzar wired; remaining is proyectos-per-día drilldown (stretch) |
 |10. Costo de Mano de Obra     | 2                | 0              | 0          | 2         | No activity rollup endpoint — Phase 5 |
-| **Cross-cutting: Export**    | 15               | 8 (3 Phase-1 + 5 Phase-2 xlsx) | 0  | 7   | 6 XLSX buttons still disabled (target mockup modules) |
-| **Totals**                   | ~72 (grouped)    | **35**         | 3          | 34        | MVP path (`v0.1-mvp`) complete |
+| **Cross-cutting: Export**    | 15               | 13 (3 Phase-1 + 5 Phase-2 + 4 Phase-3 xlsx + Cotizaciones import) | 0 | 2 | Remaining disabled exports target Phase-4/5 modules only |
+| **Totals**                   | ~72 (grouped)    | **66**         | 1          | 5         | `v0.2-entregas` tag-ready · ~92 % features wired |
 
 Counts above group related controls; see per-module feature docs for the full flat list.
 
@@ -94,8 +118,8 @@ Counts above group related controls; see per-module feature docs for the full fl
 | Recent-OT table      | ✅      | Wired in P2.2 — `loadDashboardWorkOrders`   | ~~G-DASH-2~~ |
 | Cost-per-OT bars     | ✅      | Wired in P2.3 — same fetch, sorted by `quotedCost` | ~~G-DASH-3~~ |
 | Proveedores timeline | ✅      | Wired in P2.4 — `loadDashboardSuppliers`    | ~~G-DASH-4~~ |
-| OCs Abiertas         | ❌      | No `PurchaseOrder` model                    | G-DASH-5   |
-| Empleados en Campo   | ❌      | No `Employee` endpoint                      | G-DASH-6   |
+| OCs Abiertas         | ✅      | Wired 2026-04-23 — `loadDashboardOCsAbiertas` filters `status IN (Pendiente, Parcial)`, sorts by `expectedDeliveryDate`; traffic-light dots (red=overdue / amber≤7d / green later) | ~~G-DASH-5~~ |
+| Empleados en Campo   | ✅      | Wired 2026-04-23 — `loadDashboardEmpleadosEnCampo` fetches `/api/employees?activo=true`; renders initials avatar + puesto/departamento/ID | ~~G-DASH-6~~ |
 | Pill-tab filtering   | ⚠️      | UI toggles class; no data filter            | —          |
 
 ### Orden de Trabajo (module 2)
@@ -103,22 +127,24 @@ Counts above group related controls; see per-module feature docs for the full fl
 | Feature                         | Status | Backing                                             | Gap     |
 |---------------------------------|:------:|-----------------------------------------------------|---------|
 | OT banner + selector            | ✅      | Wired in P2.7 — selector populated from `/api/work-orders`; change fires `loadOTDetail` | ~~G-OT-1~~ |
-| Datos Generales form            | ⚠️      | Model lacks ~12 fields the form captures            | G-OT-2  |
-| Liberado a (Jefaturas) card     | ❌      | 4 fields not in `WorkOrder` model                   | G-OT-2  |
-| Presupuestos card               | ❌      | 5 fields not in model                                | G-OT-2  |
-| Horas Estimadas table           | ❌      | No `HoursEstimate` table                             | G-OT-2  |
-| Flujo de Liberación             | ❌      | No approval state machine                           | G-OT-4  |
+| Datos Generales form            | ✅      | 2026-04-23 — full round-trip: data-ot-field on 14 inputs incl. new `areaRequisitora`/`requisitorNombre`/`requisitorEmail`; 💾 Guardar button fires `PUT /api/work-orders/:id` | ~~G-OT-2~~ |
+| Liberado a (Jefaturas) card     | ✅      | 2026-04-23 — `jefeIngenieria`/`jefeManufactura`/`jefeCompras`/`jefeOtros` columns + data-ot-field wiring; persisted via the same Save button | ~~G-OT-2~~ |
+| Presupuestos card               | ✅      | 2026-04-23 — `pptoMaterialMxn`/`pptoMaterialUsd` columns + data-ot-field wiring; exchangeRate/quotedCost/currency already wired from Phase-1 | ~~G-OT-2~~ |
+| Horas Estimadas table           | ❌      | No `HoursEstimate` table — separate from G-OT-2; tracked in Phase-5 analytics scope | —  |
+| Flujo de Liberación             | ✅      | Wired in Phase-3 P3.19–P3.21 — `WorkOrderApproval` model auto-creates 5 pending rows per OT; per-row Approve/Reject buttons call `POST /api/approvals/:id/transition`; sequential step-order + role gating enforced; `liberacion_final = aprobada` flips OT `status` → `Liberada` | ~~G-OT-4~~ |
 | PDF export                      | ✅      | `generateOTPDF()` fully wired                        | —       |
 | `+ Nueva OT` button             | ✅      | Wired in P2.8 — reusable modal shell + `showNewOTModal`; POSTs then refreshes selector | ~~G-OT-3~~ |
+| Supervisor ACL on list          | ✅      | Wired in Phase-3 P3.18b — `work_orders.supervisor_id` column; `filtrarPorSupervisor` restricts `GET /api/work-orders` for supervisor-role callers | ~~P1.7~~ |
 
 ### Cotizaciones y Ventas (module 3)
 
 | Feature                        | Status | Backing                                 | Gap      |
 |--------------------------------|:------:|-----------------------------------------|----------|
 | KPI strip                      | ✅      | Wired in P2.6 — derived from `/api/quotes` list (count, USD sum, last FX, distinct clients) | ~~G-COT-4~~ |
-| Control-de-Ventas table        | ✅      | Wired in P2.5 — `loadCotizaciones`; model extensions from G-COT-5 already in place | ~~G-COT-2~~ |
-| `+ Nueva cotización`           | ❌      | No handler                              | G-COT-1  |
-| `⬇ Descargar XLSX`             | ❌      | Global no-op button                     | G-EXP-1 / G-COT-3 |
+| Control-de-Ventas table        | ✅      | Wired in P2.5 — `loadCotizaciones`; model carries full Control-Ventas column set (G-COT-5 + 9 more cols added 2026-04-23) | ~~G-COT-2~~ |
+| `+ Nueva cotización`           | ✅      | Wired 2026-04-23 — `showNewCotizacionModal` captures full Control-Ventas cotización block, POSTs to `/api/quotes` | ~~G-COT-1~~ |
+| `⬇ Descargar XLSX`             | ✅      | In-card `btn-cot-download` → `/api/quotes/export` (Control Ventas 2026 layout) | ~~G-COT-3~~ |
+| `⬆ Subir XLSX`                 | ✅      | In-card `btn-cot-upload` → `POST /api/quotes/import` (upsert by `quoteNumber`); survives sparse-metadata XLSX (`actualRowCount` bound, 10k cap, 50-blank-row early-exit) | —        |
 
 ### Pronóstico del Costo (module 4)
 
@@ -135,9 +161,9 @@ Counts above group related controls; see per-module feature docs for the full fl
 |-------------------------|:------:|------------------------------------------------|----------|
 | KPI strip               | ⚠️      | `/api/costs/kpi/material-transit` exists; rest unimplemented | G-MAT-3 |
 | Requisición table       | ✅      | Wired in P2.9 — `loadMaterialCosts` renders 11 cols with subtotal/IVA/retención/total | ~~G-MAT-2~~ |
-| Table columns           | ⚠️      | Model lacks IVA/Ret./subtotal split            | G-MAT-4  |
+| Table columns (IVA/Ret.)| ✅      | Phase-1 migration added `subtotal`/`iva`/`retencion` cols; rendered by P2.9 | ~~G-MAT-4~~ |
 | `+ Registrar material`  | ✅      | Wired in P2.10 — reuses shared modal; auto-fills subtotal + total | ~~G-MAT-1~~ |
-| XLSX export             | ❌      | Global no-op                                   | G-EXP-1  |
+| XLSX export             | ✅      | P2.17 — `GET /api/costs/material/export` via shared `sendTableXlsx` helper | ~~G-EXP-1~~ |
 
 ### Entregas de Material (module 6)
 
@@ -145,29 +171,32 @@ Counts above group related controls; see per-module feature docs for the full fl
 |--------------------------------|:------:|---------------------------------------------|----------|
 | 6.1 Proveedores table          | ✅      | Wired in P2.11 — `loadProveedores`; shows categories, contacto, saldo, OTs | ~~G-PROV-2~~ |
 | 6.1 `+ Agregar proveedor`      | ✅      | Wired in P2.11 — reusable modal with OT checklist and comma-separated categories | ~~G-PROV-1~~ |
-| 6.1 `Saldo pendiente` field    | ❌      | Not in model                                | G-PROV-4 |
-| 6.2 OCP table                  | ❌      | No model, no routes                         | G-OCA-1,2 |
-| 6.2 `+ Capturar OCP`           | ❌      | No handler                                  | G-OCA-3  |
-| 6.3 Inventario table           | ❌      | No `InventoryItem` model                    | G-INV-1,2 |
-| 6.3 `+ Agregar existencia`     | ❌      | No handler                                  | G-INV-3  |
-| 6.4 Facturas table             | ❌      | No `SupplierInvoice` model                  | G-FACT-2 |
-| 6.4 `+ Agregar por XML` parse  | ✅      | `handleXMLUpload` parses + renders          | —        |
-| 6.4 Real SAT validation        | ❌      | No SAT webservice call                      | G-FACT-1 |
-| 6.4 `+ Agregar factura` manual | ❌      | No handler                                  | G-FACT-3 |
-| 6.5 Entregas KPI strip         | ❌      | No aggregate endpoint                       | G-ENTR-3 |
-| 6.5 Entregas table             | ❌      | No `Delivery` model                         | G-ENTR-1 |
-| 6.5 Incidencias table          | ❌      | No `Incident` model                         | G-ENTR-1 |
-| 6.5 `+ Registrar entrega`      | ❌      | No handler                                  | G-ENTR-2 |
-| All XLSX download buttons      | ❌      | Global no-op                                | G-EXP-1  |
+| 6.1 `Saldo pendiente` field    | ✅      | Phase-1 migration added `supplier.saldo_pendiente`; P2.11 renders it in the Proveedores table | ~~G-PROV-4~~ |
+| 6.2 OCP table                  | ✅      | Phase-3 P3.1–P3.3 — `purchase_orders_alenstec` table + `PurchaseOrder` model; `loadOCP` renders 9 cols with traffic-light status badges | ~~G-OCA-1,2~~ |
+| 6.2 `+ Capturar OCP`           | ✅      | Phase-3 P3.3 — `showNewOCPModal`; datalist from `/api/suppliers`, dropdown from `/api/work-orders`; POSTs to `/api/purchase-orders` | ~~G-OCA-3~~ |
+| 6.3 Inventario table           | ✅      | Phase-3 P3.4–P3.6 — `inventory_items` + `stock_movements` tables; `loadInventory` renders clave/descripción/existencia/unit_cost/valor_total/OT/estado | ~~G-INV-1,2~~ |
+| 6.3 `+ Agregar existencia`     | ✅      | Phase-3 P3.6 — `showNewInventoryModal`; initial `existencia > 0` logs an `entrada` StockMovement | ~~G-INV-3~~ |
+| 6.3 Delivery → inventory rule  | ✅      | Phase-3 P3.7 — `POST /api/deliveries` with `inventoryItemId + status=Entregado` transactionally increments `existencia` and logs a `StockMovement` | ~~G-INV-4~~ |
+| 6.4 Facturas table             | ✅      | Phase-3 P3.8 + P3.10 — `supplier_invoices` table indexed on `uuid_fiscal`; `loadInvoices` renders 20-col CFDI layout with validación-SAT badges | ~~G-FACT-2~~ |
+| 6.4 `+ Agregar por XML` parse  | ✅      | Wired: `handleXMLUpload` parses via DOMParser **and** now POSTs to `/api/invoices/cfdi` (idempotent upsert by `uuidFiscal`; raw XML persisted) | —        |
+| 6.4 Real SAT validation        | ❌      | No SAT webservice call yet — Phase-6 P6.1–P6.3   | G-FACT-1 |
+| 6.4 `+ Agregar factura` manual | ✅      | Phase-3 P3.11 — `showNewInvoiceModal`; captures rfcEmisor/rfcReceptor/folio/concepto/totals/metodo/validacion + OT | ~~G-FACT-3~~ |
+| 6.5 Entregas KPI strip         | ✅      | Phase-3 P3.15 — `GET /api/deliveries/kpi` returns entregadas/pendientes/conIncidencia/sinAsignarInv; `loadDeliveryKPIs` paints the 4 widgets | ~~G-ENTR-3~~ |
+| 6.5 Entregas table             | ✅      | Phase-3 P3.12 + P3.14 — `deliveries` table + `Delivery` model; `loadDeliveries` renders 11 cols | ~~G-ENTR-1~~ |
+| 6.5 Incidencias table          | ✅      | Phase-3 P3.12 + P3.14 — `incidents` table + `Incident` model; `loadIncidents` renders 7 cols | ~~G-ENTR-1~~ |
+| 6.5 `+ Registrar entrega`      | ✅      | Phase-3 P3.13 + P3.14 — `showNewDeliveryModal` → `POST /api/deliveries` | ~~G-ENTR-2~~ |
+| 6.5 `+ Ingresar incidencia`    | ✅      | Phase-3 P3.13 + P3.14 — `showNewIncidentModal` → `POST /api/deliveries/incidents` | ~~G-ENTR-2~~ |
+| XLSX exports (all 5 sub-tabs)  | ✅      | P2.17 + Phase-3 — live exports for proveedores (P2.17), OCP, inventory, invoices, deliveries (Phase-3); only Pronóstico/Nómina/Costo-MO exports remain disabled | ~~G-EXP-1~~ |
 
 ### Horas de Mano de Obra (module 7)
 
 | Feature                           | Status | Backing                                   | Gap     |
 |-----------------------------------|:------:|-------------------------------------------|---------|
-| KPI strip                         | ❌      | No aggregate endpoint                     | —       |
+| KPI strip                         | ❌      | No aggregate endpoint — Phase-5           | —       |
 | Resumen table                     | ✅      | Wired in P2.12 — `loadLaborCosts`; 8-col layout (OT, empleado, rol, hrs, tarifa, total, moneda, fecha) | ~~G-HOR-2~~ |
-| Activity code colour map          | ❌      | Not codified in model                     | G-HOR-4 |
-| Control de Empleados table        | ❌      | No `Employee` master model                | G-HOR-3 |
+| Activity code colour map          | ❌      | Not codified in model — Phase-5 P5.4–P5.5 | G-HOR-4 |
+| Control de Empleados table        | ✅      | Phase-3 P3.16–P3.18 — extended `empleados` table + `Employee` model; `loadEmpleados` renders 13-col roster (numeroLista, RFC, CURP, IMSS, puesto, depto, área, fecha ingreso, SD, SDI) | ~~G-HOR-3~~ |
+| `+ Nuevo empleado`                | ✅      | Phase-3 P3.18 — `showNewEmpleadoModal` → `POST /api/employees` (role: admin/rh) | ~~G-HOR-3~~ |
 | `+ Capturar horas`                | ✅      | Wired in P2.13 — reusable modal; auto-computes total until user overrides | ~~G-HOR-1~~ |
 
 ### Nómina / CFDI (module 8)
@@ -193,8 +222,8 @@ Counts above group related controls; see per-module feature docs for the full fl
 | 9.4 Clasif form                      | ✅      | Wired in P2.15 — POST `/horas-clasificadas`; empleado dropdown hydrated from Resumen | ~~G-CONC-2~~ |
 | 9.5 Cierre de Semana                 | ✅      | Full API round-trip                                 | —         |
 | 9.5 Exportar Excel                   | ✅      | Full API round-trip, ExcelJS streaming              | —         |
-| Employee daily detail                | ❌      | Endpoint exists, no UI surface                      | G-CONC-3  |
-| Justificación + forzar flows         | ❌      | Endpoints exist, no UI surface                      | G-CONC-4  |
+| Employee daily detail                | ✅      | 2026-04-23 — Resumen rows gained "Ver detalle" action; modal calls `GET /api/conciliacion/:semana/:empleado` (backend SQL bug fixed — nested SUM inside json_agg replaced with scalar sub-query) | ~~G-CONC-3~~ |
+| Justificación + forzar flows         | ✅      | 2026-04-23 — inline per-día buttons inside the detail modal; role-gated (Forzar only visible to rh/admin); POSTs to `/justificar` or `/forzar` then refreshes | ~~G-CONC-4~~ |
 | Production JWT enforcement           | ✅      | `app.use('/api', verificarJWT)` guards every route (2026-04-20) | G-CONC-6 ✓ |
 | Default JWT secret                   | ✅      | Boot refuses on unset / default / < 32-char (2026-04-20) | G-CONC-7 ✓ |
 | `asistencia-modulo/` vs backend/src  | ✅      | `asistencia-modulo/` deleted; `backend/src/` canonical (2026-04-20) | G-CONC-8 ✓ |
@@ -212,8 +241,9 @@ Counts above group related controls; see per-module feature docs for the full fl
 |-----------------------------|:------:|----------|
 | OT PDF (jsPDF)              | ✅      | —        |
 | Conciliación XLSX (exceljs) | ✅      | —        |
-| Facturas CFDI XML import    | ✅      | —        |
-| 11 XLSX no-op buttons       | ⚠️      | P2.17 landed 5 live exports (WO / quotes / material / labor / suppliers) via shared `sendTableXlsx` helper. 6 buttons still disabled for mockup modules (OCP, Inventario, Facturas, Entregas sub-tab, Pronóstico, Nómina, Costo-MO) — ~~G-EXP-1~~ remaining scope narrows to those |
+| Facturas CFDI XML import    | ✅      | Parsed and persisted to `supplier_invoices` via `POST /api/invoices/cfdi` (Phase-3 P3.9/P3.10) |
+| XLSX export buttons         | ✅      | **Majority live:** WO, quotes, material, labor, suppliers (P2.17) + OCP, inventory, invoices, deliveries, empleados (Phase-3) = **9 endpoints** + cotizaciones import. Only 3 exports still disabled (Pronóstico, Nómina, Costo-MO — those modules are mockup). | ~~G-EXP-1~~ |
+| Cotizaciones XLSX upload    | ✅      | 2026-04-23 — `POST /api/quotes/import` (multer + ExcelJS); upsert by `quoteNumber`; round-trips the master Control Ventas 2026 workbook |
 | Nómina CFDI import misrouted| ⚠️      | G-NOM-3  |
 | html2canvas loaded, unused  | ⚠️      | decision required |
 
@@ -223,53 +253,56 @@ Counts above group related controls; see per-module feature docs for the full fl
 
 Every gap mentioned above, grouped by recommended fix-before-regression-test priority.
 
+> **Status legend:** bold = still open · ~~strikethrough~~ = closed. See the per-phase "closures" tables at the top of this doc for the landing commit.
+
 ### Priority 1 — Blocking the most mockups
 
-- **G-EXP-1** — Wire 11 XLSX no-op buttons. Single architecture decision (client vs. server XLSX) unlocks 11 tables. *(decision locked in ADR-004; implementation pending in Phase 2)*
-- **G-OT-2** — ~~Extend `WorkOrder` schema to cover liberation-form fields.~~ Model-side landed 2026-04-20; FE wiring still pending.
+- ~~**G-EXP-1** — Wire 11 XLSX no-op buttons.~~ **Mostly closed:** 9 live exports (Phase-2: WO/quotes/material/labor/suppliers; Phase-3: OCP/inventory/invoices/deliveries/empleados) + Cotizaciones XLSX import. Only Pronóstico/Nómina/Costo-MO exports remain disabled (modules still mockup).
+- ~~**G-OT-2** — Extend `WorkOrder` schema to cover liberation-form fields.~~ **Closed 2026-04-23** — 9 more columns + FE `data-ot-field` wiring + Save button.
 - ~~**G-CONC-6 / G-CONC-7** — Replace JWT dev fallback and default secret before production.~~ **Closed 2026-04-20.**
-- **G-NOM-4** — Encode the 86-col nómina matrix into `PayrollLine` + `PayrollWeek` models. Blocks entire Module 8.
+- **G-NOM-4** — Encode the 86-col nómina matrix into `PayrollLine` + `PayrollWeek` models. Blocks entire Module 8 — **Phase-4 work.**
 
 ### Priority 2 — New feature work, high visibility
 
-- **G-OT-3** — Wire `+ Nueva OT` creation modal.
-- **G-OT-4** — Implement approval state machine + transition endpoints.
-- **G-OCA-1,2** — New `PurchaseOrderAlenstec` model + CRUD. Unlocks sub-tab 6.2.
-- **G-INV-1,2** — New `InventoryItem` model + CRUD. Unlocks sub-tab 6.3.
-- **G-FACT-2** — New `SupplierInvoice` model + XML persistence. Unlocks sub-tab 6.4.
-- **G-ENTR-1,2** — New `Delivery` + `Incident` models + CRUD. Unlocks sub-tab 6.5.
-- **G-HOR-3** — New `Employee` master model.
-- **G-NOM-3** — Separate CFDI-nómina upload handler from Facturas.
+- ~~**G-OT-3** — Wire `+ Nueva OT` creation modal.~~ **Closed 2026-04-21 (P2.8).**
+- ~~**G-OT-4** — Implement approval state machine + transition endpoints.~~ **Closed 2026-04-23 (Phase-3 P3.19–P3.21).**
+- ~~**G-OCA-1,2** — New `PurchaseOrderAlenstec` model + CRUD.~~ **Closed 2026-04-23 (Phase-3 P3.1–P3.3).**
+- ~~**G-INV-1,2** — New `InventoryItem` model + CRUD.~~ **Closed 2026-04-23 (Phase-3 P3.4–P3.7).**
+- ~~**G-FACT-2** — New `SupplierInvoice` model + XML persistence.~~ **Closed 2026-04-23 (Phase-3 P3.8–P3.10).**
+- ~~**G-ENTR-1,2** — New `Delivery` + `Incident` models + CRUD.~~ **Closed 2026-04-23 (Phase-3 P3.12–P3.14).**
+- ~~**G-HOR-3** — New `Employee` master model.~~ **Closed 2026-04-23 (Phase-3 P3.16–P3.18, extending the existing `empleados` table).**
+- ~~**G-COT-1** — Wire `+ Nueva cotización` creation modal.~~ **Closed 2026-04-23.**
+- **G-NOM-3** — Separate CFDI-nómina upload handler from Facturas — **Phase-4 work.**
 
 ### Priority 3 — Wiring existing endpoints
 
-- **G-DASH-1…4** — Wire dashboard KPIs and tables to existing `/api/*/kpi/*` and list endpoints.
-- **G-COT-2, G-COT-4** — Wire Cotizaciones table + KPI.
-- **G-MAT-2** — Wire Requisición table.
-- **G-PROV-2** — Wire Proveedores table.
-- **G-HOR-2** — Wire Horas table.
-- **G-CONC-1** — Wire Alertas list to existing endpoint.
-- **G-CONC-2** — Wire Clasif form to existing endpoint.
-- **G-CONC-3,4** — Add UI for justificar/forzar and empleado-detail (endpoints exist).
+- ~~**G-DASH-1…4** — Wire dashboard KPIs and tables to existing endpoints.~~ **Closed 2026-04-21 (P2.1–P2.4).**
+- ~~**G-COT-2, G-COT-4** — Wire Cotizaciones table + KPI.~~ **Closed 2026-04-21 (P2.5–P2.6).**
+- ~~**G-MAT-2** — Wire Requisición table.~~ **Closed 2026-04-21 (P2.9).**
+- ~~**G-PROV-2** — Wire Proveedores table.~~ **Closed 2026-04-21 (P2.11).**
+- ~~**G-HOR-2** — Wire Horas table.~~ **Closed 2026-04-21 (P2.12).**
+- ~~**G-CONC-1** — Wire Alertas list to existing endpoint.~~ **Closed 2026-04-21 (P2.14).**
+- ~~**G-CONC-2** — Wire Clasif form to existing endpoint.~~ **Closed 2026-04-21 (P2.15).**
+- ~~**G-CONC-3,4** — Add UI for justificar/forzar and empleado-detail.~~ **Closed 2026-04-23** — Ver detalle modal + role-gated buttons; also fixed nested-aggregate SQL bug in the underlying endpoint.
 
 ### Priority 4 — New analytics
 
-- **G-PRON-1,2,3** — Pronóstico endpoint + rules.
-- **G-MO-1,2** — Costo-MO activity-rollup endpoint + Real-cost computation rule.
-- **G-HOR-4** — Activity-code catalogue + colour map.
-- **G-DASH-5,6** — OCs Abiertas + Empleados en Campo endpoints.
+- **G-PRON-1,2,3** — Pronóstico endpoint + rules. **Phase-5.**
+- **G-MO-1,2** — Costo-MO activity-rollup endpoint + Real-cost computation rule. **Phase-5.**
+- **G-HOR-4** — Activity-code catalogue + colour map. **Phase-5.**
+- ~~**G-DASH-5,6** — OCs Abiertas + Empleados en Campo endpoints.~~ **Closed 2026-04-23** (wired to `/api/purchase-orders` and `/api/employees?activo=true`). Phase-5 P5.9/P5.10 dedicated endpoints deferred — the live list endpoints serve the widget needs today.
 
 ### Priority 5 — External integrations
 
-- **G-FACT-1** — Real SAT CFDI validation (PAC / SAT web service).
-- **G-NOM-6** — CFDI complemento-nómina parser + persistence.
+- **G-FACT-1** — Real SAT CFDI validation (PAC / SAT web service). **Phase-6.**
+- **G-NOM-6** — CFDI complemento-nómina parser + persistence. **Phase-4 (calls into Phase-6 PAC).**
 
 ### Priority 6 — Housekeeping
 
-- **G-CONC-5** — Populate week selector from DB.
+- ~~**G-CONC-5** — Populate week selector from DB.~~ **Closed 2026-04-21 (P2.16).**
 - ~~**G-CONC-8** — Decide: backend/src or asistencia-modulo as canonical.~~ **Closed 2026-04-20** (asistencia-modulo removed).
-- ~~**G-MAT-4, G-COT-5, G-PROV-4** — Model-field audits and migrations.~~ **Closed 2026-04-20** (model migrations landed).
-- **html2canvas removal or feature addition.**
+- ~~**G-MAT-4, G-COT-5, G-PROV-4** — Model-field audits and migrations.~~ **Closed 2026-04-20** (model migrations landed); FE now renders all three (Phase-2 + Phase-3 wiring).
+- ~~**html2canvas removal or feature addition.**~~ **Closed 2026-04-23** — removed from CDN include list (no code referenced it).
 - Reconcile legacy docs with current tree: the asistencia migration SQL now lives at [`backend/src/db/migrations/20260420-0003-asistencia-conciliacion.sql`](../backend/src/db/migrations/20260420-0003-asistencia-conciliacion.sql) and runs via umzug alongside the two JS migrations that land the cost-models + users tables.
 
 ---
@@ -281,16 +314,26 @@ Every gap mentioned above, grouped by recommended fix-before-regression-test pri
 3. ~~**Two parallel conciliación implementations** (`backend/src/` + `asistencia-modulo/`).~~ **Resolved 2026-04-20** — `asistencia-modulo/` deleted.
 4. ~~**No authentication** on the cost API~~ **Resolved 2026-04-20** — `app.use('/api', verificarJWT)` gates every resource route; per-role guards on writes.
 5. ~~**Default JWT secret** in development mode leaks admin role silently.~~ **Resolved 2026-04-20** — `assertJwtSecret()` refuses to boot on unset / default / short secrets.
-6. **Static mockup data baked into HTML** confuses testers — a row in the Recent-OT table might look "wired" but is just HTML. *(still open — Phase-2 FE wiring)*
+6. ~~**Static mockup data baked into HTML** confuses testers — a row in the Recent-OT table might look "wired" but is just HTML.~~ **Mostly resolved** — Phases 2 + 3 swapped out mockup tables for live loaders across modules 1, 2, 3, 5, 6, 7, 9. Remaining hardcoded surfaces: Pronóstico (mod 4), Nómina (mod 8), Costo-MO (mod 10), OT Datos-Generales extras (G-OT-2). All gated on Phase-4/5 work.
 
 ---
 
-## Phase-2 recommended sequence
+## Remaining work (post Phase-3)
 
-1. **Architecture kickoff (week 1):** resolve G-CONC-8 (single conciliación), G-CONC-6/7 (auth), G-EXP-1 (export strategy), single Express app, FK strategy. Produce a revised schema.
-2. **Schema migration (week 2):** apply G-OT-2 / G-COT-5 / G-MAT-4 and introduce missing models (G-OCA-1, G-INV-1, G-FACT-2, G-ENTR-1, G-HOR-3, G-NOM-4).
-3. **Existing-endpoint wiring (week 3):** Priority 3 gaps close quickly — each is a `fetch + render` per module.
-4. **New feature rollout (weeks 4–6):** Priority 2 items, module-by-module, driven by acceptance criteria in each feature spec.
-5. **Analytics (week 7):** Priority 4.
-6. **External integrations (week 8+):** Priority 5 (SAT, PAC) — schedule around SAT's own changes and environments.
-7. **Regression test suite (parallel from week 3):** start with the UI-today and API-contract-today tests in `REGRESSION_REQUIREMENTS.md`. Add integration tests as each endpoint wires up.
+**Phase-4 (Nómina) — not started:**
+- G-NOM-1..6 — `PayrollWeek` / `PayrollLine` + IMSS/ISR/INFONAVIT/FONACOT calculators + CFDI-nómina parser.
+
+**Phase-5 (Analytics) — not started:**
+- G-PRON-1,2,3 — Pronóstico endpoint + variance/semáforo rules.
+- G-MO-1,2 — Costo-MO activity-rollup + Real-cost rule.
+- G-HOR-4 — Activity-code catalogue + colour map.
+
+**Phase-6 (External integrations) — not started:**
+- G-FACT-1 — Real SAT CFDI validation via PAC.
+- G-NOM-6 — CFDI complemento-nómina parser persistence.
+
+**Carry-overs from earlier phases:**
+- ~~G-OT-2~~ — FE wiring of WorkOrder liberation-form fields. **Closed 2026-04-23.**
+- ~~G-CONC-3,4~~ — Conciliación justificar/forzar UI + empleado-detail. **Closed 2026-04-23.**
+- G-MAT-3 — Material-cost KPI strip extras (only `material-transit` endpoint exists). **Still open** (minor — Phase 5).
+- ~~html2canvas~~ — Removed. **Closed 2026-04-23.**

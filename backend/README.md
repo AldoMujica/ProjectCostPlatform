@@ -36,7 +36,7 @@ All `/api/*` routes except `/api/auth/*` and `/api/health` require a valid JWT i
 - `POST /api/auth/login` — `{ email, password }` → `{ accessToken, refreshToken, user }`
 - `POST /api/auth/refresh` — `{ refreshToken }` → `{ accessToken }`
 - `GET  /api/auth/me` — current user
-- `/api/work-orders`, `/api/quotes`, `/api/costs/{material,labor}`, `/api/suppliers`, `/api/conciliacion/*`
+- `/api/work-orders`, `/api/quotes` (+ `/export`, `/import`), `/api/costs/{material,labor}`, `/api/suppliers`, `/api/conciliacion/*`
 
 See [`implementation-roadmap.md`](../docs/implementation-roadmap.md) §Phase 2 for the full MVP endpoint list.
 

@@ -45,6 +45,20 @@ const WorkOrder = sequelize.define('WorkOrder', {
   liberationDate: { type: DataTypes.DATEONLY, allowNull: true, field: 'liberation_date' },
   liberatedBy: { type: DataTypes.INTEGER, allowNull: true, field: 'liberated_by' },
   notes: { type: DataTypes.TEXT, allowNull: true },
+
+  // P3.18b — per-record supervisor ACL. Null = unassigned / visible to all.
+  supervisorId: { type: DataTypes.INTEGER, allowNull: true, field: 'supervisor_id' },
+
+  // G-OT-2 follow-up — Datos Generales / Liberado a / Presupuestos extras.
+  areaRequisitora:   { type: DataTypes.STRING,         allowNull: true, field: 'area_requisitora' },
+  requisitorNombre:  { type: DataTypes.STRING,         allowNull: true, field: 'requisitor_nombre' },
+  requisitorEmail:   { type: DataTypes.STRING,         allowNull: true, field: 'requisitor_email' },
+  jefeIngenieria:    { type: DataTypes.STRING,         allowNull: true, field: 'jefe_ingenieria' },
+  jefeManufactura:   { type: DataTypes.STRING,         allowNull: true, field: 'jefe_manufactura' },
+  jefeCompras:       { type: DataTypes.STRING,         allowNull: true, field: 'jefe_compras' },
+  jefeOtros:         { type: DataTypes.STRING,         allowNull: true, field: 'jefe_otros' },
+  pptoMaterialMxn:   { type: DataTypes.DECIMAL(12, 2), allowNull: true, field: 'ppto_material_mxn' },
+  pptoMaterialUsd:   { type: DataTypes.DECIMAL(12, 2), allowNull: true, field: 'ppto_material_usd' },
 }, {
   tableName: 'work_orders',
   timestamps: true,

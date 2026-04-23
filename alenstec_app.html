@@ -222,7 +222,7 @@ select.fi{cursor:pointer}
 .s-foot{display:flex;align-items:center;gap:8px}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<!-- html2canvas removed 2026-04-23 — unused dependency (no code referenced it) -->
 </head>
 <body>
 
@@ -383,22 +383,14 @@ select.fi{cursor:pointer}
     </div>
     <div class="card">
       <div class="ch"><div class="ct">OCs Abiertas</div></div>
-      <div class="cb" style="padding:10px 16px">
-        <div class="tl-row"><div class="tl-dot" style="background:var(--red)"></div><div><div class="tl-title">OC 2301498137</div><div class="tl-sub">Adient · OT-1948 · T/C $17.34</div></div></div>
-        <div class="tl-row"><div class="tl-dot" style="background:var(--amber)"></div><div><div class="tl-title">OC 2301504802</div><div class="tl-sub">Adient · OT-1951 · $8,407 USD</div></div></div>
-        <div class="tl-row"><div class="tl-dot" style="background:var(--green)"></div><div><div class="tl-title">OC 2301492124</div><div class="tl-sub">Adient · OT-1946 · $16,020 USD</div></div></div>
-        <div class="tl-row"><div class="tl-dot" style="background:var(--green)"></div><div><div class="tl-title">OC 2310481395</div><div class="tl-sub">Avanzar · OT-1934 · $15,782 USD</div></div></div>
-        <div class="tl-row"><div class="tl-dot" style="background:var(--blue)"></div><div><div class="tl-title">GIPU 0817</div><div class="tl-sub">Autoliv · OT-1941/1942 · $1,048 USD</div></div></div>
+      <div class="cb" id="dash-ocs-abiertas" style="padding:10px 16px">
+        <div class="tl-row"><div class="tl-sub" style="color:var(--text3)">Cargando…</div></div>
       </div>
     </div>
     <div class="card">
       <div class="ch"><div class="ct">Empleados en Campo</div></div>
-      <div class="cb" style="padding:10px 16px">
-        <div class="tl-row"><div class="av sm" style="flex-shrink:0">MA</div><div><div class="tl-title">Magarito Álvarez Piña</div><div class="tl-sub">Maquinado · Ensamble · ID 24</div></div></div>
-        <div class="tl-row"><div class="av sm" style="flex-shrink:0">CD</div><div><div class="tl-title">Cristian Saúl Durán Plata</div><div class="tl-sub">Des. y Preventa · Ctrl. Costo · ID 65</div></div></div>
-        <div class="tl-row"><div class="av sm" style="flex-shrink:0">DC</div><div><div class="tl-title">Diego Castillo Jiménez</div><div class="tl-sub">Corte · Ensamble · Cap. · ID 114</div></div></div>
-        <div class="tl-row"><div class="av sm" style="flex-shrink:0">ME</div><div><div class="tl-title">Miguel Á. Espinosa Martínez</div><div class="tl-sub">Maquinado · Almacén · ID 10</div></div></div>
-        <div class="tl-row"><div class="av sm" style="flex-shrink:0">LL</div><div><div class="tl-title">Luis A. López Prudente</div><div class="tl-sub">Mantenimiento · Maquinado · ID 138</div></div></div>
+      <div class="cb" id="dash-empleados-campo" style="padding:10px 16px">
+        <div class="tl-row"><div class="tl-sub" style="color:var(--text3)">Cargando…</div></div>
       </div>
     </div>
   </div>
@@ -415,17 +407,23 @@ select.fi{cursor:pointer}
   </div>
   <div class="g2">
     <div class="card">
-      <div class="ch"><div class="ct">Datos Generales</div></div>
+      <div class="ch">
+        <div class="ct">Datos Generales</div>
+        <div style="display:flex;gap:6px">
+          <button class="btn sm" id="ot-save-btn" onclick="saveOTDetail()">💾 Guardar cambios</button>
+        </div>
+      </div>
       <div class="cb">
         <div class="fg"><div class="fgg"><label class="fl">No. de OT</label><input class="fi" data-ot-field="otNumber" readonly></div><div class="fgg"><label class="fl">Fecha de liberación</label><input class="fi" data-ot-field="liberationDate" type="date"></div></div>
-        <div class="fg"><div class="fgg"><label class="fl">Cliente</label><input class="fi" data-ot-field="client"></div><div class="fgg"><label class="fl">Área Requisitora</label><input class="fi" placeholder="—"></div></div>
-        <div class="fg"><div class="fgg"><label class="fl">Requisitor</label><input class="fi" placeholder="—"></div><div class="fgg"><label class="fl">E-mail</label><input class="fi" placeholder="—"></div></div>
+        <div class="fg"><div class="fgg"><label class="fl">Cliente</label><input class="fi" data-ot-field="client"></div><div class="fgg"><label class="fl">Área Requisitora</label><input class="fi" data-ot-field="areaRequisitora" placeholder="—"></div></div>
+        <div class="fg"><div class="fgg"><label class="fl">Requisitor</label><input class="fi" data-ot-field="requisitorNombre" placeholder="—"></div><div class="fgg"><label class="fl">E-mail</label><input class="fi" data-ot-field="requisitorEmail" type="email" placeholder="—"></div></div>
         <div class="fg"><div class="fgg"><label class="fl"># OC Cliente</label><input class="fi" data-ot-field="customerPO"></div><div class="fgg"><label class="fl">COT Ref. Alenstec</label><input class="fi" data-ot-field="quoteRef"></div></div>
         <div class="fg"><div class="fgg"><label class="fl">Fecha de emisión</label><input class="fi" data-ot-field="startDate" type="date"></div><div class="fgg"><label class="fl">F. Entrega Compromiso</label><input class="fi" data-ot-field="endDate" type="date"></div></div>
         <div class="fg" style="margin-bottom:10px"><div class="fgg"><label class="fl">Tipo de proyecto</label><select class="fi" data-ot-field="type"><option value="">—</option><option value="Nuevo">Nuevo</option><option value="Refurbish">Refurbish</option><option value="Servicio">Servicio</option></select></div><div class="fgg"><label class="fl">Progreso (%)</label><input class="fi" data-ot-field="progress" type="number" min="0" max="100"></div></div>
         <div style="background:var(--surface2);border-radius:7px;padding:10px 12px">
           <div class="fl" style="margin-bottom:5px">Descripción del trabajo</div>
           <div id="ot-description-text" style="font-size:12.5px;font-weight:500;line-height:1.5">—</div>
+          <textarea class="fi" data-ot-field="description" style="margin-top:6px;min-height:50px;font-size:12.5px"></textarea>
         </div>
       </div>
     </div>
@@ -433,15 +431,15 @@ select.fi{cursor:pointer}
       <div class="card" style="margin-bottom:14px">
         <div class="ch"><div class="ct">Liberado a (Jefaturas)</div></div>
         <div class="cb">
-          <div class="fg" style="margin-bottom:0"><div class="fgg"><label class="fl">Ingeniería</label><input class="fi" value="Cristian Durán"></div><div class="fgg"><label class="fl">Manufactura</label><input class="fi" value="Jesús Lara"></div></div>
-          <div class="fg" style="margin-bottom:0;margin-top:12px"><div class="fgg"><label class="fl">Compras</label><input class="fi" value="Jessica Fuentes"></div><div class="fgg"><label class="fl">Otros</label><input class="fi" value="N/A"></div></div>
+          <div class="fg" style="margin-bottom:0"><div class="fgg"><label class="fl">Ingeniería</label><input class="fi" data-ot-field="jefeIngenieria" placeholder="—"></div><div class="fgg"><label class="fl">Manufactura</label><input class="fi" data-ot-field="jefeManufactura" placeholder="—"></div></div>
+          <div class="fg" style="margin-bottom:0;margin-top:12px"><div class="fgg"><label class="fl">Compras</label><input class="fi" data-ot-field="jefeCompras" placeholder="—"></div><div class="fgg"><label class="fl">Otros</label><input class="fi" data-ot-field="jefeOtros" placeholder="—"></div></div>
         </div>
       </div>
       <div class="card">
         <div class="ch"><div class="ct">Presupuestos</div></div>
         <div class="cb">
-          <div class="g3f" style="margin-bottom:10px"><div class="fgg"><label class="fl">Tipo de Cambio</label><input class="fi" data-ot-field="exchangeRate" type="number" step="0.0001" placeholder="—"></div><div class="fgg"><label class="fl">Costo cotizado</label><input class="fi" data-ot-field="quotedCost" type="number" step="0.01" placeholder="—"></div><div class="fgg"><label class="fl">Moneda</label><input class="fi" data-ot-field="currency" readonly placeholder="—"></div></div>
-          <div class="fg" style="margin-bottom:0"><div class="fgg"><label class="fl">Ppto. Material (MXN)</label><input class="fi" placeholder="—"></div><div class="fgg"><label class="fl">Ppto. Material (USD)</label><input class="fi" placeholder="—"></div></div>
+          <div class="g3f" style="margin-bottom:10px"><div class="fgg"><label class="fl">Tipo de Cambio</label><input class="fi" data-ot-field="exchangeRate" type="number" step="0.0001" placeholder="—"></div><div class="fgg"><label class="fl">Costo cotizado</label><input class="fi" data-ot-field="quotedCost" type="number" step="0.01" placeholder="—"></div><div class="fgg"><label class="fl">Moneda</label><select class="fi" data-ot-field="currency"><option value="USD">USD</option><option value="MXN">MXN</option></select></div></div>
+          <div class="fg" style="margin-bottom:0"><div class="fgg"><label class="fl">Ppto. Material (MXN)</label><input class="fi" data-ot-field="pptoMaterialMxn" type="number" step="0.01" placeholder="—"></div><div class="fgg"><label class="fl">Ppto. Material (USD)</label><input class="fi" data-ot-field="pptoMaterialUsd" type="number" step="0.01" placeholder="—"></div></div>
         </div>
       </div>
     </div>
@@ -459,15 +457,11 @@ select.fi{cursor:pointer}
     </table></div>
   </div>
   <div class="card">
-    <div class="ch"><div class="ct">Flujo de Liberación</div></div>
+    <div class="ch"><div class="ct">Flujo de Liberación</div><div class="cs" style="font-size:11px;color:var(--text3)">5 pasos · requiere aprobación secuencial</div></div>
     <div class="tw"><table>
-      <thead><tr><th>Paso</th><th>Responsable</th><th>Área</th><th>Fecha</th><th>Estado</th><th>Observaciones</th></tr></thead>
-      <tbody>
-        <tr><td>Elaboración OT</td><td>Ing. Alejandro García</td><td>Coordinador Proyectos</td><td>10/03/2026</td><td><span class="badge bg">Completo</span></td><td>COT-AL-027ADL-26C registrada</td></tr>
-        <tr><td>Revisión Ingeniería</td><td>Cristian Durán</td><td>Ingeniería</td><td>10/03/2026</td><td><span class="badge bg">Completo</span></td><td>Sin observaciones técnicas</td></tr>
-        <tr><td>Revisión Compras</td><td>Jessica Fuentes</td><td>Compras</td><td>—</td><td><span class="badge ba">Pendiente</span></td><td>En espera de OC validada</td></tr>
-        <tr><td>Aprobación Manufactura</td><td>Jesús Lara</td><td>Manufactura</td><td>—</td><td><span class="badge bn">Bloqueado</span></td><td>Requiere aprobación de compras</td></tr>
-        <tr><td>Liberación a Producción</td><td>Sistema</td><td>—</td><td>03/03/2026</td><td><span class="badge bg">Liberada</span></td><td>Fecha liberación: 3 marzo 2026</td></tr>
+      <thead><tr><th>Paso</th><th>Responsable</th><th>Fecha decisión</th><th>Estado</th><th>Observaciones</th><th>Acciones</th></tr></thead>
+      <tbody id="ot-approvals-tbody">
+        <tr><td colspan="6" style="padding:16px;color:var(--text3);text-align:center">Selecciona una OT para cargar el flujo.</td></tr>
       </tbody>
     </table></div>
   </div>
@@ -482,7 +476,15 @@ select.fi{cursor:pointer}
     <div class="kpi"><div class="kl">Clientes activos</div><div class="kv" id="kpi-cot-clients">—</div><div class="ks">Distintos en control ventas</div></div>
   </div>
   <div class="card">
-    <div class="ch"><div><div class="ct">Control de Ventas 2026</div><div class="cs">Datos reales · Hoja Control Ventas 2026</div></div><button class="btn p sm">+ Nueva cotización</button></div>
+    <div class="ch">
+      <div><div class="ct">Control de Ventas 2026</div><div class="cs">Datos reales · Hoja Control Ventas 2026</div></div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input type="file" id="cot-import-file" accept=".xlsx" style="display:none">
+        <button class="btn sm" id="btn-cot-upload" onclick="document.getElementById('cot-import-file').click()">⬆ Subir XLSX</button>
+        <button class="btn sm" id="btn-cot-download" onclick="downloadXlsx(`${API_URL}/quotes/export`, 'control-ventas.xlsx')">⬇ Descargar XLSX</button>
+        <button class="btn p sm" onclick="showNewCotizacionModal()">+ Nueva cotización</button>
+      </div>
+    </div>
     <div class="tw"><table>
       <thead><tr><th>Item</th><th>Cliente</th><th>COT Ref.</th><th>COT Alenstec</th><th>Fecha COT</th><th>Costo (USD s/IVA)</th><th>OC Cliente</th><th>T/C</th><th>No. OT</th><th>Tipo</th><th>Estado</th></tr></thead>
       <tbody id="cot-tbody">
@@ -574,8 +576,8 @@ select.fi{cursor:pointer}
       <div class="ch">
         <div><div class="ct">Órdenes de Compra a Proveedores</div><div class="cs">OCs emitidas por Alenstec a proveedores</div></div>
         <div style="display:flex;gap:7px;align-items:center">
-          <button class="btn p sm">+ Capturar OCP</button>
-          <button class="btn sm" id="btn-dl-ocp" disabled style="opacity:.45">⬇ Descargar XLSX</button>
+          <button class="btn p sm" onclick="showNewOCPModal()">+ Capturar OCP</button>
+          <button class="btn sm" id="btn-dl-ocp" onclick="downloadXlsx(`${API_URL}/purchase-orders/export`, 'ocp.xlsx')">⬇ Descargar XLSX</button>
         </div>
       </div>
       <div class="date-filter">
@@ -584,13 +586,8 @@ select.fi{cursor:pointer}
       </div>
       <div class="tw"><table>
         <thead><tr><th>No. OC Alenstec</th><th>Proveedor</th><th>OT</th><th>Descripción</th><th>Moneda</th><th>Monto</th><th>F. Emisión</th><th>F. Entrega Prom.</th><th>Estado</th></tr></thead>
-        <tbody>
-          <tr><td class="mono">OCA-2026-001</td><td>Ecosy Engineering</td><td class="mono">1928</td><td>Conectores KQ2L04, Pinzas MH22, Detectores D-MBPL</td><td><span class="badge bn">MXN</span></td><td class="mono">$27,778.83</td><td>15/01/2026</td><td>10/02/2026</td><td><span class="badge bg">Recibido</span></td></tr>
-          <tr><td class="mono">OCA-2026-002</td><td>Misumi Mexico</td><td class="mono">1928</td><td>Tornillos DBB3-3-3 ×8 pzas</td><td><span class="badge bb">USD</span></td><td class="mono">$54.03</td><td>15/01/2026</td><td>28/02/2026</td><td><span class="badge bg">Recibido</span></td></tr>
-          <tr><td class="mono">OCA-2026-003</td><td>CORTELASER</td><td class="mono">1904</td><td>Corte láser ×33 pzas + mant. edificio</td><td><span class="badge bn">MXN</span></td><td class="mono">$10,431.72</td><td>01/02/2026</td><td>19/03/2026</td><td><span class="badge ba">Parcial</span></td></tr>
-          <tr><td class="mono">OCA-2026-004</td><td>Pei Equipos</td><td class="mono">1934</td><td>Perfil 40×40mm ×1</td><td><span class="badge bb">USD</span></td><td class="mono">$187.48</td><td>10/02/2026</td><td>24/03/2026</td><td><span class="badge bg">Recibido</span></td></tr>
-          <tr><td class="mono">OCA-2026-005</td><td>Servicio Industrial</td><td class="mono">1928</td><td>Placa C4140-2-1/4 + Corte aceros</td><td><span class="badge bb">USD</span></td><td class="mono">$68.14</td><td>10/02/2026</td><td>05/03/2026</td><td><span class="badge ba">Pendiente</span></td></tr>
-          <tr><td class="mono">OCA-2026-006</td><td>Aceros Argenis</td><td class="mono">1937</td><td>Pláfene-1/2-6 ×9 pzas</td><td><span class="badge bn">MXN</span></td><td class="mono">$1,618.20</td><td>01/02/2026</td><td>28/02/2026</td><td><span class="badge bg">Recibido</span></td></tr>
+        <tbody id="ocp-tbody">
+          <tr><td colspan="9" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
         </tbody>
       </table></div>
     </div>
@@ -602,8 +599,8 @@ select.fi{cursor:pointer}
       <div class="ch">
         <div><div class="ct">Inventario</div><div class="cs">Existencias de material en almacén</div></div>
         <div style="display:flex;gap:7px;align-items:center">
-          <button class="btn p sm">+ Agregar existencia</button>
-          <button class="btn sm" id="btn-dl-inv" disabled style="opacity:.45">⬇ Descargar XLSX</button>
+          <button class="btn p sm" onclick="showNewInventoryModal()">+ Agregar existencia</button>
+          <button class="btn sm" id="btn-dl-inv" onclick="downloadXlsx(`${API_URL}/inventory/export`, 'inventario.xlsx')">⬇ Descargar XLSX</button>
         </div>
       </div>
       <div class="date-filter">
@@ -612,14 +609,8 @@ select.fi{cursor:pointer}
       </div>
       <div class="tw"><table>
         <thead><tr><th>Clave</th><th>Descripción</th><th>Proveedor</th><th>Moneda</th><th>Existencia</th><th>Unidad</th><th>Costo Unit.</th><th>Valor Total</th><th>OT Asignada</th><th>Estado</th></tr></thead>
-        <tbody>
-          <tr><td class="mono">KQ2L04-M5A</td><td>Conex. instantáneo</td><td>Ecosy Eng.</td><td><span class="badge bn">MXN</span></td><td class="mono">6</td><td>pza</td><td class="mono">$31.68</td><td class="mono">$190.08</td><td class="mono">1928</td><td><span class="badge bg">Asignado</span></td></tr>
-          <tr><td class="mono">MH22-20D</td><td>Pinza neumática</td><td>Ecosy Eng.</td><td><span class="badge bn">MXN</span></td><td class="mono">8</td><td>pza</td><td class="mono">$2,361.92</td><td class="mono">$18,895.36</td><td class="mono">1928</td><td><span class="badge bg">Asignado</span></td></tr>
-          <tr><td class="mono">D-MBPL</td><td>Detector de elemento</td><td>Ecosy Eng.</td><td><span class="badge bn">MXN</span></td><td class="mono">20</td><td>pza</td><td class="mono">$270.10</td><td class="mono">$5,402.00</td><td class="mono">1928</td><td><span class="badge bg">Asignado</span></td></tr>
-          <tr><td class="mono">DBB3-3-3</td><td>Tornillo escalado</td><td>Misumi MX</td><td><span class="badge bb">USD</span></td><td class="mono">8</td><td>pza</td><td class="mono">$6.19</td><td class="mono">$49.52</td><td class="mono">1928</td><td><span class="badge bg">Asignado</span></td></tr>
-          <tr><td class="mono">40-4040</td><td>Perfil 40×40mm</td><td>Pei Equipos</td><td><span class="badge bb">USD</span></td><td class="mono">1</td><td>pza</td><td class="mono">$80.81</td><td class="mono">$80.81</td><td class="mono">1934</td><td><span class="badge bg">Asignado</span></td></tr>
-          <tr><td class="mono">PLÁFENE-1/2-6</td><td>Placa aluminio 1/2"</td><td>Aceros Argenis</td><td><span class="badge bn">MXN</span></td><td class="mono">9</td><td>pza</td><td class="mono">$155.00</td><td class="mono">$1,395.00</td><td class="mono">1937</td><td><span class="badge bg">Asignado</span></td></tr>
-          <tr><td class="mono">PLACA C4140</td><td>Placa acero C4140-2-1/4</td><td>Serv. Ind.</td><td><span class="badge bb">USD</span></td><td class="mono">1</td><td>pza</td><td class="mono">$48.18</td><td class="mono">$48.18</td><td class="mono">1928</td><td><span class="badge ba">Sin asignar</span></td></tr>
+        <tbody id="inv-tbody">
+          <tr><td colspan="10" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
         </tbody>
       </table></div>
     </div>
@@ -631,10 +622,10 @@ select.fi{cursor:pointer}
       <div class="ch">
         <div><div class="ct">Facturas de Proveedores</div><div class="cs">Facturas recibidas por compras de material</div></div>
         <div style="display:flex;gap:7px">
-          <button class="btn p sm">+ Agregar factura</button>
+          <button class="btn p sm" onclick="showNewInvoiceModal()">+ Agregar factura</button>
           <button class="btn sm" onclick="triggerXMLUpload()">+ Agregar por XML</button>
           <input type="file" id="xmlFileInput" accept=".xml" style="display:none" onchange="handleXMLUpload(event)">
-          <button class="btn sm" id="btn-dl-fact" disabled style="opacity:.45">⬇ Descargar XLSX</button>
+          <button class="btn sm" id="btn-dl-fact" onclick="downloadXlsx(`${API_URL}/invoices/export`, 'facturas.xlsx')">⬇ Descargar XLSX</button>
         </div>
       </div>
       <div class="date-filter">
@@ -643,16 +634,8 @@ select.fi{cursor:pointer}
       </div>
       <div class="tw"><table>
         <thead><tr><th>RFC Emisor</th><th>RFC Receptor</th><th>UUID / Folio</th><th>Serie</th><th>Folio</th><th>F. Emisión</th><th>F. Certificación</th><th>Régimen Fiscal</th><th>Concepto</th><th>Cantidad</th><th>P. Unit.</th><th>Subtotal</th><th>IVA</th><th>Ret. ISR</th><th>Ret. IVA</th><th>Total</th><th>Moneda</th><th>T/C</th><th>Método de Pago (PUE/PPD)</th><th>Validación SAT</th></tr></thead>
-        <tbody>
-          <tr><td class="mono" style="font-size:9px">ECO010101A1A</td><td>ALE010410123</td><td class="mono" style="font-size:9px">EMF006602Q2</td><td>—</td><td class="mono">76286 LN</td><td>20/03/2026</td><td>20/03/2026 11:47</td><td>Régimen General</td><td>Conectores y accesorios</td><td class="mono">1</td><td class="mono">$23,946.60</td><td class="mono">$23,946.60</td><td class="mono">$3,831.46</td><td>—</td><td>—</td><td class="mono" style="font-weight:600">$27,778.06</td><td><span class="badge bn">MXN</span></td><td>—</td><td><span class="badge bg">PUE</span></td><td><span class="badge bg">✓ Válida</span></td></tr>
-          <tr><td class="mono" style="font-size:9px">ECO010101A1A</td><td>ALE010410123</td><td class="mono" style="font-size:9px">SCD110101056</td><td>A</td><td class="mono">52960</td><td>20/03/2026</td><td>20/03/2026 12:16</td><td>Régimen General</td><td>Suministro de materiales</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td><td>—</td><td>—</td><td class="mono">—</td><td><span class="badge bn">MXN</span></td><td>—</td><td><span class="badge ba">PPD</span></td><td><span class="badge ba">Pendiente</span></td></tr>
-          <tr><td class="mono" style="font-size:9px">ECO010101A1A</td><td>ALE010410123</td><td class="mono" style="font-size:9px">EMF006602Q2</td><td>—</td><td class="mono">54700 FI</td><td>23/03/2026</td><td>23/03/2026 15:25</td><td>Régimen General</td><td>Servicios diversos</td><td class="mono">1</td><td class="mono">$15,500.00</td><td class="mono">$15,500.00</td><td class="mono">$2,480.00</td><td class="mono">$775.00</td><td>—</td><td class="mono" style="font-weight:600">$17,205.00</td><td><span class="badge bn">MXN</span></td><td>—</td><td><span class="badge bb">PUE</span></td><td><span class="badge bg">✓ Válida</span></td></tr>
-          <tr><td class="mono" style="font-size:9px">CTL010101ABC</td><td>ALE010410123</td><td class="mono" style="font-size:9px">LSO1306189</td><td>—</td><td class="mono">52918</td><td>24/03/2026</td><td>24/03/2026 12:12</td><td>Régimen General</td><td>Corte láser y servicios</td><td class="mono">1</td><td class="mono">$8,975.50</td><td class="mono">$8,975.50</td><td class="mono">$1,436.08</td><td class="mono">$448.78</td><td>—</td><td class="mono" style="font-weight:600">$9,962.80</td><td><span class="badge bn">MXN</span></td><td>—</td><td><span class="badge bg">PUE</span></td><td><span class="badge bg">✓ Válida</span></td></tr>
-          <tr><td class="mono" style="font-size:9px">CTL010101ABC</td><td>ALE010410123</td><td class="mono" style="font-size:9px">SNF171020FA</td><td>—</td><td class="mono">6140 EAC</td><td>24/03/2026</td><td>24/03/2026 19:01</td><td>Régimen General</td><td>Mantenimiento y servicios</td><td class="mono">1</td><td class="mono">$1,205.00</td><td class="mono">$1,205.00</td><td class="mono">$192.80</td><td>—</td><td>—</td><td class="mono" style="font-weight:600">$1,397.80</td><td><span class="badge bn">MXN</span></td><td>—</td><td><span class="badge ba">PUE</span></td><td><span class="badge bg">✓ Válida</span></td></tr>
-          <tr><td class="mono" style="font-size:9px">MIS010101XYZ</td><td>ALE010410123</td><td class="mono" style="font-size:9px">TSP00724QW</td><td>—</td><td class="mono">54900 FC</td><td>25/03/2026</td><td>25/03/2026 12:50</td><td>Régimen General</td><td>Distribuidor mayorista</td><td class="mono">2</td><td class="mono">$27.01</td><td class="mono">$54.02</td><td class="mono">$8.64</td><td>—</td><td>—</td><td class="mono" style="font-weight:600">$62.66</td><td><span class="badge bb">USD</span></td><td>$17.23</td><td><span class="badge bb">PUE</span></td><td><span class="badge br">⚠ Revisar</span></td></tr>
-          <tr><td class="mono" style="font-size:9px">PEI010101DEF</td><td>ALE010410123</td><td class="mono" style="font-size:9px">SFE080712F8</td><td>—</td><td class="mono">54033 FTPV</td><td>25/03/2026</td><td>25/03/2026 16:38</td><td>Régimen General</td><td>Equipos y accesorios industriales</td><td class="mono">1</td><td class="mono">$93.74</td><td class="mono">$93.74</td><td class="mono">$14.99</td><td>—</td><td>—</td><td class="mono" style="font-weight:600">$108.73</td><td><span class="badge bb">USD</span></td><td>$17.21</td><td><span class="badge bg">PUE</span></td><td><span class="badge bg">✓ Válida</span></td></tr>
-          <tr><td class="mono" style="font-size:9px">PRO010101GHI</td><td>ALE010410123</td><td class="mono" style="font-size:9px">CEC9610288A</td><td>—</td><td class="mono">54913 B</td><td>26/03/2026</td><td>26/03/2026 10:07</td><td>Régimen General</td><td>Suministro diversos</td><td class="mono">1</td><td class="mono">$1,400.00</td><td class="mono">$1,400.00</td><td class="mono">$224.00</td><td>—</td><td>—</td><td class="mono" style="font-weight:600">$1,624.00</td><td><span class="badge bn">MXN</span></td><td>—</td><td><span class="badge bg">PUE</span></td><td><span class="badge bg">✓ Válida</span></td></tr>
-          <tr><td class="mono" style="font-size:9px">ACR010101JKL</td><td>ALE010410123</td><td class="mono" style="font-size:9px">ASE0090952</td><td>—</td><td class="mono">6500 K</td><td>27/03/2026</td><td>27/03/2026 13:58</td><td>Régimen General</td><td>Materiales de acero</td><td class="mono">9</td><td class="mono">$155.00</td><td class="mono">$1,395.00</td><td class="mono">$223.20</td><td>—</td><td>—</td><td class="mono" style="font-weight:600">$1,618.20</td><td><span class="badge bn">MXN</span></td><td>—</td><td><span class="badge bb">PUE</span></td><td><span class="badge bg">✓ Válida</span></td></tr>
+        <tbody id="fact-tbody">
+          <tr><td colspan="20" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
         </tbody>
       </table></div>
     </div>
@@ -660,19 +643,19 @@ select.fi{cursor:pointer}
 
   <!-- ENTREGAS -->
   <div class="submod" id="sub-entregas-entregas">
-    <div class="kg">
-      <div class="kpi"><div class="kl">Entregadas</div><div class="kv" style="color:var(--green)">40+</div><div class="ks">Confirmadas en ERP</div></div>
-      <div class="kpi"><div class="kl">Pendientes</div><div class="kv" style="color:var(--amber)">6</div><div class="ks">Sin fecha de recepción</div></div>
-      <div class="kpi"><div class="kl">Con incidencia</div><div class="kv" style="color:var(--red)">2</div><div class="ks">Fecha real posterior a prometida</div></div>
-      <div class="kpi"><div class="kl">Material sin asignar</div><div class="kv">0%</div><div class="ks">Stock sin OT asignada</div></div>
+    <div class="kg" id="entregas-kpis">
+      <div class="kpi"><div class="kl">Entregadas</div><div class="kv" id="kpi-entr-entregadas" style="color:var(--green)">—</div><div class="ks">Confirmadas en ERP</div></div>
+      <div class="kpi"><div class="kl">Pendientes</div><div class="kv" id="kpi-entr-pendientes" style="color:var(--amber)">—</div><div class="ks">Sin fecha de recepción</div></div>
+      <div class="kpi"><div class="kl">Con incidencia</div><div class="kv" id="kpi-entr-incidencia" style="color:var(--red)">—</div><div class="ks">Fecha real posterior a prometida</div></div>
+      <div class="kpi"><div class="kl">Sin asignar (inventario)</div><div class="kv" id="kpi-entr-sinasignar">—</div><div class="ks">Stock sin OT asignada</div></div>
     </div>
     <div class="card">
       <div class="ch">
         <div><div class="ct">Registro de Entregas de Material</div><div class="cs">Base de datos OC · ERP Open Source · 2026</div></div>
         <div style="display:flex;gap:7px">
-          <button class="btn sm">+ Ingresar incidencia</button>
-          <button class="btn p sm">+ Registrar entrega</button>
-          <button class="btn sm" id="btn-dl-entr" disabled style="opacity:.45">⬇ Descargar XLSX</button>
+          <button class="btn sm" onclick="showNewIncidentModal()">+ Ingresar incidencia</button>
+          <button class="btn p sm" onclick="showNewDeliveryModal()">+ Registrar entrega</button>
+          <button class="btn sm" id="btn-dl-entr" onclick="downloadXlsx(`${API_URL}/deliveries/export`, 'entregas.xlsx')">⬇ Descargar XLSX</button>
         </div>
       </div>
       <div class="date-filter">
@@ -681,28 +664,17 @@ select.fi{cursor:pointer}
       </div>
       <div class="tw"><table>
         <thead><tr><th>No. Prov.</th><th>Proveedor</th><th>Producto</th><th>OT</th><th>Pzas</th><th>Precio Unit.</th><th>Entregado por</th><th>F. Recibido</th><th>F. Autorizado</th><th>Incidencia</th><th>Estado</th></tr></thead>
-        <tbody>
-          <tr><td class="mono">28</td><td>Ecosy Engineering</td><td>Conex. KQ2L04-M5A</td><td class="mono">1928</td><td class="mono">6</td><td class="mono">$31.68 MXN</td><td>Diego</td><td>28/02/2026</td><td>—</td><td>—</td><td><span class="badge bg">Entregado</span></td></tr>
-          <tr><td class="mono">28</td><td>Ecosy Engineering</td><td>Pinza MH22-20D</td><td class="mono">1928</td><td class="mono">2</td><td class="mono">$2,361.92 MXN</td><td>Diego</td><td>28/02/2026</td><td>—</td><td>—</td><td><span class="badge bg">Entregado</span></td></tr>
-          <tr><td class="mono">28</td><td>Ecosy Engineering</td><td>Detector D-MBPL ×18</td><td class="mono">1928</td><td class="mono">18</td><td class="mono">$270.10 MXN</td><td>Eduardo</td><td>24/03/2026</td><td>—</td><td>—</td><td><span class="badge bg">Entregado</span></td></tr>
-          <tr><td class="mono">3</td><td>Pei Equipos</td><td>Perfil 40-4040</td><td class="mono">1934</td><td class="mono">1</td><td class="mono">$80.81 USD</td><td>Eduardo</td><td>24/03/2026</td><td>—</td><td>—</td><td><span class="badge bg">Entregado</span></td></tr>
-          <tr><td class="mono">254</td><td>CORTELASER</td><td>Corte láser ×11</td><td class="mono">1904</td><td class="mono">11</td><td class="mono">$249.47 MXN</td><td>L. Vargas-E.D.</td><td>19/03/2026</td><td>—</td><td>—</td><td><span class="badge bg">Entregado</span></td></tr>
-          <tr><td class="mono">254</td><td>CORTELASER</td><td>Mant. Edificio</td><td class="mono">1934</td><td class="mono">1</td><td class="mono">$310.32 MXN</td><td>—</td><td>—</td><td>—</td><td>—</td><td><span class="badge ba">Pendiente</span></td></tr>
-          <tr><td class="mono">254</td><td>CORTELASER</td><td>Mant. Edificio</td><td class="mono">1934</td><td class="mono">1</td><td class="mono">$896.09 MXN</td><td>—</td><td>—</td><td>—</td><td>—</td><td><span class="badge ba">Pendiente</span></td></tr>
-          <tr><td class="mono">37</td><td>Misumi Mexico</td><td>Tornillo DBB3-3-3</td><td class="mono">1928</td><td class="mono">2</td><td class="mono">$6.19 USD</td><td>Diego</td><td>28/02/2026</td><td>05/03/2026</td><td>—</td><td><span class="badge bg">Entregado</span></td></tr>
-          <tr><td class="mono">20</td><td>Servicio Industrial</td><td>Placa C4140-2-1/4</td><td class="mono">1928</td><td class="mono">1</td><td class="mono">$48.18 USD</td><td>—</td><td>—</td><td>05/03/2026</td><td>—</td><td><span class="badge ba">Pendiente</span></td></tr>
-          <tr><td class="mono">14</td><td>Aceros Argenis</td><td>Pláfene-1/2-6 ×4</td><td class="mono">1937</td><td class="mono">4</td><td class="mono">$155.00 MXN</td><td>Felipe N. Flores</td><td>28/02/2026</td><td>10/02/2026</td><td>—</td><td><span class="badge bg">Entregado</span></td></tr>
-          <tr><td class="mono">14</td><td>Aceros Argenis</td><td>Pláfene-1/2-6 ×5</td><td class="mono">1937</td><td class="mono">5</td><td class="mono">$155.00 MXN</td><td>Felipe N. Flores</td><td>28/02/2026</td><td>25/02/2026</td><td>—</td><td><span class="badge bg">Entregado</span></td></tr>
+        <tbody id="entregas-tbody">
+          <tr><td colspan="11" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
         </tbody>
       </table></div>
     </div>
     <div class="card">
-      <div class="ch"><div class="ct">Últimas Incidencias</div><button class="btn sm">+ Ingresar incidencia</button></div>
+      <div class="ch"><div class="ct">Últimas Incidencias</div><button class="btn sm" onclick="showNewIncidentModal()">+ Ingresar incidencia</button></div>
       <div class="tw"><table>
         <thead><tr><th>Folio</th><th>OT</th><th>Proveedor</th><th>Descripción</th><th>Registrado por</th><th>Fecha</th><th>Estado</th></tr></thead>
-        <tbody>
-          <tr><td class="mono">INC-001</td><td class="mono">1934</td><td>CORTELASER</td><td>Entrega de mant. edificio pendiente desde fecha comprometida</td><td>Felipe N. Flores</td><td>20/03/2026</td><td><span class="badge ba">Abierta</span></td></tr>
-          <tr><td class="mono">INC-002</td><td class="mono">1928</td><td>Servicio Industrial</td><td>Placa C4140 sin recibir, OC autorizada el 05/03</td><td>Diego Castillo</td><td>22/03/2026</td><td><span class="badge ba">Abierta</span></td></tr>
+        <tbody id="incidents-tbody">
+          <tr><td colspan="7" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
         </tbody>
       </table></div>
     </div>
@@ -734,29 +706,11 @@ select.fi{cursor:pointer}
   </div>
   <div class="submod" id="sub-horas-empleados">
     <div class="card">
-      <div class="ch"><div><div class="ct">Control de Empleados</div><div class="cs">Lista real de empleados con información de nómina</div></div></div>
+      <div class="ch"><div><div class="ct">Control de Empleados</div><div class="cs">Lista real de empleados con información de nómina</div></div><button class="btn p sm" id="emp-new-btn" onclick="showNewEmpleadoModal()">+ Nuevo empleado</button></div>
       <div class="tw" style="overflow-x:auto;"><table style="min-width:1600px;">
         <thead><tr><th>No. listado de nómina</th><th>Nombre Rep Proc</th><th>Nombre</th><th>RFC</th><th>CURP</th><th>No. IMSS</th><th>Nivel de Estudios</th><th>Puesto</th><th>Departamento</th><th>Area</th><th>Fecha de ingreso</th><th>S.D</th><th>S.D.I 2</th></tr></thead>
-        <tbody>
-          <tr><td class="mono">1</td><td>0010 MIGUEL ANGEL ESPINOSA MARTINEZ</td><td>ESPINOSA MARTINEZ MIGUEL ANGEL</td><td>EIMM760515CY1</td><td>EIMM760515HMNSRG01</td><td>92967614097</td><td>SECUNDARIA</td><td>ESPECIALIST APARATISTA</td><td>PRODUCCION</td><td>GENERAL</td><td>1/16/2023</td><td>677.27</td><td>714.3807</td></tr>
-          <tr><td class="mono">2</td><td>0015 JOSE DE JESUS LARA SOSA</td><td>LARA SOSA JOSE DE JEUS</td><td>LASJ710228GA5</td><td>LASJ710228HDFRSS08</td><td>07897147299</td><td>MEDIA SUPERIOR</td><td>SUPERVISOR PRODUCCION "A"</td><td>SUPERVICION</td><td>SUPERVICION</td><td>1/16/2023</td><td>700.85</td><td>739.2572</td></tr>
-          <tr><td class="mono">3</td><td>0024 MARGARITO ALVAREZ PIÑA</td><td>ALVAREZ PIÑA MARGARITO</td><td>AAPM6810173XA</td><td>AAPM681017HMCLXR04</td><td>92876806768</td><td>PRIMARIA</td><td>ESPECIALISTA ENSAMBLADOR</td><td>PRODUCCION</td><td>GENERAL</td><td>1/16/2023</td><td>677.27</td><td>738.8712</td></tr>
-          <tr><td class="mono">5</td><td>MARIA GUADALUPE FUENTES LOPEZ</td><td>FUENTES LOPEZ MARIA GUADALUPE</td><td>FULG720903PU0</td><td>FULG720903MDFNPD02</td><td>92897243819</td><td>MEDIA SUPERIOR</td><td>COMPRADOR "A"</td><td>COMERCIO EXTERIOR</td><td>COMPRAS</td><td>4/24/2023</td><td>560.68</td><td>590.6327</td></tr>
-          <tr><td class="mono">6</td><td>0065 CRISTIAN SAUL DURAN PLATA</td><td>DURAN PLATA CRISTIAN SAUL</td><td>DUPC930104HS5</td><td>DUPC930104HMCRLR01</td><td>92119363312</td><td>SUPERIOR</td><td>JEFE DE INGENIERIA Y DISEÑO</td><td>INGENIERIA</td><td>INGENIERIA</td><td>12/6/2018</td><td>909.32</td><td>962.8842</td></tr>
-          <tr><td class="mono">9</td><td>0113 JESUS ANGEL FALCÓN CERÓN</td><td>FALCON CERON JESUS ANGEL</td><td>FACJ7504039C9</td><td>FACJ750403HDFLRS08</td><td>92977539961</td><td>MEDIA SUPERIOR</td><td>LIDER ELECTROMECANICO</td><td>PRODUCCION</td><td>LABOR ELECTRICA</td><td>3/29/2022</td><td>630.77</td><td>683.8607</td></tr>
-          <tr><td class="mono">12</td><td>0019 EDUARDO ESTRADA JASSO</td><td>ESTRADA JASSO EDUARDO</td><td>EAJE670403KNA</td><td>EAJE670403HDFSSD01</td><td>89856706406</td><td>SECUNDARIA</td><td>ESPECIALISTA ENSAMBLADOR</td><td>PRODUCCION</td><td>ENSAMBLE E INSTALACION</td><td>1/9/2023</td><td>677.27</td><td>758.7684</td></tr>
-          <tr><td class="mono">14</td><td>0071 DAVID BAEZ JARA</td><td>BAEZ JARA DAVID</td><td>BAJD790110NX6</td><td>BAJD790110HDFZRV02</td><td>68977920682</td><td>SUPERIOR</td><td>DISEÑADOR "B"</td><td>INGENIERIA</td><td>INGENIERIA</td><td>6/20/2022</td><td>700.85</td><td>751.9281</td></tr>
-          <tr><td class="mono">16</td><td>0114 DIEGO CASTILLO JIMENEZ</td><td>CASTILLO JIMENEZ DIEGO</td><td>CAJD950807GQA</td><td>CAJD950807HMCSMG00</td><td>01169507462</td><td>SUPERIOR</td><td>ELECTROMECANICO "A"</td><td>PRODUCCION</td><td>LABOR ELECTRICA</td><td>3/4/2024</td><td>560.68</td><td>614.7939</td></tr>
-          <tr><td class="mono">17</td><td>0012 LUIS ANTONIO VARGAS CHIA</td><td>VARGAS CHIA LUIS ANTONIO</td><td>VACL780905PS6</td><td>VACL780905HDFRHS09</td><td>92997817868</td><td>MEDIA SUPERIOR</td><td>SUPERVISOR PRODUCCION "A"</td><td>PRODUCCION</td><td>SUPERVICION</td><td>7/24/2023</td><td>700.85</td><td>781.0611</td></tr>
-          <tr><td class="mono">19</td><td>0138 LUIS ALEJANDRO LOPEZ PRUDENTE</td><td>LOPEZ PRUDENTE LUIS ALEJANDRO</td><td>LOPL000531861</td><td>LOPL000531HMCPRSA1</td><td>04130069398</td><td>TECNICO</td><td>MECANICO APARATISTA "A"</td><td>PRODUCCION</td><td>GENERAL</td><td>10/13/2025</td><td>677.27</td><td>712.5252</td></tr>
-          <tr><td class="mono">21</td><td>0141 FELIPE NERI FLORES RODRIGUEZ</td><td>FLORES RODRIGUEZ FELIPE NERI</td><td>FORF840526PX9</td><td>FORF840526HMCLDL07</td><td>92068404398</td><td>MEDIA SUPERIOR</td><td>ENCARGADO DE ALMACEN "A"</td><td>PRODUCCION</td><td>ALMACEN</td><td>6/15/2023</td><td>420.51</td><td>442.9801</td></tr>
-          <tr><td class="mono">37</td><td>0156 DAVID ALONSO DIAZ</td><td>ALONSO DIAZ DAVID</td><td>AODD001215E97</td><td>AODD001215HMCLZVA6</td><td>46190010002</td><td>SUPERIOR</td><td>DISEÑADOR "C"</td><td>INGENIERIA</td><td>INGENIERIA</td><td>2/12/2025</td><td>560.68</td><td>621.0723</td></tr>
-          <tr><td class="mono">1.1</td><td></td><td>FUENTES LOPEZ LUIS IGNACIO</td><td>FULL630819P36</td><td>FULL630819HDFNPS07</td><td>89816302106</td><td>SUPERIOR</td><td>DIRECCION GENERAL</td><td>DIRECCION</td><td>ADMINISTRACION</td><td>10/18/2021</td><td>3,339.00</td><td>—</td></tr>
-          <tr><td class="mono">1.2</td><td></td><td>NUÑEZ MAYORGA YEIMY</td><td>NUMY9705053F7</td><td>NUMY970505MMCXYM07</td><td>92129770548</td><td>SUPERIOR</td><td>ANALISTA CONTABLE SEÑORIOR</td><td>CONTABILIDAD</td><td>ADMINISTRACION</td><td>5/1/2022</td><td>698.68</td><td>—</td></tr>
-          <tr><td class="mono">1.3</td><td></td><td>FUENTES RICARDO JESSICA MINERVA</td><td>FURJ9106266F4</td><td>FURJ9106266MDFNCS04</td><td>90129117900</td><td>SUPERIOR</td><td>JEFA DE ADQUISICION DE MERCANCIAS</td><td>COMERCIO EXTERIOR</td><td>ADMINISTRACION</td><td>3/1/2022</td><td>747.58</td><td>—</td></tr>
-          <tr><td class="mono">1.4</td><td></td><td>FUENTES LOPEZ MARIA CRISTINA</td><td>FULC7407244S4</td><td>FULC740724MMCNPR09</td><td>68937504451</td><td>POSGRADO</td><td>JEFE DE RECURSOS HUMANOS B</td><td>ADMINISTRACION</td><td>ADMINISTRACION</td><td>1/1/2023</td><td>873.34</td><td>—</td></tr>
-          <tr><td class="mono">1.5</td><td></td><td>NAVARRO VILLEGAS BRENDA MARIANA</td><td>NAVB000203L78</td><td>NAVB000203MMCVLRA0</td><td>92150024047</td><td>SUPERIOR</td><td>SUB CONTADOR</td><td>CONTABILIDAD</td><td>ADMINISTRACION</td><td>5/8/2023</td><td>567.68</td><td>—</td></tr>
-          <tr><td class="mono">1.6</td><td></td><td>LLAMAS BRIONES LESLYE MARGARITA</td><td>LABL970808Q87</td><td>LABL970808MMCLRS08</td><td>44169737499</td><td>SUPERIOR</td><td>AUXILIAR CONTABLE B</td><td>CONTABILIDAD</td><td>ADMINISTRACION</td><td>—</td><td>—</td><td>—</td></tr>
+        <tbody id="emp-tbody">
+          <tr><td colspan="13" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
         </tbody>
       </table></div>
     </div>
@@ -862,8 +816,8 @@ select.fi{cursor:pointer}
         </div>
         <div class="conciliacion-table">
           <table id="conciliacion-table" style="width:100%;border-collapse:collapse">
-            <thead><tr><th>Empleado</th><th>Total Checador</th><th>Total Clasif.</th><th>Diferencia</th><th>Estado</th></tr></thead>
-            <tbody><tr><td colspan="5" style="padding:16px;color:var(--text3);text-align:center">Selecciona una semana y haz clic en Actualizar</td></tr></tbody>
+            <thead><tr><th>Empleado</th><th>Total Checador</th><th>Total Clasif.</th><th>Diferencia</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <tbody><tr><td colspan="6" style="padding:16px;color:var(--text3);text-align:center">Selecciona una semana y haz clic en Actualizar</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -1326,11 +1280,91 @@ async function loadDashboardSuppliers() {
   }
 }
 
+// G-DASH-5 — OCs Abiertas widget. Renders purchase orders whose status is
+// Pendiente or Parcial, sorted by expected delivery ascending so the most
+// urgent surface first. Dot color: red = overdue, amber = ≤7d, green = later.
+async function loadDashboardOCsAbiertas() {
+  const container = document.getElementById('dash-ocs-abiertas');
+  if (!container) return;
+  try {
+    const res = await apiFetch(`${API_URL}/purchase-orders`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const all = await res.json();
+    const open = all.filter((o) => o.status === 'Pendiente' || o.status === 'Parcial');
+    if (!open.length) {
+      container.innerHTML = '<div style="padding:10px 0;color:var(--text3);text-align:center">Sin OCs abiertas. ✓</div>';
+      return;
+    }
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    open.sort((a, b) => {
+      const da = a.expectedDeliveryDate ? new Date(a.expectedDeliveryDate).getTime() : Infinity;
+      const db = b.expectedDeliveryDate ? new Date(b.expectedDeliveryDate).getTime() : Infinity;
+      return da - db;
+    });
+    const dotColor = (exp) => {
+      if (!exp) return 'var(--blue)';
+      const d = new Date(exp); d.setHours(0, 0, 0, 0);
+      const diffDays = (d - today) / 86400000;
+      if (diffDays < 0)  return 'var(--red)';
+      if (diffDays <= 7) return 'var(--amber)';
+      return 'var(--green)';
+    };
+    container.innerHTML = open.slice(0, 8).map((o) => {
+      const amount = `${fmtCurrency(Number(o.amount) || 0, o.currency || 'MXN')} ${esc(o.currency || 'MXN')}`;
+      const sub = `${esc(o.supplierName)} · ${esc(o.otNumber || '—')} · ${amount}`;
+      return `<div class="tl-row">
+        <div class="tl-dot" style="background:${dotColor(o.expectedDeliveryDate)}"></div>
+        <div><div class="tl-title">OC ${esc(o.ocNumber)}</div><div class="tl-sub">${sub}</div></div>
+      </div>`;
+    }).join('');
+  } catch (err) {
+    console.warn('⚠ loadDashboardOCsAbiertas:', err);
+    container.innerHTML = '<div style="padding:10px 0;color:var(--red);text-align:center">No se pudieron cargar las OCs.</div>';
+  }
+}
+
+// G-DASH-6 — Empleados en Campo widget. Renders the active-employee roster
+// (empleados.activo = true). Until a work-session tracker exists (v2 backlog),
+// "en campo" = "activo" is the closest live signal available.
+async function loadDashboardEmpleadosEnCampo() {
+  const container = document.getElementById('dash-empleados-campo');
+  if (!container) return;
+  try {
+    const res = await apiFetch(`${API_URL}/employees?activo=true`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const all = await res.json();
+    if (!all.length) {
+      container.innerHTML = '<div style="padding:10px 0;color:var(--text3);text-align:center">Sin empleados activos.</div>';
+      return;
+    }
+    // Initials from nombre — "APELLIDO PATERNO APELLIDO MATERNO NOMBRE" → first letter of first + last token.
+    const initials = (nombre) => {
+      if (!nombre) return '??';
+      const parts = String(nombre).trim().split(/\s+/);
+      if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    };
+    container.innerHTML = all.slice(0, 8).map((e) => {
+      const subParts = [e.puesto, e.departamento, e.numeroLista && `ID ${e.numeroLista}`].filter(Boolean);
+      return `<div class="tl-row">
+        <div class="av sm" style="flex-shrink:0">${esc(initials(e.nombre))}</div>
+        <div><div class="tl-title">${esc(e.nombre)}</div><div class="tl-sub">${esc(subParts.join(' · ') || '—')}</div></div>
+      </div>`;
+    }).join('');
+  } catch (err) {
+    console.warn('⚠ loadDashboardEmpleadosEnCampo:', err);
+    container.innerHTML = '<div style="padding:10px 0;color:var(--red);text-align:center">No se pudieron cargar los empleados.</div>';
+  }
+}
+
 async function refreshDashboard() {
   await Promise.all([
     loadDashboardKpis(),
     loadDashboardWorkOrders(),
     loadDashboardSuppliers(),
+    loadDashboardOCsAbiertas(),
+    loadDashboardEmpleadosEnCampo(),
   ]);
 }
 
@@ -1387,6 +1421,7 @@ const XLSX_EXPORTS = {
   cotizaciones: `${API_URL}/quotes/export`,
   material:     `${API_URL}/costs/material/export`,
   horas:        `${API_URL}/costs/labor/export`,
+  entregas:     `${API_URL}/deliveries/export`, // Phase-3 sub-tab default export
   // dashboard / pronostico / nomina / costomo: no backing yet — button stays disabled.
   // conciliacion: existing handleGlobalAction routes to cierre export.
 };
@@ -1490,9 +1525,50 @@ async function loadOTDetail(id) {
       if (el.type === 'date' && typeof val === 'string') val = val.slice(0, 10);
       el.value = val;
     });
+    // Phase-3 P3.21 — refresh Flujo de Liberación for the selected OT.
+    loadOTApprovals();
   } catch (err) {
     console.warn('⚠ loadOTDetail:', err);
     clearOTForm();
+  }
+}
+
+// G-OT-2 — persist the Datos Generales / Liberado a / Presupuestos form to
+// `PUT /api/work-orders/:id`. Skips `otNumber` (readonly — it's the immutable
+// OT code) and coerces numeric/date fields.
+const OT_NUMBER_FIELDS = new Set(['exchangeRate', 'quotedCost', 'actualCost', 'progress', 'pptoMaterialMxn', 'pptoMaterialUsd']);
+
+async function saveOTDetail() {
+  if (!_selectedOtId) { alert('Selecciona una OT primero.'); return; }
+  const btn = document.getElementById('ot-save-btn');
+  const originalLabel = btn && btn.textContent;
+  if (btn) { btn.disabled = true; btn.textContent = 'Guardando…'; }
+  try {
+    const payload = {};
+    document.querySelectorAll('#mod-ot [data-ot-field]').forEach((el) => {
+      const field = el.dataset.otField;
+      if (field === 'otNumber') return; // readonly, server-side unique
+      let v = el.value;
+      if (v === '') { payload[field] = null; return; }
+      if (OT_NUMBER_FIELDS.has(field)) v = Number(v);
+      payload[field] = v;
+    });
+    const res = await apiFetch(`${API_URL}/work-orders/${encodeURIComponent(_selectedOtId)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || body.mensaje || `HTTP ${res.status}`);
+    // Refresh the detail so the banner + description reflect the saved state.
+    await loadOTDetail(_selectedOtId);
+    if (btn) btn.textContent = '✓ Guardado';
+    setTimeout(() => { if (btn) btn.textContent = originalLabel || '💾 Guardar cambios'; }, 1500);
+  } catch (err) {
+    alert(`No se pudo guardar: ${err.message}`);
+    if (btn) btn.textContent = originalLabel || '💾 Guardar cambios';
+  } finally {
+    if (btn) btn.disabled = false;
   }
 }
 
@@ -1681,6 +1757,706 @@ async function showNewProveedorModal() {
       err.textContent = e2.message;
       submitBtn.disabled = false;
       submitBtn.textContent = 'Agregar';
+    }
+  });
+}
+
+// ===== Phase-3 Entregas module: OCP / Inventario / Facturas / Entregas =====
+const _phase3State = { ocTypes: [], supplierCache: [] };
+
+async function ensureOTCache() {
+  if (_otCache.length) return _otCache;
+  try {
+    const res = await apiFetch(`${API_URL}/work-orders`);
+    if (res.ok) _otCache = await res.json();
+  } catch { /* continue empty */ }
+  return _otCache;
+}
+
+async function ensureSupplierCache() {
+  if (_phase3State.supplierCache.length) return _phase3State.supplierCache;
+  try {
+    const res = await apiFetch(`${API_URL}/suppliers`);
+    if (res.ok) _phase3State.supplierCache = await res.json();
+  } catch { /* continue empty */ }
+  return _phase3State.supplierCache;
+}
+
+function statusBadge(text, map) {
+  const cls = map[text] || 'bn';
+  return `<span class="badge ${cls}">${esc(text || '—')}</span>`;
+}
+
+// ---- Sub-tab 6.2: Órdenes de Compra (OCP) ----
+async function loadOCP() {
+  const tbody = document.getElementById('ocp-tbody');
+  if (!tbody) return;
+  try {
+    const res = await apiFetch(`${API_URL}/purchase-orders`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const rows = await res.json();
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="9" style="padding:16px;color:var(--text3);text-align:center">Sin órdenes de compra.</td></tr>';
+      return;
+    }
+    const map = { Recibido: 'bg', Pendiente: 'ba', Parcial: 'ba', Cancelada: 'bn' };
+    tbody.innerHTML = rows.map((r) => `<tr>
+      <td class="mono">${esc(r.ocNumber)}</td>
+      <td>${esc(r.supplierName)}</td>
+      <td class="mono">${esc(r.otNumber) || '—'}</td>
+      <td>${esc(r.description)}</td>
+      <td>${moneyBadge(r.currency)}</td>
+      <td class="mono">${fmtCurrency(Number(r.amount) || 0, r.currency || 'MXN')}</td>
+      <td>${r.issueDate ? fmtDateDMY(r.issueDate) : '—'}</td>
+      <td>${r.expectedDeliveryDate ? fmtDateDMY(r.expectedDeliveryDate) : '—'}</td>
+      <td>${statusBadge(r.status, map)}</td>
+    </tr>`).join('');
+  } catch (err) {
+    console.warn('⚠ loadOCP:', err);
+    tbody.innerHTML = '<tr><td colspan="9" style="padding:16px;color:var(--red);text-align:center">No se pudieron cargar las OCPs.</td></tr>';
+  }
+}
+
+async function showNewOCPModal() {
+  const orders = await ensureOTCache();
+  const suppliers = await ensureSupplierCache();
+  const today = new Date().toISOString().slice(0, 10);
+  openModal({
+    title: '+ Capturar OCP',
+    bodyHtml: `
+      <form id="new-ocp-form">
+        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div><label>No. OC *</label><input name="ocNumber" required placeholder="OCA-2026-###"></div>
+          <div><label>Estado</label>
+            <select name="status"><option value="Pendiente" selected>Pendiente</option><option value="Parcial">Parcial</option><option value="Recibido">Recibido</option><option value="Cancelada">Cancelada</option></select>
+          </div>
+        </div>
+        <div class="fg"><label>Proveedor *</label>
+          <input name="supplierName" required list="prov-datalist" placeholder="Escribe o selecciona…">
+          <datalist id="prov-datalist">${suppliers.map((s) => `<option value="${esc(s.supplierName)}">`).join('')}</datalist>
+        </div>
+        <div class="fg"><label>OT asociada</label>
+          <select name="otNumber">
+            <option value="">Sin OT</option>
+            ${orders.map((o) => `<option value="${esc(o.otNumber)}">${esc(o.otNumber)} · ${esc(o.client)}</option>`).join('')}
+          </select>
+        </div>
+        <div class="fg"><label>Descripción *</label><textarea name="description" required></textarea></div>
+        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+          <div><label>Monto *</label><input name="amount" type="number" step="0.01" min="0" required></div>
+          <div><label>Moneda</label><select name="currency"><option value="MXN" selected>MXN</option><option value="USD">USD</option></select></div>
+          <div><label>F. Emisión</label><input name="issueDate" type="date" value="${today}"></div>
+        </div>
+        <div class="fg"><label>F. Entrega prometida</label><input name="expectedDeliveryDate" type="date"></div>
+        <div class="modal-error" id="new-ocp-error"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn sm" onclick="closeModal()">Cancelar</button>
+          <button type="submit" class="btn p sm" id="new-ocp-submit">Capturar</button>
+        </div>
+      </form>`,
+  });
+  document.getElementById('new-ocp-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const errEl = document.getElementById('new-ocp-error');
+    const submitBtn = document.getElementById('new-ocp-submit');
+    errEl.textContent = '';
+    submitBtn.disabled = true; submitBtn.textContent = 'Capturando…';
+    try {
+      const fd = new FormData(form);
+      const payload = Object.fromEntries([...fd.entries()].map(([k, v]) => [k, v === '' ? null : v]));
+      payload.amount = Number(payload.amount);
+      const res = await apiFetch(`${API_URL}/purchase-orders`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || body.mensaje || `HTTP ${res.status}`);
+      closeModal();
+      await loadOCP();
+    } catch (e2) {
+      errEl.textContent = e2.message;
+      submitBtn.disabled = false; submitBtn.textContent = 'Capturar';
+    }
+  });
+}
+
+// ---- Sub-tab 6.3: Inventario ----
+async function loadInventory() {
+  const tbody = document.getElementById('inv-tbody');
+  if (!tbody) return;
+  try {
+    const res = await apiFetch(`${API_URL}/inventory`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const rows = await res.json();
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="10" style="padding:16px;color:var(--text3);text-align:center">Sin existencias.</td></tr>';
+      return;
+    }
+    const map = { Asignado: 'bg', 'Sin asignar': 'ba', Agotado: 'bn' };
+    tbody.innerHTML = rows.map((r) => {
+      const unit = Number(r.unitCost) || 0;
+      const ex = Number(r.existencia) || 0;
+      const cur = r.currency || 'MXN';
+      return `<tr>
+        <td class="mono">${esc(r.clave)}</td>
+        <td>${esc(r.description)}</td>
+        <td>${esc(r.supplierName) || '—'}</td>
+        <td>${moneyBadge(cur)}</td>
+        <td class="mono">${ex}</td>
+        <td>${esc(r.unidad) || 'pza'}</td>
+        <td class="mono">${fmtCurrency(unit, cur)}</td>
+        <td class="mono">${fmtCurrency(unit * ex, cur)}</td>
+        <td class="mono">${esc(r.assignedOtNumber) || '—'}</td>
+        <td>${statusBadge(r.status, map)}</td>
+      </tr>`;
+    }).join('');
+  } catch (err) {
+    console.warn('⚠ loadInventory:', err);
+    tbody.innerHTML = '<tr><td colspan="10" style="padding:16px;color:var(--red);text-align:center">No se pudo cargar el inventario.</td></tr>';
+  }
+}
+
+async function showNewInventoryModal() {
+  const orders = await ensureOTCache();
+  openModal({
+    title: '+ Agregar existencia',
+    bodyHtml: `
+      <form id="new-inv-form">
+        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div><label>Clave *</label><input name="clave" required placeholder="KQ2L04-M5A"></div>
+          <div><label>Unidad</label><select name="unidad"><option value="pza" selected>pza</option><option value="kg">kg</option><option value="m">m</option><option value="lt">lt</option></select></div>
+        </div>
+        <div class="fg"><label>Descripción *</label><input name="description" required></div>
+        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div><label>Proveedor</label><input name="supplierName"></div>
+          <div><label>Moneda</label><select name="currency"><option value="MXN" selected>MXN</option><option value="USD">USD</option></select></div>
+        </div>
+        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div><label>Existencia *</label><input name="existencia" type="number" step="0.01" min="0" required value="0"></div>
+          <div><label>Costo unitario *</label><input name="unitCost" type="number" step="0.0001" min="0" required></div>
+        </div>
+        <div class="fg"><label>OT asignada</label>
+          <select name="assignedOtNumber">
+            <option value="">Sin asignar</option>
+            ${orders.map((o) => `<option value="${esc(o.otNumber)}">${esc(o.otNumber)} · ${esc(o.client)}</option>`).join('')}
+          </select>
+        </div>
+        <div class="modal-error" id="new-inv-error"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn sm" onclick="closeModal()">Cancelar</button>
+          <button type="submit" class="btn p sm" id="new-inv-submit">Agregar</button>
+        </div>
+      </form>`,
+  });
+  document.getElementById('new-inv-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const errEl = document.getElementById('new-inv-error');
+    const submitBtn = document.getElementById('new-inv-submit');
+    errEl.textContent = '';
+    submitBtn.disabled = true; submitBtn.textContent = 'Agregando…';
+    try {
+      const fd = new FormData(form);
+      const payload = Object.fromEntries([...fd.entries()].map(([k, v]) => [k, v === '' ? null : v]));
+      payload.existencia = Number(payload.existencia);
+      payload.unitCost = Number(payload.unitCost);
+      if (payload.assignedOtNumber) payload.status = 'Asignado';
+      const res = await apiFetch(`${API_URL}/inventory`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || body.mensaje || `HTTP ${res.status}`);
+      closeModal();
+      await loadInventory();
+    } catch (e2) {
+      errEl.textContent = e2.message;
+      submitBtn.disabled = false; submitBtn.textContent = 'Agregar';
+    }
+  });
+}
+
+// ---- Sub-tab 6.4: Facturas CFDI ----
+async function loadInvoices() {
+  const tbody = document.getElementById('fact-tbody');
+  if (!tbody) return;
+  try {
+    const res = await apiFetch(`${API_URL}/invoices`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const rows = await res.json();
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="20" style="padding:16px;color:var(--text3);text-align:center">Sin facturas registradas.</td></tr>';
+      return;
+    }
+    const valMap = { 'válida': 'bg', 'pendiente': 'ba', 'revisar': 'br', 'no válida': 'br' };
+    const fmtDT = (v) => v ? new Date(v).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' }) : '—';
+    tbody.innerHTML = rows.map((r) => {
+      const cur = r.moneda || 'MXN';
+      const num = (v) => v == null ? '—' : fmtCurrency(Number(v), cur);
+      const val = (r.validacionSat || 'pendiente');
+      const valBadge = `<span class="badge ${valMap[val] || 'bn'}">${val === 'válida' ? '✓ Válida' : (val === 'revisar' ? '⚠ Revisar' : esc(val))}</span>`;
+      const mp = r.metodoPago ? `<span class="badge ${r.metodoPago === 'PUE' ? 'bg' : 'ba'}">${r.metodoPago}</span>` : '—';
+      return `<tr>
+        <td class="mono" style="font-size:9px">${esc(r.rfcEmisor)}</td>
+        <td class="mono" style="font-size:9px">${esc(r.rfcReceptor)}</td>
+        <td class="mono" style="font-size:9px">${esc(r.uuidFiscal)}</td>
+        <td>${esc(r.serie) || '—'}</td>
+        <td class="mono">${esc(r.folio) || '—'}</td>
+        <td>${r.fechaEmision ? fmtDateDMY(r.fechaEmision) : '—'}</td>
+        <td>${fmtDT(r.fechaCertificacion)}</td>
+        <td>${esc(r.regimenFiscal) || '—'}</td>
+        <td>${esc(r.concepto) || '—'}</td>
+        <td class="mono">${r.cantidad == null ? '—' : Number(r.cantidad)}</td>
+        <td class="mono">${num(r.precioUnitario)}</td>
+        <td class="mono">${num(r.subtotal)}</td>
+        <td class="mono">${num(r.iva)}</td>
+        <td class="mono">${num(r.retencionIsr)}</td>
+        <td class="mono">${num(r.retencionIva)}</td>
+        <td class="mono" style="font-weight:600">${num(r.total)}</td>
+        <td>${moneyBadge(cur)}</td>
+        <td class="mono">${r.tipoCambio == null ? '—' : Number(r.tipoCambio)}</td>
+        <td>${mp}</td>
+        <td>${valBadge}</td>
+      </tr>`;
+    }).join('');
+  } catch (err) {
+    console.warn('⚠ loadInvoices:', err);
+    tbody.innerHTML = '<tr><td colspan="20" style="padding:16px;color:var(--red);text-align:center">No se pudieron cargar las facturas.</td></tr>';
+  }
+}
+
+async function showNewInvoiceModal() {
+  const orders = await ensureOTCache();
+  openModal({
+    title: '+ Agregar factura',
+    bodyHtml: `
+      <form id="new-inv2-form">
+        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div><label>UUID fiscal *</label><input name="uuidFiscal" required placeholder="Tomar del CFDI"></div>
+          <div><label>Validación SAT</label>
+            <select name="validacionSat"><option value="pendiente" selected>pendiente</option><option value="válida">válida</option><option value="revisar">revisar</option><option value="no válida">no válida</option></select>
+          </div>
+        </div>
+        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div><label>RFC Emisor *</label><input name="rfcEmisor" required maxlength="13"></div>
+          <div><label>RFC Receptor *</label><input name="rfcReceptor" required maxlength="13"></div>
+        </div>
+        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+          <div><label>Serie</label><input name="serie"></div>
+          <div><label>Folio</label><input name="folio"></div>
+          <div><label>Método</label><select name="metodoPago"><option value="">—</option><option value="PUE">PUE</option><option value="PPD">PPD</option></select></div>
+        </div>
+        <div class="fg"><label>Concepto</label><input name="concepto"></div>
+        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px">
+          <div><label>Subtotal</label><input name="subtotal" type="number" step="0.01"></div>
+          <div><label>IVA</label><input name="iva" type="number" step="0.01" value="0"></div>
+          <div><label>Ret. ISR</label><input name="retencionIsr" type="number" step="0.01" value="0"></div>
+          <div><label>Ret. IVA</label><input name="retencionIva" type="number" step="0.01" value="0"></div>
+        </div>
+        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+          <div><label>Total *</label><input name="total" type="number" step="0.01" required></div>
+          <div><label>Moneda</label><select name="moneda"><option value="MXN" selected>MXN</option><option value="USD">USD</option></select></div>
+          <div><label>T/C</label><input name="tipoCambio" type="number" step="0.0001"></div>
+        </div>
+        <div class="fg"><label>OT asociada</label>
+          <select name="otNumber"><option value="">Sin OT</option>${orders.map((o) => `<option value="${esc(o.otNumber)}">${esc(o.otNumber)}</option>`).join('')}</select>
+        </div>
+        <div class="modal-error" id="new-inv2-error"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn sm" onclick="closeModal()">Cancelar</button>
+          <button type="submit" class="btn p sm" id="new-inv2-submit">Agregar</button>
+        </div>
+      </form>`,
+  });
+  document.getElementById('new-inv2-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const errEl = document.getElementById('new-inv2-error');
+    const submitBtn = document.getElementById('new-inv2-submit');
+    errEl.textContent = '';
+    submitBtn.disabled = true; submitBtn.textContent = 'Agregando…';
+    try {
+      const fd = new FormData(form);
+      const payload = Object.fromEntries([...fd.entries()].map(([k, v]) => [k, v === '' ? null : v]));
+      ['subtotal','iva','retencionIsr','retencionIva','total','tipoCambio'].forEach((k) => {
+        if (payload[k] != null) payload[k] = Number(payload[k]);
+      });
+      const res = await apiFetch(`${API_URL}/invoices`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || body.mensaje || `HTTP ${res.status}`);
+      closeModal();
+      await loadInvoices();
+    } catch (e2) {
+      errEl.textContent = e2.message;
+      submitBtn.disabled = false; submitBtn.textContent = 'Agregar';
+    }
+  });
+}
+
+// ---- Sub-tab 6.5: Entregas + Incidencias ----
+async function loadDeliveryKPIs() {
+  try {
+    const res = await apiFetch(`${API_URL}/deliveries/kpi`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const k = await res.json();
+    const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+    set('kpi-entr-entregadas',  k.entregadas);
+    set('kpi-entr-pendientes',  k.pendientes);
+    set('kpi-entr-incidencia',  k.conIncidencia);
+    set('kpi-entr-sinasignar',  k.sinAsignarInv);
+  } catch (err) {
+    console.warn('⚠ loadDeliveryKPIs:', err);
+  }
+}
+
+async function loadDeliveries() {
+  const tbody = document.getElementById('entregas-tbody');
+  if (!tbody) return;
+  try {
+    const res = await apiFetch(`${API_URL}/deliveries`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const rows = await res.json();
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="11" style="padding:16px;color:var(--text3);text-align:center">Sin entregas registradas.</td></tr>';
+      return;
+    }
+    const map = { Entregado: 'bg', Pendiente: 'ba', 'Con incidencia': 'br' };
+    tbody.innerHTML = rows.map((r) => {
+      const cur = r.currency || 'MXN';
+      return `<tr>
+        <td class="mono">${esc(r.deliveryNumber) || '—'}</td>
+        <td>${esc(r.supplierName)}</td>
+        <td>${esc(r.producto)}</td>
+        <td class="mono">${esc(r.otNumber) || '—'}</td>
+        <td class="mono">${Number(r.piezas) || 0}</td>
+        <td class="mono">${r.unitCost == null ? '—' : `${fmtCurrency(Number(r.unitCost), cur)} ${cur}`}</td>
+        <td>${esc(r.entregadoPor) || '—'}</td>
+        <td>${r.fechaRecibido ? fmtDateDMY(r.fechaRecibido) : '—'}</td>
+        <td>${r.fechaAutorizado ? fmtDateDMY(r.fechaAutorizado) : '—'}</td>
+        <td>${esc(r.incidencia) || '—'}</td>
+        <td>${statusBadge(r.status, map)}</td>
+      </tr>`;
+    }).join('');
+  } catch (err) {
+    console.warn('⚠ loadDeliveries:', err);
+    tbody.innerHTML = '<tr><td colspan="11" style="padding:16px;color:var(--red);text-align:center">No se pudieron cargar las entregas.</td></tr>';
+  }
+}
+
+async function loadIncidents() {
+  const tbody = document.getElementById('incidents-tbody');
+  if (!tbody) return;
+  try {
+    const res = await apiFetch(`${API_URL}/deliveries/incidents/all`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const rows = await res.json();
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="padding:16px;color:var(--text3);text-align:center">Sin incidencias.</td></tr>';
+      return;
+    }
+    const map = { Abierta: 'ba', 'En revisión': 'ba', Cerrada: 'bg' };
+    tbody.innerHTML = rows.map((r) => `<tr>
+      <td class="mono">${esc(r.folio)}</td>
+      <td class="mono">${esc(r.otNumber) || '—'}</td>
+      <td>${esc(r.supplierName) || '—'}</td>
+      <td>${esc(r.descripcion)}</td>
+      <td>${esc(r.registradoPor) || '—'}</td>
+      <td>${fmtDateDMY(r.fecha)}</td>
+      <td>${statusBadge(r.status, map)}</td>
+    </tr>`).join('');
+  } catch (err) {
+    console.warn('⚠ loadIncidents:', err);
+    tbody.innerHTML = '<tr><td colspan="7" style="padding:16px;color:var(--red);text-align:center">No se pudieron cargar las incidencias.</td></tr>';
+  }
+}
+
+async function showNewDeliveryModal() {
+  const [orders, suppliers] = await Promise.all([ensureOTCache(), ensureSupplierCache()]);
+  const today = new Date().toISOString().slice(0, 10);
+  openModal({
+    title: '+ Registrar entrega',
+    bodyHtml: `
+      <form id="new-del-form">
+        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div><label>No. Prov.</label><input name="deliveryNumber"></div>
+          <div><label>Estado</label><select name="status"><option value="Entregado" selected>Entregado</option><option value="Pendiente">Pendiente</option><option value="Con incidencia">Con incidencia</option></select></div>
+        </div>
+        <div class="fg"><label>Proveedor *</label><input name="supplierName" required list="del-prov"><datalist id="del-prov">${suppliers.map((s) => `<option value="${esc(s.supplierName)}">`).join('')}</datalist></div>
+        <div class="fg"><label>Producto *</label><input name="producto" required></div>
+        <div class="fg"><label>OT</label>
+          <select name="otNumber"><option value="">Sin OT</option>${orders.map((o) => `<option value="${esc(o.otNumber)}">${esc(o.otNumber)}</option>`).join('')}</select>
+        </div>
+        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+          <div><label>Pzas *</label><input name="piezas" type="number" step="0.01" min="0" required></div>
+          <div><label>Precio unit.</label><input name="unitCost" type="number" step="0.0001" min="0"></div>
+          <div><label>Moneda</label><select name="currency"><option value="MXN" selected>MXN</option><option value="USD">USD</option></select></div>
+        </div>
+        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+          <div><label>Entregado por</label><input name="entregadoPor"></div>
+          <div><label>F. Recibido</label><input name="fechaRecibido" type="date" value="${today}"></div>
+          <div><label>F. Autorizado</label><input name="fechaAutorizado" type="date"></div>
+        </div>
+        <div class="fg"><label>Incidencia (opcional)</label><input name="incidencia"></div>
+        <div class="modal-error" id="new-del-error"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn sm" onclick="closeModal()">Cancelar</button>
+          <button type="submit" class="btn p sm" id="new-del-submit">Registrar</button>
+        </div>
+      </form>`,
+  });
+  document.getElementById('new-del-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const errEl = document.getElementById('new-del-error');
+    const submitBtn = document.getElementById('new-del-submit');
+    errEl.textContent = '';
+    submitBtn.disabled = true; submitBtn.textContent = 'Registrando…';
+    try {
+      const fd = new FormData(form);
+      const payload = Object.fromEntries([...fd.entries()].map(([k, v]) => [k, v === '' ? null : v]));
+      ['piezas','unitCost'].forEach((k) => { if (payload[k] != null) payload[k] = Number(payload[k]); });
+      const res = await apiFetch(`${API_URL}/deliveries`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || body.mensaje || `HTTP ${res.status}`);
+      closeModal();
+      await Promise.all([loadDeliveries(), loadDeliveryKPIs(), loadInventory()]);
+    } catch (e2) {
+      errEl.textContent = e2.message;
+      submitBtn.disabled = false; submitBtn.textContent = 'Registrar';
+    }
+  });
+}
+
+async function showNewIncidentModal() {
+  const [orders, suppliers] = await Promise.all([ensureOTCache(), ensureSupplierCache()]);
+  const today = new Date().toISOString().slice(0, 10);
+  openModal({
+    title: '+ Ingresar incidencia',
+    bodyHtml: `
+      <form id="new-inc-form">
+        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div><label>Folio *</label><input name="folio" required placeholder="INC-###"></div>
+          <div><label>Estado</label><select name="status"><option value="Abierta" selected>Abierta</option><option value="En revisión">En revisión</option><option value="Cerrada">Cerrada</option></select></div>
+        </div>
+        <div class="fg"><label>OT</label>
+          <select name="otNumber"><option value="">Sin OT</option>${orders.map((o) => `<option value="${esc(o.otNumber)}">${esc(o.otNumber)}</option>`).join('')}</select>
+        </div>
+        <div class="fg"><label>Proveedor</label><input name="supplierName" list="inc-prov"><datalist id="inc-prov">${suppliers.map((s) => `<option value="${esc(s.supplierName)}">`).join('')}</datalist></div>
+        <div class="fg"><label>Descripción *</label><textarea name="descripcion" required></textarea></div>
+        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div><label>Registrado por</label><input name="registradoPor"></div>
+          <div><label>Fecha *</label><input name="fecha" type="date" required value="${today}"></div>
+        </div>
+        <div class="modal-error" id="new-inc-error"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn sm" onclick="closeModal()">Cancelar</button>
+          <button type="submit" class="btn p sm" id="new-inc-submit">Registrar</button>
+        </div>
+      </form>`,
+  });
+  document.getElementById('new-inc-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const errEl = document.getElementById('new-inc-error');
+    const submitBtn = document.getElementById('new-inc-submit');
+    errEl.textContent = '';
+    submitBtn.disabled = true; submitBtn.textContent = 'Registrando…';
+    try {
+      const fd = new FormData(form);
+      const payload = Object.fromEntries([...fd.entries()].map(([k, v]) => [k, v === '' ? null : v]));
+      const res = await apiFetch(`${API_URL}/deliveries/incidents`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || body.mensaje || `HTTP ${res.status}`);
+      closeModal();
+      await Promise.all([loadIncidents(), loadDeliveryKPIs()]);
+    } catch (e2) {
+      errEl.textContent = e2.message;
+      submitBtn.disabled = false; submitBtn.textContent = 'Registrar';
+    }
+  });
+}
+
+// ---- OT Flujo de Liberación (P3.21) ----
+const APPROVAL_STEP_LABEL = {
+  cotizacion:       'Cotización / Ventas',
+  compras:          'Compras',
+  produccion:       'Producción',
+  calidad:          'Calidad',
+  liberacion_final: 'Liberación Final',
+};
+
+async function loadOTApprovals() {
+  const tbody = document.getElementById('ot-approvals-tbody');
+  if (!tbody) return;
+  if (!_selectedOtId) {
+    tbody.innerHTML = '<tr><td colspan="6" style="padding:16px;color:var(--text3);text-align:center">Selecciona una OT para cargar el flujo.</td></tr>';
+    return;
+  }
+  try {
+    const res = await apiFetch(`${API_URL}/approvals/${encodeURIComponent(_selectedOtId)}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const rows = await res.json();
+    const map = { aprobada: 'bg', rechazada: 'br', pendiente: 'ba' };
+    tbody.innerHTML = rows.map((r) => {
+      const who = r.decidedByUser ? `${esc(r.decidedByUser.nombre)} · ${esc(r.decidedByUser.rol)}` : '—';
+      const when = r.decidedAt ? fmtDateDMY(r.decidedAt) : '—';
+      const label = APPROVAL_STEP_LABEL[r.step] || r.step;
+      const actions = r.status === 'aprobada'
+        ? '<span style="color:var(--text3);font-size:11px">Aprobado ✓</span>'
+        : `<div style="display:flex;gap:4px">
+             <button class="btn sm" onclick="transitionApproval('${esc(r.id)}','aprobada')" style="padding:2px 8px;font-size:11px">Aprobar</button>
+             <button class="btn sm" onclick="transitionApproval('${esc(r.id)}','rechazada')" style="padding:2px 8px;font-size:11px;color:var(--red)">Rechazar</button>
+           </div>`;
+      return `<tr>
+        <td>${label}</td>
+        <td>${who}</td>
+        <td>${when}</td>
+        <td>${statusBadge(r.status, map)}</td>
+        <td>${esc(r.comments) || '—'}</td>
+        <td>${actions}</td>
+      </tr>`;
+    }).join('');
+  } catch (err) {
+    console.warn('⚠ loadOTApprovals:', err);
+    tbody.innerHTML = '<tr><td colspan="6" style="padding:16px;color:var(--red);text-align:center">No se pudo cargar el flujo.</td></tr>';
+  }
+}
+
+async function transitionApproval(id, status) {
+  const comments = prompt(`Comentarios (opcional) para marcar ${status}:`);
+  if (comments === null) return; // cancelled
+  try {
+    const res = await apiFetch(`${API_URL}/approvals/${encodeURIComponent(id)}/transition`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status, comments }),
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
+    await loadOTApprovals();
+    // Refresh OT detail — it may have been flipped to "Liberada".
+    if (_selectedOtId) loadOTDetail(_selectedOtId);
+  } catch (err) {
+    alert(`Error: ${err.message}`);
+  }
+}
+
+// ===== Control de Empleados (Phase-3 P3.16–P3.18) =====
+async function loadEmpleados() {
+  const tbody = document.getElementById('emp-tbody');
+  if (!tbody) return;
+  try {
+    const res = await apiFetch(`${API_URL}/employees?activo=true`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const rows = await res.json();
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="13" style="padding:16px;color:var(--text3);text-align:center">Sin empleados registrados.</td></tr>';
+      return;
+    }
+    const fmtNum = (v) => (v == null ? '—' : Number(v).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+    tbody.innerHTML = rows.map((e) => `<tr>
+      <td class="mono">${esc(e.numeroLista) || '—'}</td>
+      <td>${esc(e.nombreRepProc) || ''}</td>
+      <td>${esc(e.nombre) || '—'}</td>
+      <td class="mono">${esc(e.rfc) || '—'}</td>
+      <td class="mono">${esc(e.curp) || '—'}</td>
+      <td class="mono">${esc(e.imss) || '—'}</td>
+      <td>${esc(e.nivelEstudios) || '—'}</td>
+      <td>${esc(e.puesto) || '—'}</td>
+      <td>${esc(e.departamento) || '—'}</td>
+      <td>${esc(e.area) || '—'}</td>
+      <td>${e.fechaIngreso ? fmtDateDMY(e.fechaIngreso) : '—'}</td>
+      <td class="mono">${fmtNum(e.salarioDiario)}</td>
+      <td class="mono">${fmtNum(e.salarioDiarioIntegrado)}</td>
+    </tr>`).join('');
+  } catch (err) {
+    console.warn('⚠ loadEmpleados:', err);
+    tbody.innerHTML = '<tr><td colspan="13" style="padding:16px;color:var(--red);text-align:center">No se pudieron cargar los empleados.</td></tr>';
+  }
+}
+
+function showNewEmpleadoModal() {
+  openModal({
+    title: '+ Nuevo empleado',
+    bodyHtml: `
+      <form id="new-emp-form">
+        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div><label>No. listado *</label><input name="numeroLista" required placeholder="0123"></div>
+          <div><label>Turno</label>
+            <select name="turno"><option value="08:00-17:00" selected>08:00-17:00</option><option value="14:00-22:00">14:00-22:00</option><option value="22:00-06:00">22:00-06:00</option></select>
+          </div>
+        </div>
+        <div class="fg"><label>Nombre *</label><input name="nombre" required></div>
+        <div class="fg"><label>Nombre Rep Proc</label><input name="nombreRepProc" placeholder="Opcional"></div>
+        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+          <div><label>RFC</label><input name="rfc" placeholder="XAXX010101000"></div>
+          <div><label>CURP</label><input name="curp"></div>
+          <div><label>No. IMSS</label><input name="imss"></div>
+        </div>
+        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div><label>Puesto</label><input name="puesto"></div>
+          <div><label>Nivel estudios</label>
+            <select name="nivelEstudios">
+              <option value="">—</option>
+              <option>PRIMARIA</option><option>SECUNDARIA</option><option>MEDIA SUPERIOR</option>
+              <option>TECNICO</option><option>SUPERIOR</option><option>POSGRADO</option>
+            </select>
+          </div>
+        </div>
+        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div><label>Departamento</label><input name="departamento"></div>
+          <div><label>Área *</label><input name="area" required></div>
+        </div>
+        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+          <div><label>Fecha ingreso</label><input name="fechaIngreso" type="date"></div>
+          <div><label>S.D</label><input name="salarioDiario" type="number" step="0.01" min="0"></div>
+          <div><label>S.D.I</label><input name="salarioDiarioIntegrado" type="number" step="0.01" min="0"></div>
+        </div>
+        <div class="modal-error" id="new-emp-error"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn sm" onclick="closeModal()">Cancelar</button>
+          <button type="submit" class="btn p sm" id="new-emp-submit">Guardar</button>
+        </div>
+      </form>
+    `,
+  });
+  const form = document.getElementById('new-emp-form');
+  const err  = document.getElementById('new-emp-error');
+  const submitBtn = document.getElementById('new-emp-submit');
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    err.textContent = '';
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Guardando…';
+    try {
+      const fd = new FormData(form);
+      const payload = {};
+      for (const [k, v] of fd.entries()) payload[k] = v === '' ? null : v;
+      ['salarioDiario', 'salarioDiarioIntegrado'].forEach((k) => {
+        if (payload[k] != null) payload[k] = Number(payload[k]);
+      });
+      const res = await apiFetch(`${API_URL}/employees`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || body.mensaje || `HTTP ${res.status}`);
+      closeModal();
+      await loadEmpleados();
+    } catch (e2) {
+      err.textContent = e2.message;
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Guardar';
     }
   });
 }
@@ -2005,6 +2781,111 @@ async function loadCotizaciones() {
   }
 }
 
+// G-COT-1 — + Nueva cotización modal. Captures the Control-Ventas cotización
+// block minus the O.C. sub-block (that's filled in later when the OC lands).
+function showNewCotizacionModal() {
+  const today = new Date().toISOString().slice(0, 10);
+  openModal({
+    title: '+ Nueva cotización',
+    bodyHtml: `
+      <form id="new-cot-form">
+        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div><label>COT Alenstec *</label><input name="quoteNumber" required placeholder="CZ-2026-### / 0##ADL-26"></div>
+          <div><label>COT Ref.</label><input name="cotRef"></div>
+        </div>
+        <div class="fg"><label>Cliente *</label><input name="client" required></div>
+        <div class="fg"><label>Descripción del proyecto *</label><textarea name="description" required></textarea></div>
+        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+          <div><label>Proyecto / Programa</label><input name="proyecto"></div>
+          <div><label>Celda</label><input name="celda"></div>
+          <div><label>RFQ</label><input name="rfq"></div>
+        </div>
+        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+          <div><label>MECR</label><input name="mecr"></div>
+          <div><label>Tipo</label>
+            <select name="tipo"><option value="">—</option><option value="Nuevo">Nuevo</option><option value="Refurbish">Refurbish</option><option value="Servicio">Servicio</option></select>
+          </div>
+          <div><label>Estado</label>
+            <select name="status"><option value="Pendiente" selected>Pendiente</option><option value="Aprobada">Aprobada</option><option value="Rechazada">Rechazada</option><option value="Expirada">Expirada</option></select>
+          </div>
+        </div>
+        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+          <div><label>Costo COT (USD s/IVA) *</label><input name="amount" type="number" step="0.01" min="0" required></div>
+          <div><label>Moneda</label>
+            <select name="currency"><option value="USD" selected>USD</option><option value="MXN">MXN</option></select>
+          </div>
+          <div><label>Tipo de cambio</label><input name="exchangeRate" type="number" step="0.0001" min="0"></div>
+        </div>
+        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+          <div><label>Fecha cotización</label><input name="fechaCotizacion" type="date" value="${today}"></div>
+          <div><label>Válida hasta</label><input name="validUntil" type="date"></div>
+          <div><label>Fecha compromiso</label><input name="fechaCompromiso" type="date"></div>
+        </div>
+        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div><label>OT Alenstec</label><input name="otNumber" placeholder="OT-AL-#### (opcional)"></div>
+          <div><label>Tipo de contrato</label><input name="tipoContrato"></div>
+        </div>
+        <div class="modal-error" id="new-cot-error"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn sm" onclick="closeModal()">Cancelar</button>
+          <button type="submit" class="btn p sm" id="new-cot-submit">Crear cotización</button>
+        </div>
+      </form>`,
+  });
+  const form = document.getElementById('new-cot-form');
+  const errEl = document.getElementById('new-cot-error');
+  const submitBtn = document.getElementById('new-cot-submit');
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errEl.textContent = '';
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Creando…';
+    try {
+      const fd = new FormData(form);
+      const payload = Object.fromEntries([...fd.entries()].map(([k, v]) => [k, v === '' ? null : v]));
+      payload.amount = Number(payload.amount);
+      if (payload.exchangeRate != null) payload.exchangeRate = Number(payload.exchangeRate);
+      const res = await apiFetch(`${API_URL}/quotes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || body.mensaje || `HTTP ${res.status}`);
+      closeModal();
+      await loadCotizaciones();
+    } catch (e2) {
+      errEl.textContent = e2.message;
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Crear cotización';
+    }
+  });
+}
+
+async function uploadCotizacionesXlsx(file) {
+  if (!file) return;
+  const btn = document.getElementById('btn-cot-upload');
+  const originalLabel = btn && btn.textContent;
+  if (btn) { btn.disabled = true; btn.textContent = 'Subiendo…'; }
+  try {
+    const fd = new FormData();
+    fd.append('archivo', file);
+    const res = await apiFetch(`${API_URL}/quotes/import`, { method: 'POST', body: fd });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || data.mensaje || `HTTP ${res.status}`);
+    const parts = [`Creadas: ${data.created}`, `Actualizadas: ${data.updated}`, `Omitidas: ${data.skipped}`];
+    if (data.errors && data.errors.length) parts.push(`Errores: ${data.errors.length}`);
+    alert(`Importación completa.\n${parts.join(' · ')}`);
+    loadCotizaciones();
+  } catch (err) {
+    alert(`No se pudo importar: ${err.message}`);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = originalLabel || '⬆ Subir XLSX'; }
+    const input = document.getElementById('cot-import-file');
+    if (input) input.value = '';
+  }
+}
+
 async function bootstrapAuth() {
   if (!AUTH.accessToken()) { showLogin(); return false; }
   try {
@@ -2280,6 +3161,7 @@ function goMod(id) {
   if (id === 'ot') loadOTSelector(_selectedOtId);
   if (id === 'material') loadMaterialCosts();
   if (id === 'entregas') loadProveedores(); // sub-tab 6.1 is the default on module entry
+  if (id === 'ot' && _selectedOtId) loadOTApprovals();
   if (id === 'horas') loadLaborCosts();
   if (id === 'conciliacion') loadConciliacionSemanas();
   refreshAllDlButtons();
@@ -2320,6 +3202,13 @@ function goSub(mod, sub, el) {
   if (el) el.classList.add('active');
   // Load data on demand per sub-tab.
   if (mod === 'conciliacion' && sub === 'alertas') loadConciliacionAlertas();
+  if (mod === 'horas' && sub === 'empleados') loadEmpleados();
+  if (mod === 'entregas') {
+    if (sub === 'ocp')        loadOCP();
+    if (sub === 'inventario') loadInventory();
+    if (sub === 'facturas')   loadInvoices();
+    if (sub === 'entregas')   { loadDeliveries(); loadIncidents(); loadDeliveryKPIs(); }
+  }
 }
 function checkDl(prefix) {
   // P2.17: dates are optional filters, not prerequisites for export. Keep the
@@ -2558,15 +3447,149 @@ function renderConciliacionRows(empleados) {
   const tbody = document.getElementById('conciliacion-table').querySelector('tbody');
   tbody.innerHTML = '';
   if (!empleados || empleados.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" style="padding:16px;color:var(--text3);text-align:center">No se encontraron registros para la semana seleccionada.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" style="padding:16px;color:var(--text3);text-align:center">No se encontraron registros para la semana seleccionada.</td></tr>';
     return;
   }
 
   empleados.forEach((empleado) => {
+    const eid = empleado.empleado_id || empleado.id;
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${empleado.nombre || '—'}</td><td>${empleado.total_horas_checador || 0}</td><td>${empleado.total_horas_clasificadas || 0}</td><td>${empleado.diferencia || 0}</td><td>${empleado.estado || 'pendiente'}</td>`;
+    tr.innerHTML = `
+      <td>${esc(empleado.nombre) || '—'}</td>
+      <td>${empleado.total_horas_checador || 0}</td>
+      <td>${empleado.total_horas_clasificadas || 0}</td>
+      <td>${empleado.diferencia || 0}</td>
+      <td>${esc(empleado.estado) || 'pendiente'}</td>
+      <td><button class="btn sm" onclick="showEmpleadoDetalleModal('${esc(eid)}')" style="padding:2px 8px;font-size:11px">Ver detalle</button></td>`;
     tbody.appendChild(tr);
   });
+}
+
+// G-CONC-3 — empleado daily detail modal. Fetches /api/conciliacion/:semana_id/:empleado_id
+// and renders the 7-day breakdown (checador hours, clasificadas, diferencia, estado,
+// justificacion). G-CONC-4 — inline Justificar / Forzar buttons per day whose
+// estado != 'ok'.
+async function showEmpleadoDetalleModal(empleadoId) {
+  if (!conciliacionState.semanaId) { alert('Selecciona una semana primero.'); return; }
+
+  openModal({
+    title: 'Detalle de empleado',
+    bodyHtml: `
+      <div id="emp-detalle-header" style="margin-bottom:12px;font-size:12.5px;color:var(--text3)">Cargando…</div>
+      <div class="tw" style="max-height:60vh;overflow-y:auto"><table>
+        <thead><tr>
+          <th>Fecha</th><th>Día</th><th>Horas checador</th><th>Horas clasificadas</th>
+          <th>Diferencia</th><th>Estado</th><th>Justificación</th><th>Acciones</th>
+        </tr></thead>
+        <tbody id="emp-detalle-tbody">
+          <tr><td colspan="8" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
+        </tbody>
+      </table></div>
+      <div class="modal-actions" style="margin-top:12px">
+        <button type="button" class="btn sm" onclick="closeModal()">Cerrar</button>
+      </div>`,
+  });
+
+  try {
+    const res = await apiFetch(`${API_URL}/conciliacion/${conciliacionState.semanaId}/${encodeURIComponent(empleadoId)}`);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+
+    const emp = data.empleado || {};
+    const header = document.getElementById('emp-detalle-header');
+    if (header) {
+      header.innerHTML = `<strong>${esc(emp.nombre) || '—'}</strong> · No. ${esc(emp.numero_lista) || '—'} · ${esc(emp.area) || '—'} · Turno ${esc(emp.turno) || '—'}`;
+    }
+
+    const tbody = document.getElementById('emp-detalle-tbody');
+    if (!tbody) return;
+    const dias = data.detalles_dia || [];
+    if (!dias.length) {
+      tbody.innerHTML = '<tr><td colspan="8" style="padding:16px;color:var(--text3);text-align:center">Sin registros para la semana.</td></tr>';
+      return;
+    }
+    const map = { ok: 'bg', conflicto: 'br', alerta: 'ba', justificado: 'bn', forzado: 'bn' };
+    const role = (AUTH.user && AUTH.user()?.rol) || '';
+    const canForzar = ['rh', 'admin'].includes(role);
+
+    tbody.innerHTML = dias.map((d) => {
+      const fecha = d.fecha ? d.fecha.slice(0, 10) : '—';
+      const dia = (d.dia_semana || '').trim();
+      const checador = Number(d.horas_checador || 0).toFixed(2);
+      const clasif = Number(d.horas_clasificadas || 0).toFixed(2);
+      const diff = Number(d.diferencia || 0).toFixed(2);
+      const estado = d.estado || 'pendiente';
+      const badge = `<span class="badge ${map[estado] || 'bn'}">${esc(estado)}</span>`;
+      const justif = d.justificacion ? esc(d.justificacion) : '—';
+      const actions = (estado === 'conflicto' || estado === 'alerta')
+        ? `<div style="display:flex;gap:4px;flex-wrap:wrap">
+             <button class="btn sm" onclick="justificarDia('${esc(empleadoId)}','${esc(fecha)}')" style="padding:2px 6px;font-size:11px">Justificar</button>
+             ${canForzar ? `<button class="btn sm" onclick="forzarDia('${esc(empleadoId)}','${esc(fecha)}')" style="padding:2px 6px;font-size:11px;color:var(--red)">Forzar</button>` : ''}
+           </div>`
+        : '<span style="color:var(--text3);font-size:11px">—</span>';
+      return `<tr>
+        <td class="mono">${esc(fecha)}</td>
+        <td>${esc(dia)}</td>
+        <td class="mono">${checador}</td>
+        <td class="mono">${clasif}</td>
+        <td class="mono" style="font-weight:600">${diff}</td>
+        <td>${badge}</td>
+        <td style="font-size:11px">${justif}</td>
+        <td>${actions}</td>
+      </tr>`;
+    }).join('');
+  } catch (err) {
+    const tbody = document.getElementById('emp-detalle-tbody');
+    if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="padding:16px;color:var(--red);text-align:center">${esc(err.message)}</td></tr>`;
+  }
+}
+
+async function justificarDia(empleadoId, fecha) {
+  const justificacion = prompt('Justificación:');
+  if (!justificacion || !justificacion.trim()) return;
+  try {
+    const res = await apiFetch(`${API_URL}/conciliacion/justificar`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        empleado_id: empleadoId,
+        fecha,
+        semana_id: conciliacionState.semanaId,
+        justificacion: justificacion.trim(),
+      }),
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
+    // Refresh both the day detail and the resumen table.
+    await showEmpleadoDetalleModal(empleadoId);
+    await loadConciliacionSemana();
+  } catch (err) {
+    alert(`No se pudo justificar: ${err.message}`);
+  }
+}
+
+async function forzarDia(empleadoId, fecha) {
+  const motivo = prompt('Motivo de forzado (requerido):');
+  if (!motivo || !motivo.trim()) return;
+  if (!confirm('Forzar la conciliación sobrescribe el estado del día. ¿Continuar?')) return;
+  try {
+    const res = await apiFetch(`${API_URL}/conciliacion/forzar`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        empleado_id: empleadoId,
+        fecha,
+        semana_id: conciliacionState.semanaId,
+        motivo: motivo.trim(),
+      }),
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
+    await showEmpleadoDetalleModal(empleadoId);
+    await loadConciliacionSemana();
+  } catch (err) {
+    alert(`No se pudo forzar: ${err.message}`);
+  }
 }
 
 async function loadConciliacionSemana() {
@@ -2852,12 +3875,49 @@ function handleXMLUpload(event) {
         <td><span class="badge bg">✓ Importada</span></td>
       `;
 
-      // Add row to table
-      const tabla = document.querySelector('#sub-entregas-facturas table tbody');
-      if (tabla) {
-        tabla.insertBefore(nuevaFila, tabla.firstChild);
-        alert(`✓ Factura importada exitosamente\n\nUUID: ${uuid}\nTotal: $${parseFloat(total).toLocaleString('es-MX')} ${moneda}\nMétodo: ${metodoPago}`);
-      }
+      // Phase-3 P3.9/P3.10: persist parsed CFDI to the backend, then reload
+      // the live table from the API. Keeps the optimistic prepend for users
+      // but tries to store the data first.
+      (async () => {
+        try {
+          const payload = {
+            uuidFiscal: uuid,
+            rfcEmisor, rfcReceptor,
+            serie: serie === '—' ? null : serie,
+            folio: folioFiscal === '—' ? null : folioFiscal,
+            fechaEmision: fecha,
+            fechaCertificacion: fechaCert,
+            regimenFiscal: 'Régimen General',
+            concepto: descripcion,
+            cantidad: Number(cantidad) || null,
+            precioUnitario: Number(precioUnitario) || null,
+            subtotal: Number(subtotal) || null,
+            iva: Number(iva) || 0,
+            total: Number(total),
+            moneda,
+            tipoCambio: Number(tipoCambio) || null,
+            metodoPago: ['PUE', 'PPD'].includes(metodoPago) ? metodoPago : null,
+            validacionSat: 'pendiente',
+            xmlRaw: xmlText,
+          };
+          const res = await apiFetch(`${API_URL}/invoices/cfdi`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+          if (!res.ok) {
+            const body = await res.json().catch(() => ({}));
+            throw new Error(body.error || `HTTP ${res.status}`);
+          }
+          await loadInvoices();
+          alert(`✓ Factura importada y persistida\n\nUUID: ${uuid}\nTotal: $${parseFloat(total).toLocaleString('es-MX')} ${moneda}\nMétodo: ${metodoPago}`);
+        } catch (err) {
+          console.warn('⚠ CFDI persist failed:', err);
+          // Fallback: prepend the parsed row locally so the user at least sees it.
+          const tabla = document.getElementById('fact-tbody') || document.querySelector('#sub-entregas-facturas table tbody');
+          if (tabla) tabla.insertBefore(nuevaFila, tabla.firstChild);
+          alert(`⚠ Factura parseada pero no se pudo persistir.\n${err.message}`);
+        }
+      })();
     } catch (error) {
       console.error('Error parsing XML:', error);
       alert('❌ Error procesando el archivo XML: ' + error.message);
@@ -2906,6 +3966,12 @@ function handleXMLUpload(event) {
   document.getElementById('mat-new-btn')?.addEventListener('click', showNewMaterialModal);
   document.getElementById('prov-new-btn')?.addEventListener('click', showNewProveedorModal);
   document.getElementById('hrs-new-btn')?.addEventListener('click', showNewHorasModal);
+
+  // Cotizaciones XLSX import (⬆ Subir XLSX → POST /api/quotes/import).
+  document.getElementById('cot-import-file')?.addEventListener('change', (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (file) uploadCotizacionesXlsx(file);
+  });
 
   // P2.17 — Proveedores download; the other Entregas sub-tabs stay disabled
   // because their tables are still mockup.

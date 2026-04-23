@@ -1,7 +1,7 @@
 const express = require('express');
 const { Op } = require('sequelize');
 const { WorkOrder } = require('../models');
-const { verificarRol } = require('../middleware/auth');
+const { verificarRol, filtrarPorSupervisor } = require('../middleware/auth');
 const { sendTableXlsx } = require('../utils/xlsxTable');
 
 const router = express.Router();
@@ -33,7 +33,7 @@ router.get('/export', async (req, res) => {
   }
 });
 
-router.get('/', async (req, res) => {
+router.get('/', filtrarPorSupervisor, async (req, res) => {
   try {
     const { status, startDate, endDate } = req.query;
     const where = {};
@@ -42,6 +42,10 @@ router.get('/', async (req, res) => {
       where.createdAt = {};
       if (startDate) where.createdAt[Op.gte] = new Date(startDate);
       if (endDate) where.createdAt[Op.lte] = new Date(endDate);
+    }
+    // P3.18b — supervisors only see their own OTs (or unassigned ones).
+    if (req.supervisor_id) {
+      where[Op.or] = [{ supervisorId: req.supervisor_id }, { supervisorId: null }];
     }
     const workOrders = await WorkOrder.findAll({ where, order: [['createdAt', 'DESC']] });
     res.json(workOrders);

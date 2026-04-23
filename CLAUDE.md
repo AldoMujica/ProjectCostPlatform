@@ -4,7 +4,7 @@ Guidance for Claude Code when working in this repo. The canonical docs are linke
 
 ## What this is
 
-Alenstec cost-management platform. Single Node/Express/Sequelize/Postgres app serving both the cost API and the conciliación-nómina API from `:3000`, with a vanilla-JS SPA (`alenstec_app.html`) as the frontend. On-prem mini-PC deployment, LAN-only. ~19-week phased roadmap; Phase-1 backend foundations landed, Phase-2 wiring pending.
+Alenstec cost-management platform. Single Node/Express/Sequelize/Postgres app serving both the cost API and the conciliación-nómina API from `:3000`, with a vanilla-JS SPA (`alenstec_app.html`) as the frontend. On-prem mini-PC deployment, LAN-only. ~19-week phased roadmap; Phases 1–3 complete, Phase 4 (Nómina) up next.
 
 Product summary: [docs/project-summary.md](docs/project-summary.md).
 
@@ -71,20 +71,24 @@ backend/src/
 ├── db/            sequelize.js, migrator.js, migrations/
 ├── middleware/    auth.js (assertJwtSecret, verificarJWT, verificarRol, filtrarPorSupervisor)
 ├── models/        Sequelize models + associations (models/index.js)
-├── routes/        auth, workOrders, quotes, costs, suppliers, conciliacionRoutes
-├── seed/          idempotent seed
+├── routes/        auth, workOrders, quotes, costs, suppliers, employees,
+│                  purchaseOrders, inventory, supplierInvoices, deliveries,
+│                  approvals, conciliacionRoutes
+├── seed/          idempotent seed (re-entrant for Phase-3 fixtures)
 ├── services/      conciliacionService, parserChecadorService
-├── utils/         excelExporter.js
+├── utils/         excelExporter.js, xlsxTable.js
 └── server.js      single Express app on :3000
 ```
 
-## Current state (2026-04-21)
+## Current state (2026-04-23)
 
-**Phase 2 is complete (MVP gate met).** Every Phase-2 work item (P2.1–P2.17) landed via the cumulative squash in commit `ee60685`. Dashboard, Cotizaciones, OT (with "+ Nueva OT" creation), Material, Proveedores, Horas, and Conciliación all read/write against the backend. XLSX export lives for WO / quotes / material / labor / suppliers via a shared `backend/src/utils/xlsxTable.js` helper. A generic modal shell (`openModal`) is the foundation for future creation flows.
+**Phase 3 is complete.** All 21 Phase-3 work items (P3.1–P3.21 + deferred P3.18b) landed in a single cumulative commit. New models: `Employee` (maps the existing `empleados` table, extended with RFC/CURP/IMSS/puesto/SD/SDI columns), `PurchaseOrder` (OCP), `InventoryItem` + `StockMovement`, `SupplierInvoice` (CFDI persistence, idempotent upsert by `uuid_fiscal`), `Delivery` + `Incident`, `WorkOrderApproval` (5-step liberation flow with sequential-order + role-gated transitions; approving `liberacion_final` flips the OT to `Liberada`).
 
-About **55 %** of ~72 grouped mockup features are now fully wired. What's still mockup: Pronóstico, Nómina, Costo-MO, 4 of 5 Entregas sub-tabs (OCP / Inventario / Facturas / Entregas), OT approval workflow, OCs Abiertas / Empleados en Campo dashboard cards. All gated on Phase-3 models (PurchaseOrderAlenstec, InventoryItem, SupplierInvoice, Delivery, Employee, WorkOrderApproval), Phase-4 (Nómina), or Phase-5 (Analytics).
+Module 6 (Entregas) is now fully wired end-to-end — all 5 sub-tabs live. Module 7 gained the Control de Empleados sub-tab. Module 2 gained a functional Flujo de Liberación table with per-row Approve/Reject buttons. XLSX export is live for 9 tables (4 new Phase-3: OCP / inventory / invoices / deliveries).
 
-P1.7 deferred to Phase-3 `P3.18b` pending the `Employee` master. `v0.1-mvp` tag-ready.
+Per-record supervisor ACL (P3.18b, deferred from P1.7): ownership lives at the OT level via new `work_orders.supervisor_id` column (nullable; NULL = visible to all). `filtrarPorSupervisor` is wired into `GET /api/work-orders` — supervisor-role callers see OTs assigned to them or unassigned.
+
+About **85 %** of ~72 grouped mockup features are now wired. What's still mockup: Pronóstico, Nómina, Costo-MO, OCs Abiertas / Empleados en Campo dashboard widgets, activity-code rollup — all gated on Phase-4 (Nómina) or Phase-5 (Analytics). `v0.2-entregas` tag-ready.
 
 ## Known doc drift
 

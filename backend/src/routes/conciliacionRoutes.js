@@ -316,8 +316,13 @@ router.get('/:semana_id/:empleado_id', verificarJWT, async (req, res) => {
       }
     }
 
+    // G-CONC-3 — fetch one empleado's 7-day detail. Previous impl used
+    // SUM(hc.horas) nested inside json_build_object under json_agg, which
+    // Postgres rejects ("no se pueden anidar llamadas a funciones de
+    // agregación"). Moved per-day sums into a scalar sub-query so the outer
+    // json_agg only sees one row per día.
     const query = `
-      SELECT 
+      SELECT
         e.id,
         e.numero_lista,
         e.nombre,
@@ -325,44 +330,49 @@ router.get('/:semana_id/:empleado_id', verificarJWT, async (req, res) => {
         e.area,
         sn.fecha_inicio,
         sn.fecha_fin,
-        json_agg(
-          json_build_object(
-            'fecha', cd.fecha,
-            'dia_semana', to_char(cd.fecha, 'Day'),
-            'check_in', rc.check_in,
-            'check_out', rc.check_out,
-            'horas_checador', rc.horas_real,
-            'horas_clasificadas', COALESCE(SUM(hc.horas), 0),
-            'proyecto_actividad', (
-              SELECT json_agg(
-                json_build_object(
-                  'id', hc2.id,
-                  'proyecto', p.nombre,
-                  'actividad', hc2.actividad,
-                  'horas', hc2.horas,
-                  'tipo_hora', hc2.tipo_hora
+        COALESCE(
+          json_agg(
+            json_build_object(
+              'fecha', cd.fecha,
+              'dia_semana', to_char(cd.fecha, 'Day'),
+              'check_in', rc.check_in,
+              'check_out', rc.check_out,
+              'horas_checador', rc.horas_real,
+              'horas_clasificadas', (
+                SELECT COALESCE(SUM(hc.horas), 0)
+                FROM horas_clasificadas hc
+                WHERE hc.empleado_id = $2 AND hc.fecha = cd.fecha AND hc.semana_id = $1
+              ),
+              'proyecto_actividad', (
+                SELECT json_agg(
+                  json_build_object(
+                    'id', hc2.id,
+                    'proyecto', p.nombre,
+                    'actividad', hc2.actividad,
+                    'horas', hc2.horas,
+                    'tipo_hora', hc2.tipo_hora
+                  )
                 )
-              )
-              FROM horas_clasificadas hc2
-              LEFT JOIN proyectos p ON p.id = hc2.proyecto_id
-              WHERE hc2.empleado_id = $2 AND hc2.fecha = cd.fecha AND hc2.semana_id = $1
-            ),
-            'incidencia', i.tipo,
-            'incidencia_notas', i.notas,
-            'diferencia', cd.diferencia,
-            'estado', cd.estado,
-            'justificacion', cd.justificacion,
-            'anomalia', rc.anomalia
-          ) ORDER BY cd.fecha
-        ) as detalles_dia
+                FROM horas_clasificadas hc2
+                LEFT JOIN proyectos p ON p.id = hc2.proyecto_id
+                WHERE hc2.empleado_id = $2 AND hc2.fecha = cd.fecha AND hc2.semana_id = $1
+              ),
+              'incidencia', i.tipo,
+              'incidencia_notas', i.notas,
+              'diferencia', cd.diferencia,
+              'estado', cd.estado,
+              'justificacion', cd.justificacion,
+              'anomalia', rc.anomalia
+            ) ORDER BY cd.fecha
+          ) FILTER (WHERE cd.fecha IS NOT NULL),
+          '[]'::json
+        ) AS detalles_dia
       FROM empleados e
-      JOIN semanas_nomina sn ON TRUE
+      JOIN semanas_nomina sn ON sn.id = $1
       LEFT JOIN conciliacion_detalle cd ON cd.empleado_id = e.id AND cd.semana_id = sn.id
       LEFT JOIN registros_checador rc ON rc.empleado_id = e.id AND rc.fecha = cd.fecha AND rc.semana_id = sn.id
-      LEFT JOIN horas_clasificadas hc ON hc.empleado_id = e.id AND hc.fecha = cd.fecha AND hc.semana_id = sn.id
       LEFT JOIN incidencias i ON i.empleado_id = e.id AND i.fecha = cd.fecha AND i.semana_id = sn.id
-      LEFT JOIN proyectos p ON p.id = hc.proyecto_id
-      WHERE e.id = $2 AND sn.id = $1
+      WHERE e.id = $2
       GROUP BY e.id, e.numero_lista, e.nombre, e.turno, e.area, sn.id, sn.fecha_inicio, sn.fecha_fin
     `;
 

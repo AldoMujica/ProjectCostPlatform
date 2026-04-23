@@ -58,11 +58,15 @@ Button `#btn-dl-global` in the top-bar becomes enabled when both `#g-desde` and 
 
 ## Backend support
 
-`backend/models/Quote.js` — UUID PK, `quoteNumber` (unique), `client`, `description`, `amount`, `currency` (default USD), `status` (enum `Pendiente`/`Aprobada`/`Rechazada`/`Expirada`), `validUntil`.
+`backend/models/Quote.js` — UUID PK, `quoteNumber` (unique), `client`, `description`, `amount`, `currency` (default USD), `status` (enum `Pendiente`/`Aprobada`/`Rechazada`/`Expirada`), `validUntil`, plus G-COT-5 extensions (`cotRef`, `ocCliente`, `exchangeRate`, `otNumber`, `tipo`) and the Control-Ventas round-trip columns added 2026-04-23 (`proyecto`, `celda`, `rfq`, `mecr`, `fechaCotizacion`, `tipoContrato`, `fechaOC`, `costoOC`, `fechaCompromiso`).
 
-`backend/routes/quotes.js` — `GET /`, `GET /:id`, `POST /`, `PUT /:id`, `GET /kpi/open-count`. **No `DELETE`**.
+`backend/routes/quotes.js` — `GET /`, `GET /:id`, `POST /`, `PUT /:id`, `GET /kpi/open-count`, `GET /export`, `POST /import`. **No `DELETE`**.
 
-**Gap G-COT-5:** the UI table columns require `cotRefCliente` (the client's reference number, e.g. `057AMX-24` or `TERM. Y COND.`), `ocClienteNumber`, `fechaCotizacion`, `tipoCambio`, `otNumber` (FK to WorkOrder), and `tipo` (enum covering mockup values `Nuevo / Refurbish / MECR / Corte / Fabricación / Manufactura`). These are not in the model.
+### XLSX round-trip (`/import` + `/export`)
+
+The export produces a single-sheet workbook named `Control Ventas 2026` whose 20 headers mirror the client-supplied master (`20260317 VENTAS TOTALES CON RESUMEN POR ORDEN DE COMPRA.xlsx`) for the first 19 cotización-level columns, plus `TIPO` / `ESTADO` for the internal workflow.
+
+The import (`POST /api/quotes/import`, multipart `archivo` field, admin/ventas only) is header-driven: it normalises whitespace/line-break/case on the first 10 rows and picks the row with the most header hits. Rows whose `COT ALENSTEC` cell is itself a header label (common for workbooks with a two-row compound header) are skipped automatically. Each data row upserts by `quoteNumber` — missing `amount` defaults to `0`, missing `client` defaults to `SIN CLIENTE`, missing `description` falls back to `proyecto` or the quote number.
 
 ## Acceptance criteria
 

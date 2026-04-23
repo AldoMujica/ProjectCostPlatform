@@ -32,6 +32,19 @@ const Quote = sequelize.define('Quote', {
     type: DataTypes.ENUM('Nuevo', 'Refurbish', 'Servicio'),
     allowNull: true,
   },
+
+  // Control de Ventas 2026 workbook alignment — mirrors the first 19 cols
+  // of the "Control Ventas 2026" sheet so the upload/download flow can
+  // round-trip without lossy mapping.
+  proyecto:        { type: DataTypes.STRING, allowNull: true },
+  celda:           { type: DataTypes.STRING, allowNull: true },
+  rfq:             { type: DataTypes.STRING, allowNull: true },
+  mecr:            { type: DataTypes.STRING, allowNull: true },
+  fechaCotizacion: { type: DataTypes.DATEONLY, allowNull: true, field: 'fecha_cotizacion' },
+  tipoContrato:    { type: DataTypes.STRING, allowNull: true, field: 'tipo_contrato' },
+  fechaOC:         { type: DataTypes.DATEONLY, allowNull: true, field: 'fecha_oc' },
+  costoOC:         { type: DataTypes.DECIMAL(12, 2), allowNull: true, field: 'costo_oc' },
+  fechaCompromiso: { type: DataTypes.DATEONLY, allowNull: true, field: 'fecha_compromiso' },
 }, {
   tableName: 'quotes',
   timestamps: true,

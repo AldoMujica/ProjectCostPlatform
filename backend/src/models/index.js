@@ -7,6 +7,14 @@ const MaterialCost = require('./MaterialCost');
 const LaborCost = require('./LaborCost');
 const Supplier = require('./Supplier');
 const SupplierWorkOrder = require('./SupplierWorkOrder');
+const Employee = require('./Employee');
+const PurchaseOrder = require('./PurchaseOrder');
+const InventoryItem = require('./InventoryItem');
+const StockMovement = require('./StockMovement');
+const SupplierInvoice = require('./SupplierInvoice');
+const Delivery = require('./Delivery');
+const Incident = require('./Incident');
+const WorkOrderApproval = require('./WorkOrderApproval');
 
 // Associations (ADR-006: FK enforced, otNumber kept redundant)
 WorkOrder.hasMany(MaterialCost, { foreignKey: 'workOrderId', as: 'materialCosts' });
@@ -28,6 +36,48 @@ WorkOrder.belongsToMany(Supplier, {
   as: 'suppliers',
 });
 
+// Phase-3 P3.16 / P3.18b — Employee ↔ User (supervisor) and WorkOrder ↔ User
+// (supervisor). Both are nullable so unassigned OTs / empleados stay valid.
+User.hasMany(Employee, { foreignKey: 'supervisorId', as: 'empleadosSupervisados' });
+Employee.belongsTo(User, { foreignKey: 'supervisorId', as: 'supervisor' });
+
+User.hasMany(WorkOrder, { foreignKey: 'supervisorId', as: 'otsSupervisadas' });
+WorkOrder.belongsTo(User, { foreignKey: 'supervisorId', as: 'supervisor' });
+
+// Phase-3 associations
+Supplier.hasMany(PurchaseOrder, { foreignKey: 'supplierId', as: 'purchaseOrders' });
+PurchaseOrder.belongsTo(Supplier, { foreignKey: 'supplierId', as: 'supplierObj' });
+WorkOrder.hasMany(PurchaseOrder, { foreignKey: 'workOrderId', as: 'purchaseOrders' });
+PurchaseOrder.belongsTo(WorkOrder, { foreignKey: 'workOrderId', as: 'workOrder' });
+
+WorkOrder.hasMany(InventoryItem, { foreignKey: 'assignedWorkOrderId', as: 'inventoryItems' });
+InventoryItem.belongsTo(WorkOrder, { foreignKey: 'assignedWorkOrderId', as: 'assignedWorkOrder' });
+
+InventoryItem.hasMany(StockMovement, { foreignKey: 'inventoryItemId', as: 'movements' });
+StockMovement.belongsTo(InventoryItem, { foreignKey: 'inventoryItemId', as: 'item' });
+
+Supplier.hasMany(SupplierInvoice, { foreignKey: 'supplierId', as: 'invoices' });
+SupplierInvoice.belongsTo(Supplier, { foreignKey: 'supplierId', as: 'supplierObj' });
+WorkOrder.hasMany(SupplierInvoice, { foreignKey: 'workOrderId', as: 'invoices' });
+SupplierInvoice.belongsTo(WorkOrder, { foreignKey: 'workOrderId', as: 'workOrder' });
+
+Supplier.hasMany(Delivery, { foreignKey: 'supplierId', as: 'deliveries' });
+Delivery.belongsTo(Supplier, { foreignKey: 'supplierId', as: 'supplierObj' });
+WorkOrder.hasMany(Delivery, { foreignKey: 'workOrderId', as: 'deliveries' });
+Delivery.belongsTo(WorkOrder, { foreignKey: 'workOrderId', as: 'workOrder' });
+InventoryItem.hasMany(Delivery, { foreignKey: 'inventoryItemId', as: 'deliveries' });
+Delivery.belongsTo(InventoryItem, { foreignKey: 'inventoryItemId', as: 'inventoryItem' });
+
+Supplier.hasMany(Incident, { foreignKey: 'supplierId', as: 'incidents' });
+Incident.belongsTo(Supplier, { foreignKey: 'supplierId', as: 'supplierObj' });
+WorkOrder.hasMany(Incident, { foreignKey: 'workOrderId', as: 'incidents' });
+Incident.belongsTo(WorkOrder, { foreignKey: 'workOrderId', as: 'workOrder' });
+
+WorkOrder.hasMany(WorkOrderApproval, { foreignKey: 'workOrderId', as: 'approvals' });
+WorkOrderApproval.belongsTo(WorkOrder, { foreignKey: 'workOrderId', as: 'workOrder' });
+User.hasMany(WorkOrderApproval, { foreignKey: 'decidedBy', as: 'approvalsDecided' });
+WorkOrderApproval.belongsTo(User, { foreignKey: 'decidedBy', as: 'decidedByUser' });
+
 module.exports = {
   sequelize,
   User,
@@ -37,4 +87,12 @@ module.exports = {
   LaborCost,
   Supplier,
   SupplierWorkOrder,
+  Employee,
+  PurchaseOrder,
+  InventoryItem,
+  StockMovement,
+  SupplierInvoice,
+  Delivery,
+  Incident,
+  WorkOrderApproval,
 };

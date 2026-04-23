@@ -14,12 +14,18 @@ const workOrderRoutes = require('./routes/workOrders');
 const quoteRoutes = require('./routes/quotes');
 const costRoutes = require('./routes/costs');
 const supplierRoutes = require('./routes/suppliers');
+const employeeRoutes = require('./routes/employees');
+const purchaseOrderRoutes = require('./routes/purchaseOrders');
+const inventoryRoutes = require('./routes/inventory');
+const supplierInvoiceRoutes = require('./routes/supplierInvoices');
+const deliveryRoutes = require('./routes/deliveries');
+const approvalRoutes = require('./routes/approvals');
 const conciliacionRoutes = require('./routes/conciliacionRoutes');
 
 const app = express();
 
 // CSP tuned for the single-file SPA (alenstec_app.html): inline <script>/<style>
-// blocks, jsPDF + html2canvas from cdnjs, DM Sans + DM Mono from Google Fonts.
+// blocks, jsPDF from cdnjs, DM Sans + DM Mono from Google Fonts.
 // LAN-only on-prem deployment — we keep defaultSrc tight and widen only where
 // the SPA actually needs it.
 app.use(helmet({
@@ -64,6 +70,12 @@ app.use('/api/work-orders', workOrderRoutes);
 app.use('/api/quotes', quoteRoutes);
 app.use('/api/costs', costRoutes);
 app.use('/api/suppliers', supplierRoutes);
+app.use('/api/employees', employeeRoutes);
+app.use('/api/purchase-orders', purchaseOrderRoutes);
+app.use('/api/inventory', inventoryRoutes);
+app.use('/api/invoices', supplierInvoiceRoutes);
+app.use('/api/deliveries', deliveryRoutes);
+app.use('/api/approvals', approvalRoutes);
 app.use('/api/conciliacion', conciliacionRoutes);
 
 // Serve the app SPA at root
