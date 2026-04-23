@@ -6,13 +6,13 @@
 
 ## Progress snapshot — 2026-04-20
 
-| Phase | Scope                               | Status        |
-|-------|-------------------------------------|---------------|
-| 0     | Infrastructure setup                | Partial — local Postgres 15 reachable; Tailscale/B2 still not verified in this repo. **CI ✅ landed (P1.17).** |
-| 1     | Code foundations — **backend**      | ✅ **Done** — single Express app on `:3000`, umzug migrations, JWT auth with boot-time secret guard, 6 roles seeded, FKs enforced, `asistencia-modulo/` removed. Verified end-to-end against local Postgres. |
-| 1     | Code foundations — **QA harness**   | ✅ **Done (P1.17 + P1.18)** — jest + supertest smoke suite (health, auth, migrate/seed idempotence); ESLint `:recommended`; GitHub Actions workflow runs lint → migrate ×2 → seed → test against a Postgres 15 service container; `docker-compose.test.yml` for local dev. |
-| 1     | Code foundations — **frontend**     | ✅ **Done (P1.15 + P1.16)** — login overlay, `apiFetch` wrapper, `Authorization: Bearer` injection, single-flight refresh on 401, logout link; user chip renders current session. Existing wired fetches (work-orders, quotes, suppliers, conciliación) migrated to `apiFetch`. |
-| 2+    | —                                   | Not started |
+| Phase | Scope                             | Status                                                                                                                                                                                                                                                                         |
+| ----- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 0     | Infrastructure setup              | Partial — local Postgres 15 reachable; Tailscale/B2 still not verified in this repo. **CI ✅ landed (P1.17).**                                                                                                                                                                  |
+| 1     | Code foundations — **backend**    | ✅ **Done** — single Express app on `:3000`, umzug migrations, JWT auth with boot-time secret guard, 6 roles seeded, FKs enforced, `asistencia-modulo/` removed. Verified end-to-end against local Postgres.                                                                    |
+| 1     | Code foundations — **QA harness** | ✅ **Done (P1.17 + P1.18)** — jest + supertest smoke suite (health, auth, migrate/seed idempotence); ESLint `:recommended`; GitHub Actions workflow runs lint → migrate ×2 → seed → test against a Postgres 15 service container; `docker-compose.test.yml` for local dev.      |
+| 1     | Code foundations — **frontend**   | ✅ **Done (P1.15 + P1.16)** — login overlay, `apiFetch` wrapper, `Authorization: Bearer` injection, single-flight refresh on 401, logout link; user chip renders current session. Existing wired fetches (work-orders, quotes, suppliers, conciliación) migrated to `apiFetch`. |
+| 2+    | —                                 | Not started                                                                                                                                                                                                                                                                    |
 
 **Backend exit criteria for Phase 1 — met:**
 
@@ -229,22 +229,22 @@ All Priority-3 gaps from the audit. Each is a small `fetch+render` per module.
 | ID    | Item                                                                | Owner  | Days | Gap closed |
 |-------|---------------------------------------------------------------------|--------|-----:|------------|
 | P2.1  | Dashboard — wire 4 KPIs to `/api/*/kpi/*`                           | FE     | 1    | G-DASH-1   | ✅ |
-| P2.2  | Dashboard — wire Recent-OT table to `/api/work-orders`              | FE     | 0.5  | G-DASH-2   |
-| P2.3  | Dashboard — derive cost-per-OT bars                                 | FE     | 0.5  | G-DASH-3   |
-| P2.4  | Dashboard — wire Proveedores timeline to `/api/suppliers`           | FE     | 0.5  | G-DASH-4   |
-| P2.5  | Cotizaciones — wire table to `/api/quotes`                          | FE     | 1    | G-COT-2    |
-| P2.6  | Cotizaciones — wire KPI strip                                       | FE     | 0.5  | G-COT-4    |
-| P2.7  | OT — OT selector repopulates form via `GET /api/work-orders/:id`    | FE     | 1    | G-OT-1     |
-| P2.8  | OT — `+ Nueva OT` creation modal → `POST`                           | FE     | 2    | G-OT-3     |
-| P2.9  | Material — wire Requisición table to `/api/costs/material`          | FE     | 1    | G-MAT-2    |
-| P2.10 | Material — `+ Registrar material` modal → `POST`                    | FE     | 1    | G-MAT-1    |
-| P2.11 | Entregas/Proveedores — wire table + `+ Agregar proveedor` modal      | FE     | 1.5  | G-PROV-1,2 |
-| P2.12 | Horas — wire Resumen table to `/api/costs/labor`                    | FE     | 1    | G-HOR-2    |
-| P2.13 | Horas — `+ Capturar horas` modal → `POST`                           | FE     | 1    | G-HOR-1    |
-| P2.14 | Conciliación/Alertas — wire to `GET /api/conciliacion/:id/alertas`  | FE     | 0.5  | G-CONC-1   |
-| P2.15 | Conciliación/Clasificación — wire form to `POST /horas-clasificadas` | FE    | 1    | G-CONC-2   |
-| P2.16 | Conciliación — populate week selector from DB                       | FE     | 0.5  | G-CONC-5   |
-| P2.17 | **XLSX export: shared helper + 11 endpoints + UI wiring** (ADR-004)  | BE+FE | 4    | G-EXP-1    |
+| P2.2  | Dashboard — wire Recent-OT table to `/api/work-orders`              | FE     | 0.5  | G-DASH-2   | ✅ |
+| P2.3  | Dashboard — derive cost-per-OT bars                                 | FE     | 0.5  | G-DASH-3   | ✅ |
+| P2.4  | Dashboard — wire Proveedores timeline to `/api/suppliers`           | FE     | 0.5  | G-DASH-4   | ✅ |
+| P2.5  | Cotizaciones — wire table to `/api/quotes`                          | FE     | 1    | G-COT-2    | ✅ |
+| P2.6  | Cotizaciones — wire KPI strip                                       | FE     | 0.5  | G-COT-4    | ✅ |
+| P2.7  | OT — OT selector repopulates form via `GET /api/work-orders/:id`    | FE     | 1    | G-OT-1     | ✅ |
+| P2.8  | OT — `+ Nueva OT` creation modal → `POST`                           | FE     | 2    | G-OT-3     | ✅ |
+| P2.9  | Material — wire Requisición table to `/api/costs/material`          | FE     | 1    | G-MAT-2    | ✅ |
+| P2.10 | Material — `+ Registrar material` modal → `POST`                    | FE     | 1    | G-MAT-1    | ✅ |
+| P2.11 | Entregas/Proveedores — wire table + `+ Agregar proveedor` modal      | FE     | 1.5  | G-PROV-1,2 | ✅ |
+| P2.12 | Horas — wire Resumen table to `/api/costs/labor`                    | FE     | 1    | G-HOR-2    | ✅ |
+| P2.13 | Horas — `+ Capturar horas` modal → `POST`                           | FE     | 1    | G-HOR-1    | ✅ |
+| P2.14 | Conciliación/Alertas — wire to `GET /api/conciliacion/:id/alertas`  | FE     | 0.5  | G-CONC-1   | ✅ |
+| P2.15 | Conciliación/Clasificación — wire form to `POST /horas-clasificadas` | FE    | 1    | G-CONC-2   | ✅ |
+| P2.16 | Conciliación — populate week selector from DB                       | FE     | 0.5  | G-CONC-5   | ✅ |
+| P2.17 | **XLSX export: shared helper + 5 endpoints + UI wiring** (ADR-004)   | BE+FE | 4    | G-EXP-1    | ✅ (partial — 5 of ~11 tables; 6 buttons for mockup modules stay disabled) |
 
 ### Regression track
 

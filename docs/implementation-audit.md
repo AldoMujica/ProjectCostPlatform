@@ -64,9 +64,9 @@ Counts above group related controls; see per-module feature docs for the full fl
 | Feature              | Status | Backing                                     | Gap        |
 |----------------------|:------:|---------------------------------------------|------------|
 | 4-KPI strip          | ✅      | Wired in P2.1 — `apiFetch` parallel to 3 endpoints; compact currency format | ~~G-DASH-1~~ |
-| Recent-OT table      | ⚠️      | `GET /api/work-orders` exists, UI not wired | G-DASH-2   |
-| Cost-per-OT bars     | ⚠️      | Derivable from `/api/work-orders`           | G-DASH-3   |
-| Proveedores timeline | ⚠️      | `GET /api/suppliers` exists, UI not wired   | G-DASH-4   |
+| Recent-OT table      | ✅      | Wired in P2.2 — `loadDashboardWorkOrders`   | ~~G-DASH-2~~ |
+| Cost-per-OT bars     | ✅      | Wired in P2.3 — same fetch, sorted by `quotedCost` | ~~G-DASH-3~~ |
+| Proveedores timeline | ✅      | Wired in P2.4 — `loadDashboardSuppliers`    | ~~G-DASH-4~~ |
 | OCs Abiertas         | ❌      | No `PurchaseOrder` model                    | G-DASH-5   |
 | Empleados en Campo   | ❌      | No `Employee` endpoint                      | G-DASH-6   |
 | Pill-tab filtering   | ⚠️      | UI toggles class; no data filter            | —          |
@@ -75,21 +75,21 @@ Counts above group related controls; see per-module feature docs for the full fl
 
 | Feature                         | Status | Backing                                             | Gap     |
 |---------------------------------|:------:|-----------------------------------------------------|---------|
-| OT banner + selector            | ⚠️      | Dropdown changes label only; no data reload         | G-OT-1  |
+| OT banner + selector            | ✅      | Wired in P2.7 — selector populated from `/api/work-orders`; change fires `loadOTDetail` | ~~G-OT-1~~ |
 | Datos Generales form            | ⚠️      | Model lacks ~12 fields the form captures            | G-OT-2  |
 | Liberado a (Jefaturas) card     | ❌      | 4 fields not in `WorkOrder` model                   | G-OT-2  |
 | Presupuestos card               | ❌      | 5 fields not in model                                | G-OT-2  |
 | Horas Estimadas table           | ❌      | No `HoursEstimate` table                             | G-OT-2  |
 | Flujo de Liberación             | ❌      | No approval state machine                           | G-OT-4  |
 | PDF export                      | ✅      | `generateOTPDF()` fully wired                        | —       |
-| `+ Nueva OT` button             | ❌      | No handler                                           | G-OT-3  |
+| `+ Nueva OT` button             | ✅      | Wired in P2.8 — reusable modal shell + `showNewOTModal`; POSTs then refreshes selector | ~~G-OT-3~~ |
 
 ### Cotizaciones y Ventas (module 3)
 
 | Feature                        | Status | Backing                                 | Gap      |
 |--------------------------------|:------:|-----------------------------------------|----------|
-| KPI strip                      | ❌      | Open-count endpoint exists, not wired   | G-COT-4  |
-| Control-de-Ventas table        | ⚠️      | Model missing cotRef/OC/T-C/otNumber    | G-COT-2, G-COT-5 |
+| KPI strip                      | ✅      | Wired in P2.6 — derived from `/api/quotes` list (count, USD sum, last FX, distinct clients) | ~~G-COT-4~~ |
+| Control-de-Ventas table        | ✅      | Wired in P2.5 — `loadCotizaciones`; model extensions from G-COT-5 already in place | ~~G-COT-2~~ |
 | `+ Nueva cotización`           | ❌      | No handler                              | G-COT-1  |
 | `⬇ Descargar XLSX`             | ❌      | Global no-op button                     | G-EXP-1 / G-COT-3 |
 
@@ -107,17 +107,17 @@ Counts above group related controls; see per-module feature docs for the full fl
 | Feature                 | Status | Backing                                        | Gap      |
 |-------------------------|:------:|------------------------------------------------|----------|
 | KPI strip               | ⚠️      | `/api/costs/kpi/material-transit` exists; rest unimplemented | G-MAT-3 |
-| Requisición table       | ⚠️      | `GET /api/costs/material` exists, UI not wired | G-MAT-2  |
+| Requisición table       | ✅      | Wired in P2.9 — `loadMaterialCosts` renders 11 cols with subtotal/IVA/retención/total | ~~G-MAT-2~~ |
 | Table columns           | ⚠️      | Model lacks IVA/Ret./subtotal split            | G-MAT-4  |
-| `+ Registrar material`  | ❌      | No handler                                     | G-MAT-1  |
+| `+ Registrar material`  | ✅      | Wired in P2.10 — reuses shared modal; auto-fills subtotal + total | ~~G-MAT-1~~ |
 | XLSX export             | ❌      | Global no-op                                   | G-EXP-1  |
 
 ### Entregas de Material (module 6)
 
 | Sub-tab / Feature              | Status | Backing                                     | Gap      |
 |--------------------------------|:------:|---------------------------------------------|----------|
-| 6.1 Proveedores table          | ⚠️      | `/api/suppliers` exists, UI not wired       | G-PROV-2 |
-| 6.1 `+ Agregar proveedor`      | ❌      | No handler                                  | G-PROV-1 |
+| 6.1 Proveedores table          | ✅      | Wired in P2.11 — `loadProveedores`; shows categories, contacto, saldo, OTs | ~~G-PROV-2~~ |
+| 6.1 `+ Agregar proveedor`      | ✅      | Wired in P2.11 — reusable modal with OT checklist and comma-separated categories | ~~G-PROV-1~~ |
 | 6.1 `Saldo pendiente` field    | ❌      | Not in model                                | G-PROV-4 |
 | 6.2 OCP table                  | ❌      | No model, no routes                         | G-OCA-1,2 |
 | 6.2 `+ Capturar OCP`           | ❌      | No handler                                  | G-OCA-3  |
@@ -138,10 +138,10 @@ Counts above group related controls; see per-module feature docs for the full fl
 | Feature                           | Status | Backing                                   | Gap     |
 |-----------------------------------|:------:|-------------------------------------------|---------|
 | KPI strip                         | ❌      | No aggregate endpoint                     | —       |
-| Resumen table                     | ⚠️      | `GET /api/costs/labor` exists, UI not wired | G-HOR-2 |
+| Resumen table                     | ✅      | Wired in P2.12 — `loadLaborCosts`; 8-col layout (OT, empleado, rol, hrs, tarifa, total, moneda, fecha) | ~~G-HOR-2~~ |
 | Activity code colour map          | ❌      | Not codified in model                     | G-HOR-4 |
 | Control de Empleados table        | ❌      | No `Employee` master model                | G-HOR-3 |
-| `+ Capturar horas`                | ❌      | No handler                                | G-HOR-1 |
+| `+ Capturar horas`                | ✅      | Wired in P2.13 — reusable modal; auto-computes total until user overrides | ~~G-HOR-1~~ |
 
 ### Nómina / CFDI (module 8)
 
@@ -158,12 +158,12 @@ Counts above group related controls; see per-module feature docs for the full fl
 
 | Feature                              | Status | Backing                                             | Gap       |
 |--------------------------------------|:------:|-----------------------------------------------------|-----------|
-| Week selector + Actualizar           | ⚠️      | Hardcoded 4 options                                 | G-CONC-5  |
+| Week selector + Actualizar           | ✅      | Wired in P2.16 — `GET /api/conciliacion/semanas` (new endpoint) populates dropdown | ~~G-CONC-5~~ |
 | 9.1 Checador preview                 | ✅      | Full API round-trip                                 | —         |
 | 9.1 Checador import                  | ✅      | Full API round-trip                                 | —         |
 | 9.2 Resumen semanal                  | ✅      | Full API round-trip + render                        | —         |
-| 9.3 Alertas                          | ⚠️      | Hardcoded 3 cards; endpoint exists                  | G-CONC-1  |
-| 9.4 Clasif form                      | ⚠️      | Persists local-only; endpoint exists                | G-CONC-2  |
+| 9.3 Alertas                          | ✅      | Wired in P2.14 — on sub-tab entry fetches `/alertas` and renders cards | ~~G-CONC-1~~ |
+| 9.4 Clasif form                      | ✅      | Wired in P2.15 — POST `/horas-clasificadas`; empleado dropdown hydrated from Resumen | ~~G-CONC-2~~ |
 | 9.5 Cierre de Semana                 | ✅      | Full API round-trip                                 | —         |
 | 9.5 Exportar Excel                   | ✅      | Full API round-trip, ExcelJS streaming              | —         |
 | Employee daily detail                | ❌      | Endpoint exists, no UI surface                      | G-CONC-3  |
@@ -186,7 +186,7 @@ Counts above group related controls; see per-module feature docs for the full fl
 | OT PDF (jsPDF)              | ✅      | —        |
 | Conciliación XLSX (exceljs) | ✅      | —        |
 | Facturas CFDI XML import    | ✅      | —        |
-| 11 XLSX no-op buttons       | ❌      | G-EXP-1  |
+| 11 XLSX no-op buttons       | ⚠️      | P2.17 landed 5 live exports (WO / quotes / material / labor / suppliers) via shared `sendTableXlsx` helper. 6 buttons still disabled for mockup modules (OCP, Inventario, Facturas, Entregas sub-tab, Pronóstico, Nómina, Costo-MO) — ~~G-EXP-1~~ remaining scope narrows to those |
 | Nómina CFDI import misrouted| ⚠️      | G-NOM-3  |
 | html2canvas loaded, unused  | ⚠️      | decision required |
 

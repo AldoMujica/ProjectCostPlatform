@@ -2,8 +2,59 @@ const express = require('express');
 const { Op } = require('sequelize');
 const { MaterialCost, LaborCost, WorkOrder } = require('../models');
 const { verificarRol } = require('../middleware/auth');
+const { sendTableXlsx } = require('../utils/xlsxTable');
 
 const router = express.Router();
+
+router.get('/material/export', async (req, res) => {
+  try {
+    const rows = await MaterialCost.findAll({ order: [['createdAt', 'DESC']], raw: true });
+    await sendTableXlsx(res, {
+      filename: `costo-material-${new Date().toISOString().slice(0, 10)}.xlsx`,
+      sheetName: 'Costo de Material',
+      columns: [
+        { header: 'No. OT', key: 'otNumber', width: 14 },
+        { header: 'Proveedor', key: 'supplier', width: 28 },
+        { header: 'Descripción', key: 'materialDescription', width: 40 },
+        { header: 'Cantidad', key: 'quantity', width: 10, fmt: (v) => Number(v) },
+        { header: 'Precio unit.', key: 'unitCost', width: 14, fmt: (v) => Number(v) },
+        { header: 'Subtotal', key: 'subtotal', width: 14, fmt: (v) => (v == null ? '' : Number(v)) },
+        { header: 'IVA', key: 'iva', width: 12, fmt: (v) => (v == null ? '' : Number(v)) },
+        { header: 'Retención', key: 'retencion', width: 12, fmt: (v) => (v == null ? '' : Number(v)) },
+        { header: 'Total', key: 'totalCost', width: 14, fmt: (v) => Number(v) },
+        { header: 'Moneda', key: 'currency', width: 10 },
+        { header: 'Estado', key: 'status', width: 14 },
+        { header: 'Fecha entrega', key: 'deliveryDate', width: 16 },
+      ],
+      rows,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.get('/labor/export', async (req, res) => {
+  try {
+    const rows = await LaborCost.findAll({ order: [['date', 'DESC']], raw: true });
+    await sendTableXlsx(res, {
+      filename: `horas-mo-${new Date().toISOString().slice(0, 10)}.xlsx`,
+      sheetName: 'Horas de Mano de Obra',
+      columns: [
+        { header: 'No. OT', key: 'otNumber', width: 14 },
+        { header: 'Empleado', key: 'employeeName', width: 26 },
+        { header: 'Rol', key: 'role', width: 22 },
+        { header: 'Horas', key: 'hoursWorked', width: 10, fmt: (v) => Number(v) },
+        { header: 'Tarifa/hr', key: 'hourlyRate', width: 12, fmt: (v) => Number(v) },
+        { header: 'Total', key: 'totalCost', width: 14, fmt: (v) => Number(v) },
+        { header: 'Moneda', key: 'currency', width: 10 },
+        { header: 'Fecha', key: 'date', width: 14 },
+      ],
+      rows,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 async function resolveWorkOrderId(body) {
   if (body.workOrderId) return body.workOrderId;

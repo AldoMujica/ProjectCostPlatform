@@ -133,6 +133,24 @@ router.post('/checador/importar', verificarJWT, async (req, res) => {
 // ==================== VISTA DE CONCILIACIÓN SEMANAL ====================
 
 /**
+ * GET /api/conciliacion/semanas
+ * Lista todas las semanas disponibles para el selector.
+ * Declarado antes de /:semana_id para que 'semanas' no se matchee como param.
+ */
+router.get('/semanas', verificarJWT, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT id, fecha_inicio, fecha_fin, descripcion, cerrada
+       FROM semanas_nomina
+       ORDER BY fecha_inicio DESC`
+    );
+    res.json({ exitoso: true, semanas: result.rows });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
  * GET /api/conciliacion/:semana_id
  * Vista semanal con resumen de todos los empleados
  */

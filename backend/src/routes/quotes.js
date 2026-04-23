@@ -1,8 +1,37 @@
 const express = require('express');
 const { Quote } = require('../models');
 const { verificarRol } = require('../middleware/auth');
+const { sendTableXlsx } = require('../utils/xlsxTable');
 
 const router = express.Router();
+
+router.get('/export', async (req, res) => {
+  try {
+    const rows = await Quote.findAll({ order: [['createdAt', 'DESC']], raw: true });
+    await sendTableXlsx(res, {
+      filename: `cotizaciones-${new Date().toISOString().slice(0, 10)}.xlsx`,
+      sheetName: 'Cotizaciones',
+      columns: [
+        { header: 'No. Cotización', key: 'quoteNumber', width: 20 },
+        { header: 'COT Ref.', key: 'cotRef', width: 18 },
+        { header: 'Cliente', key: 'client', width: 24 },
+        { header: 'Descripción', key: 'description', width: 40 },
+        { header: 'Monto', key: 'amount', width: 14, fmt: (v) => Number(v) },
+        { header: 'Moneda', key: 'currency', width: 10 },
+        { header: 'T/C', key: 'exchangeRate', width: 10, fmt: (v) => (v == null ? '' : Number(v)) },
+        { header: 'OC Cliente', key: 'ocCliente', width: 18 },
+        { header: 'No. OT', key: 'otNumber', width: 14 },
+        { header: 'Tipo', key: 'tipo', width: 12 },
+        { header: 'Estado', key: 'status', width: 12 },
+        { header: 'Vigencia', key: 'validUntil', width: 14 },
+        { header: 'Creado', key: 'createdAt', width: 20 },
+      ],
+      rows,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 router.get('/', async (req, res) => {
   try {
