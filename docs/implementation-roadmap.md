@@ -4,7 +4,7 @@
 >
 > **Purpose:** Sequence the closure of the ~28 gaps identified in the audit into phases with clear entry/exit gates, explicit dependencies, and a parallel regression-test track.
 
-## Progress snapshot — 2026-04-20
+## Progress snapshot — 2026-04-21
 
 | Phase | Scope                             | Status                                                                                                                                                                                                                                                                         |
 | ----- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -12,7 +12,8 @@
 | 1     | Code foundations — **backend**    | ✅ **Done** — single Express app on `:3000`, umzug migrations, JWT auth with boot-time secret guard, 6 roles seeded, FKs enforced, `asistencia-modulo/` removed. Verified end-to-end against local Postgres.                                                                    |
 | 1     | Code foundations — **QA harness** | ✅ **Done (P1.17 + P1.18)** — jest + supertest smoke suite (health, auth, migrate/seed idempotence); ESLint `:recommended`; GitHub Actions workflow runs lint → migrate ×2 → seed → test against a Postgres 15 service container; `docker-compose.test.yml` for local dev.      |
 | 1     | Code foundations — **frontend**   | ✅ **Done (P1.15 + P1.16)** — login overlay, `apiFetch` wrapper, `Authorization: Bearer` injection, single-flight refresh on 401, logout link; user chip renders current session. Existing wired fetches (work-orders, quotes, suppliers, conciliación) migrated to `apiFetch`. |
-| 2+    | —                                 | Not started                                                                                                                                                                                                                                                                    |
+| 2     | MVP wiring — **every module**     | ✅ **Done (P2.1–P2.17)** — Dashboard KPIs + Recent-OT + cost bars + proveedores timeline; Cotizaciones table + KPIs; OT selector + form + Nueva-OT modal; Material table + Registrar-material modal; Proveedores table + Agregar-proveedor modal; Horas Resumen + Capturar-horas modal; Conciliación alertas / clasif form / week selector; XLSX export (5 endpoints via shared `sendTableXlsx` helper). Reusable modal shell landed for future creation flows. |
+| 3+    | New core models                    | Not started                                                                                                                                                                                                                                                                    |
 
 **Backend exit criteria for Phase 1 — met:**
 
@@ -26,6 +27,8 @@
 **Still open in Phase 1:** — none. All backend + QA + FE foundation items are ✅.
 
 **Deferred from Phase 1:** P1.7 — the cost/WO/quote models have no `supervisor_id` column to filter on, and the ownership semantic ("supervisor owns OT" vs "supervisor owns employee → labor-cost") is cleanest to pick after `Employee` lands. Moved to Phase 3, blocked on P3.16–P3.18 (G-HOR-3). Phase-1 hard exit criteria are unaffected — `verificarRol` already restricts supervisor writes to `POST /api/costs/labor`.
+
+**Phase 2 — MVP Gate met.** Every Phase-2 work item landed via the cumulative squash of PRs #2 → #10. `v0.1-mvp` is tag-ready. Remaining XLSX buttons (6 of 11) are for modules that are still mockup (OCP / Inventario / Facturas / Entregas sub-tab / Pronóstico / Nómina / Costo-MO); their exports will land alongside the Phase-3 models those modules depend on.
 
 ---
 

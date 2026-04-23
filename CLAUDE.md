@@ -80,9 +80,11 @@ backend/src/
 
 ## Current state (2026-04-21)
 
-**Phase 1 is complete.** Backend foundations, QA harness (CI + ephemeral-Postgres jest suite), and FE auth (login overlay, `apiFetch` wrapper with refresh-on-401) all landed. Ready for Phase 2 (MVP endpoint wiring). P1.7 deferred to Phase 3 (P3.18b) pending the `Employee` master. See [docs/implementation-roadmap.md](docs/implementation-roadmap.md#progress-snapshot--2026-04-20).
+**Phase 2 is complete (MVP gate met).** Every Phase-2 work item (P2.1–P2.17) landed via the cumulative squash in commit `ee60685`. Dashboard, Cotizaciones, OT (with "+ Nueva OT" creation), Material, Proveedores, Horas, and Conciliación all read/write against the backend. XLSX export lives for WO / quotes / material / labor / suppliers via a shared `backend/src/utils/xlsxTable.js` helper. A generic modal shell (`openModal`) is the foundation for future creation flows.
 
-~20 % of mockup features wired end-to-end (audit headline). Next milestone: `v0.1-mvp` at end of Phase 2 (~week 6).
+About **55 %** of ~72 grouped mockup features are now fully wired. What's still mockup: Pronóstico, Nómina, Costo-MO, 4 of 5 Entregas sub-tabs (OCP / Inventario / Facturas / Entregas), OT approval workflow, OCs Abiertas / Empleados en Campo dashboard cards. All gated on Phase-3 models (PurchaseOrderAlenstec, InventoryItem, SupplierInvoice, Delivery, Employee, WorkOrderApproval), Phase-4 (Nómina), or Phase-5 (Analytics).
+
+P1.7 deferred to Phase-3 `P3.18b` pending the `Employee` master. `v0.1-mvp` tag-ready.
 
 ## Known doc drift
 
