@@ -815,11 +815,8 @@ select.fi{cursor:pointer}
       </div>
       <div style="display:flex;align-items:center;gap:10px">
         <label class="fl" style="margin-bottom:0">Semana</label>
-        <select id="conciliacion-week" class="fi" style="max-width:200px">
-          <option value="1">Semana 1 · 01-07 Mar 2026</option>
-          <option value="2">Semana 2 · 08-14 Mar 2026</option>
-          <option value="3">Semana 3 · 15-21 Mar 2026</option>
-          <option value="4">Semana 4 · 22-28 Mar 2026</option>
+        <select id="conciliacion-week" class="fi" style="max-width:240px">
+          <option value="">Cargando…</option>
         </select>
         <button class="btn sm" onclick="loadConciliacionSemana()">Actualizar</button>
       </div>
@@ -876,9 +873,7 @@ select.fi{cursor:pointer}
       <div class="card">
         <div class="ch"><div><div class="ct">Alertas de Conciliación</div><div class="cs">Detecta registros pendientes, conflictos y ausencias.</div></div></div>
         <div class="alerts-list" id="alertas-list">
-          <div class="alert-card danger"><strong>Conflicto de entrada</strong><p style="margin-top:8px;color:var(--text3)">Empleado no tiene registro de salida en fecha 2026-03-21.</p></div>
-          <div class="alert-card warn"><strong>Diferencia de horas</strong><p style="margin-top:8px;color:var(--text3)">Hay 3 empleados con más de 2 horas de diferencia.</p></div>
-          <div class="alert-card"><strong>Falta justificante</strong><p style="margin-top:8px;color:var(--text3)">Pendientes 4 justificantes de ausencia.</p></div>
+          <div style="padding:12px;color:var(--text3)">Selecciona una semana para ver alertas.</div>
         </div>
       </div>
     </div>
@@ -889,7 +884,7 @@ select.fi{cursor:pointer}
         <div class="conciliacion-panel">
           <div class="conciliacion-card" style="padding:18px">
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-              <div><label class="fl">Empleado</label><input class="fi" id="clasif-empleado" placeholder="Nombre / ID"></div>
+              <div><label class="fl">Empleado</label><select class="fi" id="clasif-empleado"><option value="">Selecciona…</option></select></div>
               <div><label class="fl">Proyecto / OT</label><input class="fi" id="clasif-proyecto" placeholder="OT-AL-1948"></div>
               <div><label class="fl">Fecha</label><input class="fi" id="clasif-fecha" type="date"></div>
               <div><label class="fl">Horas</label><input class="fi" id="clasif-horas" type="number" min="0" step="0.25"></div>
@@ -2242,6 +2237,7 @@ function goMod(id) {
   if (id === 'material') loadMaterialCosts();
   if (id === 'entregas') loadProveedores(); // sub-tab 6.1 is the default on module entry
   if (id === 'horas') loadLaborCosts();
+  if (id === 'conciliacion') loadConciliacionSemanas();
   const c = CFG[id] || {};
   document.getElementById('ttitle').textContent = c.title || id;
   document.getElementById('tcrumb').textContent = c.crumb || '';
@@ -2277,6 +2273,8 @@ function goSub(mod, sub, el) {
   const target = document.getElementById('sub-' + mod + '-' + sub);
   if (target) target.classList.add('active');
   if (el) el.classList.add('active');
+  // Load data on demand per sub-tab.
+  if (mod === 'conciliacion' && sub === 'alertas') loadConciliacionAlertas();
 }
 function checkDl(prefix) {
   const d = document.getElementById((prefix||'g') + '-desde');
@@ -2290,11 +2288,87 @@ function checkDl(prefix) {
 function checkGlobalDates() { checkDl(); }
 
 const conciliacionState = {
-  semanaId: '1',
+  semanaId: '',
   checadorFile: null,
   previewData: null,
-  clasificacionRecords: []
+  empleados: [],            // populated from loadConciliacionSemana
+  clasificacionRecords: []  // populated from backend
 };
+
+// P2.16 — populate the week selector from /api/conciliacion/semanas.
+async function loadConciliacionSemanas() {
+  const sel = document.getElementById('conciliacion-week');
+  if (!sel) return;
+  try {
+    const res = await apiFetch(`${API_URL}/conciliacion/semanas`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const semanas = data.semanas || [];
+    if (!semanas.length) {
+      sel.innerHTML = '<option value="">Sin semanas configuradas</option>';
+      return;
+    }
+    sel.innerHTML = semanas.map((s) => {
+      const ini = fmtDateDMY(s.fecha_inicio);
+      const fin = fmtDateDMY(s.fecha_fin);
+      const desc = s.descripcion ? ` · ${esc(s.descripcion)}` : '';
+      const closed = s.cerrada ? ' 🔒' : '';
+      return `<option value="${esc(s.id)}">${ini}–${fin}${desc}${closed}</option>`;
+    }).join('');
+    if (!conciliacionState.semanaId) {
+      conciliacionState.semanaId = String(semanas[0].id);
+      sel.value = conciliacionState.semanaId;
+    }
+  } catch (err) {
+    console.warn('⚠ loadConciliacionSemanas:', err);
+    sel.innerHTML = '<option value="">(error al cargar)</option>';
+  }
+}
+
+// P2.14 — Alertas sub-tab loader.
+async function loadConciliacionAlertas() {
+  const list = document.getElementById('alertas-list');
+  if (!list) return;
+  if (!conciliacionState.semanaId) {
+    list.innerHTML = '<div style="padding:12px;color:var(--text3)">Selecciona una semana para ver alertas.</div>';
+    return;
+  }
+  try {
+    const res = await apiFetch(`${API_URL}/conciliacion/${conciliacionState.semanaId}/alertas`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const alertas = data.alertas || [];
+    if (!alertas.length) {
+      list.innerHTML = '<div style="padding:12px;color:var(--text3)">Sin alertas para esta semana. ✓</div>';
+      return;
+    }
+    list.innerHTML = alertas.map((a) => {
+      const cls = a.severidad === 'crítica' ? 'danger'
+                : a.severidad === 'media'   ? 'warn'
+                :                              '';
+      const title = esc(a.tipo_alerta || a.tipo || 'Alerta');
+      const nombre = esc(a.nombre || a.empleado_nombre || '—');
+      const fecha = a.fecha ? fmtDateDMY(a.fecha) : '';
+      const msg = esc(a.descripcion || a.mensaje || '');
+      return `<div class="alert-card ${cls}">
+        <strong>${title}${nombre !== '—' ? ` · ${nombre}` : ''}${fecha ? ` · ${fecha}` : ''}</strong>
+        <p style="margin-top:8px;color:var(--text3)">${msg}</p>
+      </div>`;
+    }).join('');
+  } catch (err) {
+    console.warn('⚠ loadConciliacionAlertas:', err);
+    list.innerHTML = '<div style="padding:12px;color:var(--red)">No se pudieron cargar las alertas.</div>';
+  }
+}
+
+// P2.15 — populate the empleado dropdown once we know who's in the semana.
+function refreshClasifEmpleadoOptions() {
+  const sel = document.getElementById('clasif-empleado');
+  if (!sel) return;
+  const empleados = conciliacionState.empleados || [];
+  sel.innerHTML = '<option value="">Selecciona…</option>'
+    + empleados.map((e) => `<option value="${esc(e.empleado_id || e.id)}">${esc(e.numero_lista || '')} · ${esc(e.nombre || '—')}</option>`).join('');
+}
 
 function getCurrentModule() {
   const activeNav = document.querySelector('.ni.active');
@@ -2468,6 +2542,8 @@ async function loadConciliacionSemana() {
     horasClasificadas.textContent = resumen.total_horas_clasificadas || 0;
     incidencias.textContent = resumen.total_incidencias || 0;
 
+    conciliacionState.empleados = data.empleados || [];
+    refreshClasifEmpleadoOptions();
     renderConciliacionRows(data.empleados || []);
     document.getElementById('cierre-status').textContent = data.semana?.cerrada ? 'Cerrada' : 'Abierta';
     document.getElementById('cierre-alertas').textContent = `${data.resumen?.estado_alerta || 0}`;
@@ -2483,22 +2559,57 @@ async function loadConciliacionSemana() {
   }
 }
 
-function addClasificacion() {
-  const empleado = document.getElementById('clasif-empleado').value.trim();
-  const proyecto = document.getElementById('clasif-proyecto').value.trim();
-  const fecha = document.getElementById('clasif-fecha').value;
-  const horas = document.getElementById('clasif-horas').value;
-  const actividad = document.getElementById('clasif-actividad').value.trim();
-  const tipo = document.getElementById('clasif-tipo').value;
+// P2.15 — POST horas clasificadas to the backend instead of keeping local-only state.
+async function addClasificacion() {
+  const empleado_id = document.getElementById('clasif-empleado').value;
+  const proyecto    = document.getElementById('clasif-proyecto').value.trim(); // display hint only (no proyectos endpoint yet)
+  const fecha       = document.getElementById('clasif-fecha').value;
+  const horas       = document.getElementById('clasif-horas').value;
+  const actividad   = document.getElementById('clasif-actividad').value.trim();
+  const tipo        = document.getElementById('clasif-tipo').value;
+  const resultEl    = document.getElementById('clasif-result');
 
-  if (!empleado || !proyecto || !fecha || !horas || !actividad) {
-    document.getElementById('clasif-result').textContent = 'Completa todos los campos antes de guardar.';
+  if (!empleado_id || !fecha || !horas || !actividad || !conciliacionState.semanaId) {
+    resultEl.textContent = 'Completa empleado, fecha, horas y actividad.';
     return;
   }
 
-  conciliacionState.clasificacionRecords.push({ empleado, proyecto, fecha, horas, tipo });
-  document.getElementById('clasif-result').textContent = 'Registro guardado localmente. No se envía a backend en esta vista integrada.';
-  renderClasifTable();
+  resultEl.style.color = 'var(--text3)';
+  resultEl.textContent = 'Guardando…';
+
+  try {
+    const payload = {
+      empleado_id: Number(empleado_id),
+      fecha,
+      semana_id: Number(conciliacionState.semanaId),
+      actividad,
+      horas: Number(horas),
+      tipo_hora: tipo,
+    };
+    const res = await apiFetch(`${API_URL}/conciliacion/horas-clasificadas`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || body.mensaje || `HTTP ${res.status}`);
+    resultEl.style.color = 'var(--green)';
+    resultEl.textContent = `Clasificación guardada (id=${body.id || 'ok'})`;
+    // Track locally so the table updates without a round-trip to fetch-all; a
+    // reload of the semana will reconcile with server-side state.
+    conciliacionState.clasificacionRecords.push({
+      empleado: document.getElementById('clasif-empleado').selectedOptions[0]?.text || empleado_id,
+      fecha,
+      proyecto: proyecto || '—',
+      horas,
+      tipo,
+    });
+    renderClasifTable();
+    loadConciliacionSemana(); // refresh Resumen so total_horas_clasificadas updates
+  } catch (err) {
+    resultEl.style.color = 'var(--red)';
+    resultEl.textContent = err.message;
+  }
 }
 
 function renderClasifTable() {
@@ -2509,7 +2620,7 @@ function renderClasifTable() {
     return;
   }
 
-  tbody.innerHTML = records.map(r => `<tr><td>${r.empleado}</td><td>${r.fecha}</td><td>${r.proyecto}</td><td>${r.horas}</td><td>${r.tipo}</td></tr>`).join('');
+  tbody.innerHTML = records.map(r => `<tr><td>${esc(r.empleado)}</td><td>${esc(r.fecha)}</td><td>${esc(r.proyecto)}</td><td>${esc(String(r.horas))}</td><td>${esc(r.tipo)}</td></tr>`).join('');
 }
 
 async function cerrarSemana() {

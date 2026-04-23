@@ -158,12 +158,12 @@ Counts above group related controls; see per-module feature docs for the full fl
 
 | Feature                              | Status | Backing                                             | Gap       |
 |--------------------------------------|:------:|-----------------------------------------------------|-----------|
-| Week selector + Actualizar           | ⚠️      | Hardcoded 4 options                                 | G-CONC-5  |
+| Week selector + Actualizar           | ✅      | Wired in P2.16 — `GET /api/conciliacion/semanas` (new endpoint) populates dropdown | ~~G-CONC-5~~ |
 | 9.1 Checador preview                 | ✅      | Full API round-trip                                 | —         |
 | 9.1 Checador import                  | ✅      | Full API round-trip                                 | —         |
 | 9.2 Resumen semanal                  | ✅      | Full API round-trip + render                        | —         |
-| 9.3 Alertas                          | ⚠️      | Hardcoded 3 cards; endpoint exists                  | G-CONC-1  |
-| 9.4 Clasif form                      | ⚠️      | Persists local-only; endpoint exists                | G-CONC-2  |
+| 9.3 Alertas                          | ✅      | Wired in P2.14 — on sub-tab entry fetches `/alertas` and renders cards | ~~G-CONC-1~~ |
+| 9.4 Clasif form                      | ✅      | Wired in P2.15 — POST `/horas-clasificadas`; empleado dropdown hydrated from Resumen | ~~G-CONC-2~~ |
 | 9.5 Cierre de Semana                 | ✅      | Full API round-trip                                 | —         |
 | 9.5 Exportar Excel                   | ✅      | Full API round-trip, ExcelJS streaming              | —         |
 | Employee daily detail                | ❌      | Endpoint exists, no UI surface                      | G-CONC-3  |
