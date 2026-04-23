@@ -3,8 +3,31 @@ const { Op } = require('sequelize');
 const { WorkOrder } = require('../models');
 const { verificarRol, filtrarPorSupervisor } = require('../middleware/auth');
 const { sendTableXlsx } = require('../utils/xlsxTable');
+const configService = require('../services/configService');
 
 const router = express.Router();
+
+// Phase-5b — precarga de Jefaturas desde config. Operator values win;
+// defaults only fill fields the operator left blank.
+const JEFATURA_FIELD_MAP = {
+  ingenieria:  'jefeIngenieria',
+  manufactura: 'jefeManufactura',
+  compras:     'jefeCompras',
+  otros:       'jefeOtros',
+};
+
+async function applyJefaturasDefaults(payload) {
+  const defaults = await configService.get('ot.jefaturas_default', null);
+  if (!defaults || typeof defaults !== 'object') return payload;
+  const out = { ...payload };
+  for (const [configKey, modelField] of Object.entries(JEFATURA_FIELD_MAP)) {
+    if ((out[modelField] === undefined || out[modelField] === null || out[modelField] === '')
+        && defaults[configKey] != null) {
+      out[modelField] = defaults[configKey];
+    }
+  }
+  return out;
+}
 
 router.get('/export', async (req, res) => {
   try {
@@ -76,7 +99,8 @@ router.get('/:id', async (req, res) => {
 
 router.post('/', verificarRol('admin', 'ventas', 'jefe_area'), async (req, res) => {
   try {
-    const wo = await WorkOrder.create(req.body);
+    const payload = await applyJefaturasDefaults(req.body);
+    const wo = await WorkOrder.create(payload);
     res.status(201).json(wo);
   } catch (error) {
     res.status(400).json({ error: error.message });

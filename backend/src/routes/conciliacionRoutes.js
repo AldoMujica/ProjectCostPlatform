@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const moment = require('moment');
 const pool = require('../db/config');
-const { verificarJWT, verificarRol } = require('../middleware/auth');
+const { verificarJWT, verificarRol, verificarRolDinamico } = require('../middleware/auth');
 const {
   conciliarEmpleadoDia,
   conciliarSemana,
@@ -411,7 +411,12 @@ router.get('/:semana_id/:empleado_id', verificarJWT, async (req, res) => {
  * POST /api/conciliacion/justificar
  * Agregar justificación a una diferencia
  */
-router.post('/justificar', verificarJWT, verificarRol(['supervisor', 'jefe_area', 'rh', 'admin']), async (req, res) => {
+// Phase-5b — role lists for justificar / forzar come from system_config
+// (conciliacion.justificar.roles · conciliacion.forzar.roles). Fallbacks
+// preserve the original hardcoded behavior if the key is missing.
+router.post('/justificar', verificarJWT,
+  verificarRolDinamico('conciliacion.justificar.roles', 'supervisor', 'jefe_area', 'rh', 'admin'),
+  async (req, res) => {
   try {
     const { empleado_id, fecha, semana_id, justificacion } = req.body;
     const usuario_id = req.user.id;
@@ -436,7 +441,9 @@ router.post('/justificar', verificarJWT, verificarRol(['supervisor', 'jefe_area'
  * POST /api/conciliacion/forzar
  * Forzar conciliación (solo admin/rh)
  */
-router.post('/forzar', verificarJWT, verificarRol(['rh', 'admin']), async (req, res) => {
+router.post('/forzar', verificarJWT,
+  verificarRolDinamico('conciliacion.forzar.roles', 'rh', 'admin'),
+  async (req, res) => {
   try {
     const { empleado_id, fecha, semana_id, motivo } = req.body;
     const usuario_id = req.user.id;

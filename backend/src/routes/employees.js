@@ -3,6 +3,7 @@ const { Op } = require('sequelize');
 const { Employee, User } = require('../models');
 const { verificarRol } = require('../middleware/auth');
 const { sendTableXlsx } = require('../utils/xlsxTable');
+const configService = require('../services/configService');
 
 const router = express.Router();
 
@@ -76,7 +77,12 @@ router.get('/:id', async (req, res) => {
 
 router.post('/', verificarRol('admin', 'rh'), async (req, res) => {
   try {
-    const e = await Employee.create(req.body);
+    // Phase-5b — default turno comes from config if the operator didn't set one.
+    const payload = { ...req.body };
+    if (payload.turno == null || payload.turno === '') {
+      payload.turno = await configService.get('conciliacion.turno_default', '08:00-17:00');
+    }
+    const e = await Employee.create(payload);
     res.status(201).json(e);
   } catch (error) {
     res.status(400).json({ error: error.message });

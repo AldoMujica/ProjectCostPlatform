@@ -378,7 +378,14 @@ async function registrarJustificacion(empleadoId, fecha, semanaId, justificacion
  * Forzar conciliación (solo admin/rh)
  */
 async function forzarConciliacion(empleadoId, fecha, semanaId, motivo, porUsuarioId, rol) {
-  if (!['rh', 'admin'].includes(rol)) {
+  // Phase-5b — defense-in-depth role check. The route-level middleware
+  // (verificarRolDinamico) is the primary gate; this secondary check
+  // reads the same config key so both stay consistent.
+  // eslint-disable-next-line global-require
+  const configService = require('./configService');
+  const allowed = await configService.get('conciliacion.forzar.roles', ['rh', 'admin']);
+  const list = Array.isArray(allowed) && allowed.length ? allowed : ['rh', 'admin'];
+  if (!list.includes(rol)) {
     throw new Error('No autorizado para forzar conciliación');
   }
 

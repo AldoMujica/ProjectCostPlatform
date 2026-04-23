@@ -67,6 +67,50 @@ const verificarRol = (...rolesPermitidos) => {
   };
 };
 
+/**
+ * Phase-5b — like `verificarRol` but reads the allowed-roles list from
+ * `system_config` at request time. Admins can tune who can do what
+ * without a code change. Falls back to the hardcoded list if the config
+ * key is missing (e.g. fresh DB before seed ran).
+ *
+ *   router.post('/forzar',
+ *     verificarRolDinamico('conciliacion.forzar.roles', 'rh', 'admin'),
+ *     handler);
+ */
+const verificarRolDinamico = (configKey, ...fallbackRoles) => {
+  const fallback = Array.isArray(fallbackRoles[0]) ? fallbackRoles[0] : fallbackRoles;
+  // Lazy-require to avoid a circular dep with services/configService.
+  // (configService loads models which load audit hooks which touch auth.)
+  let configService;
+  return async (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({ exitoso: false, mensaje: 'Usuario no autenticado' });
+    }
+    try {
+      if (!configService) configService = require('../services/configService');
+      const allowed = await configService.get(configKey, fallback);
+      const list = Array.isArray(allowed) ? allowed : fallback;
+      if (!list.includes(req.user.rol)) {
+        return res.status(403).json({
+          exitoso: false,
+          mensaje: `Acceso denegado. Roles permitidos: ${list.join(', ')}`,
+        });
+      }
+      next();
+    } catch (err) {
+      // On any config-lookup failure, fall back to the hardcoded list so
+      // the route still works (fail-open on reads, fail-closed on writes).
+      if (!fallback.includes(req.user.rol)) {
+        return res.status(403).json({
+          exitoso: false,
+          mensaje: `Acceso denegado. Roles permitidos: ${fallback.join(', ')}`,
+        });
+      }
+      next();
+    }
+  };
+};
+
 // P1.7 per-record access filter extended from filtrarPorSupervisor
 const filtrarPorSupervisor = (req, res, next) => {
   if (req.user && req.user.rol === 'supervisor') {
@@ -83,5 +127,6 @@ module.exports = {
   signRefreshToken,
   verificarJWT,
   verificarRol,
+  verificarRolDinamico,
   filtrarPorSupervisor,
 };

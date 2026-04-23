@@ -2,26 +2,43 @@ const express = require('express');
 const { Op } = require('sequelize');
 const { WorkOrder, MaterialCost, LaborCost, sequelize } = require('../models');
 const { sendTableXlsx } = require('../utils/xlsxTable');
+const configService = require('../services/configService');
 
 const router = express.Router();
 
-// G-PRON-3 — Variance + semáforo rules, codified once here so the FE, the
-// XLSX export, and any future acceptance test read the same thresholds.
+// G-PRON-3 — Variance + semáforo rules.
 //
-//   real = 0     + status is active  →  "En ejecución"  (blue)
+//   real = 0     + status is active   →  "En ejecución"  (blue)
 //   real = 0     + status inactive    →  "Sin iniciar"   (neutral)
-//   real ≤ 70 % cot                   →  "OK"            (green)
-//   70 % < real ≤ 100 % cot           →  "Atención"      (amber)
-//   real > cot                        →  "Crítico"       (red)
+//   real ≤ okMax × cot                →  "OK"            (green)
+//   okMax < real ≤ atencionMax × cot  →  "Atención"      (amber)
+//   real > atencionMax × cot          →  "Crítico"       (red)
 //
-// Thresholds are a pragmatic default pending client signoff; swap the
-// constants below when operations confirm their preferred bands.
-const SEMAFORO_OK_MAX       = 0.70;
-const SEMAFORO_ATENCION_MAX = 1.00;
+// Thresholds are read from `system_config` at request time (Phase-5b):
+//   forecasting.semaforo.ok_max        (default 0.70)
+//   forecasting.semaforo.atencion_max  (default 1.00)
+//
+// If the config keys are missing for any reason, the defaults below
+// preserve the original behavior.
+const DEFAULT_OK_MAX       = 0.70;
+const DEFAULT_ATENCION_MAX = 1.00;
 
 const ACTIVE_STATUSES = new Set(['En ejecución', 'En revisión']);
 
-function classify({ quotedCost, actualCost, status }) {
+async function getThresholds() {
+  const [okMax, atencionMax, fxFallback] = await Promise.all([
+    configService.get('forecasting.semaforo.ok_max', DEFAULT_OK_MAX),
+    configService.get('forecasting.semaforo.atencion_max', DEFAULT_ATENCION_MAX),
+    configService.get('system.exchange_rate_fallback', 0),
+  ]);
+  return {
+    okMax:       Number(okMax) || DEFAULT_OK_MAX,
+    atencionMax: Number(atencionMax) || DEFAULT_ATENCION_MAX,
+    fxFallback:  Number(fxFallback) || 0,
+  };
+}
+
+function classify({ quotedCost, actualCost, status, thresholds }) {
   const cot = Number(quotedCost) || 0;
   const real = Number(actualCost) || 0;
   if (real === 0) {
@@ -30,8 +47,8 @@ function classify({ quotedCost, actualCost, status }) {
   }
   if (cot === 0) return { semaforo: 'Sin cotización', color: 'neutral' };
   const ratio = real / cot;
-  if (ratio <= SEMAFORO_OK_MAX)       return { semaforo: 'OK',       color: 'green' };
-  if (ratio <= SEMAFORO_ATENCION_MAX) return { semaforo: 'Atención', color: 'amber' };
+  if (ratio <= thresholds.okMax)       return { semaforo: 'OK',       color: 'green' };
+  if (ratio <= thresholds.atencionMax) return { semaforo: 'Atención', color: 'amber' };
   return { semaforo: 'Crítico', color: 'red' };
 }
 
@@ -51,9 +68,10 @@ function varianceLabel({ quotedCost, actualCost }) {
 
 // Sum material + labor cost for all active OTs in a single round-trip.
 // Currency-normalized to USD using each WO's exchangeRate when currency=MXN;
-// rows without an exchangeRate are kept in their native currency so the FE
-// can show both values side-by-side.
+// rows without an exchangeRate fall back to `system.exchange_rate_fallback`
+// from config (0 = excluded from the USD sum, the default).
 async function fetchRollup({ year } = {}) {
+  const thresholds = await getThresholds();
   const where = {};
   if (year) {
     where.createdAt = {
@@ -63,7 +81,7 @@ async function fetchRollup({ year } = {}) {
   }
 
   const workOrders = await WorkOrder.findAll({ where, order: [['createdAt', 'DESC']], raw: true });
-  if (workOrders.length === 0) return { rows: [], kpi: emptyKpi() };
+  if (workOrders.length === 0) return { rows: [], kpi: emptyKpi(), thresholds };
 
   const woIds = workOrders.map((w) => w.id);
 
@@ -113,7 +131,10 @@ async function fetchRollup({ year } = {}) {
 
   const rows = workOrders.map((wo) => {
     const agg = perWo.get(wo.id);
-    const fx  = Number(wo.exchange_rate) || Number(wo.exchangeRate) || 0;
+    const ownFx = Number(wo.exchange_rate) || Number(wo.exchangeRate) || 0;
+    // Use the OT's own FX when set; otherwise fall back to the system-wide
+    // value from config (0 = "don't normalize, exclude from USD sum").
+    const fx  = ownFx > 0 ? ownFx : thresholds.fxFallback;
     const quotedCurrency = (wo.currency || 'USD').toUpperCase();
     const quotedCost = Number(wo.quoted_cost) || Number(wo.quotedCost) || 0;
 
@@ -133,7 +154,7 @@ async function fetchRollup({ year } = {}) {
     const quotedCostMxn = quotedCurrency === 'USD' && fx > 0 ? quotedCost * fx : (quotedCurrency === 'MXN' ? quotedCost : null);
 
     const status = wo.status;
-    const { semaforo, color } = classify({ quotedCost, actualCost, status });
+    const { semaforo, color } = classify({ quotedCost, actualCost, status, thresholds });
     const { varianza, label: varianzaLabel } = varianceLabel({ quotedCost, actualCost });
 
     return {
@@ -146,7 +167,8 @@ async function fetchRollup({ year } = {}) {
       quotedCost,
       quotedCurrency,
       quotedCostMxn,
-      exchangeRate: fx || null,
+      exchangeRate: ownFx || null,               // shown in UI; null if OT didn't set its own FX
+      exchangeRateUsed: fx || null,              // actually applied (own or fallback)
       actualCost: Number(actualCost.toFixed(2)),
       actualCostNative: { MXN: Number(realMxn.toFixed(2)), USD: Number(realUsd.toFixed(2)) },
       hoursWorked: Number(agg.hours.toFixed(2)),
@@ -157,7 +179,7 @@ async function fetchRollup({ year } = {}) {
     };
   });
 
-  return { rows, kpi: kpiFromRows(rows) };
+  return { rows, kpi: kpiFromRows(rows), thresholds };
 }
 
 function emptyKpi() {

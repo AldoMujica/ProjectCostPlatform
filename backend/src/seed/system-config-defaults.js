@@ -76,7 +76,14 @@ const DEFAULTS = [
     value: ['rh', 'admin'],
     dataType: 'array',
     category: 'conciliacion',
-    description: 'Roles autorizados a "forzar" la conciliación de un día. Justificar está abierto para supervisor/jefe_area/rh/admin.',
+    description: 'Roles autorizados a "forzar" la conciliación de un día (sobrescribe el estado sin justificación). Default: sólo rh + admin.',
+  },
+  {
+    key: 'conciliacion.justificar.roles',
+    value: ['supervisor', 'jefe_area', 'rh', 'admin'],
+    dataType: 'array',
+    category: 'conciliacion',
+    description: 'Roles autorizados a "justificar" una diferencia en la conciliación diaria.',
   },
   {
     key: 'conciliacion.turno_default',
