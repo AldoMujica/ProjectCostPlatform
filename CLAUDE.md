@@ -18,6 +18,7 @@ Product summary: [docs/project-summary.md](docs/project-summary.md).
 | Per-module design (intended vs as-built)    | [designs/README.md](designs/README.md) + `designs/0{1..7}-*-design.md`   |
 | Per-module feature specs (from mockup)      | [docs/modules/](docs/modules/)                                           |
 | Acceptance criteria / regression list       | [docs/regression-requirements.md](docs/regression-requirements.md)       |
+| Checklist de pruebas manuales (QA / cliente) | [docs/checklist-pruebas-usuario.md](docs/checklist-pruebas-usuario.md) |
 | Backend setup, env vars, API surface        | [backend/README.md](backend/README.md) · [docs/backend-setup.md](docs/backend-setup.md) |
 | Conciliación operator runbook               | [docs/conciliacion-ops.md](docs/conciliacion-ops.md)                     |
 | Commercial proposal (ES)                    | [docs/propuesta-comercial.md](docs/propuesta-comercial.md)               |
