@@ -1,6 +1,6 @@
 # Alenstec — Plataforma de Gestión de Costos
 
-> **Status (2026-04-20):** Phase-1 backend foundations landed. ~20% of the UI is wired end-to-end; the rest is mockup awaiting Phase-2 wiring. See [`docs/implementation-roadmap.md`](docs/implementation-roadmap.md) for phase status.
+> **Status (2026-04-21):** Phase-1 + Phase-2 done. Every core module (Dashboard, Cotizaciones, OT, Material, Proveedores, Horas, Conciliación) is wired to the backend end-to-end; XLSX export works for 5 tables; login + refresh are live. `v0.1-mvp` tag-ready. See [`docs/implementation-roadmap.md`](docs/implementation-roadmap.md) for phase status and [`docs/implementation-audit.md`](docs/implementation-audit.md) for the feature-by-feature matrix.
 
 This repository is organised as an **Obsidian vault**. Open the folder in Obsidian (or any Markdown editor — everything is plain `.md`) to get graph view, backlinks, and search across the entire documentation set.
 
