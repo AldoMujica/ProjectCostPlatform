@@ -1,18 +1,22 @@
 node_modules/
 
-# Obsidian vault — per-user session state, not shared config
-.obsidian/workspace.json
-.obsidian/workspace-mobile.json
-.obsidian/.obsidian/
+# Obsidian vault — cache/preferences are per-user, not shared. The
+# vault's value is in the tracked .md files; .obsidian/ itself is
+# throwaway local state.
+.obsidian/
 
-# Env / secrets
+# Env / secrets — cubre .env, .env.production, .env.development,
+# .env.test, .env.local, .env.<stage>.local, etc.
+# Excepción: .env.example (plantilla) SÍ debe subir.
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
 
 # OS / editor
 .DS_Store
 Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
 .vscode/
 .idea/
 *.swp
@@ -22,7 +26,34 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
 
 # Build output
 dist/
 build/
+
+# Caches / temp
+.cache/
+tmp/
+temp/
+.parcel-cache/
+
+# DB dumps / backups que se crean durante desarrollo
+*.bak
+*.dump
+*.sql.bak
+*.sqlite
+*.sqlite-journal
+
+# Datos del cliente / archivos Excel en el root — nunca entran a git.
+# Si hay un XLSX de prueba legítimo (fixture), va en backend/fixtures/
+# y lo agregamos con `git add -f`.
+/*.xlsx
+/*.xls
+
+# Lock files de gestores que NO usamos. Evita que alguien
+# accidentalmente cree un lock paralelo al package-lock.json vigente.
+yarn.lock
+pnpm-lock.yaml
