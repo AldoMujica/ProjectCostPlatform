@@ -138,10 +138,10 @@ Counts above group related controls; see per-module feature docs for the full fl
 | Feature                           | Status | Backing                                   | Gap     |
 |-----------------------------------|:------:|-------------------------------------------|---------|
 | KPI strip                         | ❌      | No aggregate endpoint                     | —       |
-| Resumen table                     | ⚠️      | `GET /api/costs/labor` exists, UI not wired | G-HOR-2 |
+| Resumen table                     | ✅      | Wired in P2.12 — `loadLaborCosts`; 8-col layout (OT, empleado, rol, hrs, tarifa, total, moneda, fecha) | ~~G-HOR-2~~ |
 | Activity code colour map          | ❌      | Not codified in model                     | G-HOR-4 |
 | Control de Empleados table        | ❌      | No `Employee` master model                | G-HOR-3 |
-| `+ Capturar horas`                | ❌      | No handler                                | G-HOR-1 |
+| `+ Capturar horas`                | ✅      | Wired in P2.13 — reusable modal; auto-computes total until user overrides | ~~G-HOR-1~~ |
 
 ### Nómina / CFDI (module 8)
 
