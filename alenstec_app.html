@@ -307,6 +307,10 @@ select.fi{cursor:pointer}
       <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a4 4 0 110 8A4 4 0 0110 2zm0 9c4.42 0 8 1.79 8 4v2H2v-2c0-2.21 3.58-4 8-4z"/></svg>
       <span>Costo de Mano de Obra</span>
     </div>
+    <div class="ni" data-mod="admin" data-admin-only="true" style="display:none">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2l7 3v5c0 4.42-3.08 7.58-7 8-3.92-.42-7-3.58-7-8V5l7-3zm0 2.11L5 6.13V10c0 3.03 2.08 5.44 5 5.87 2.92-.43 5-2.84 5-5.87V6.13l-5-2.02zM9 8h2v4H9V8zm0 5h2v2H9v-2z"/></svg>
+      <span>Administración</span>
+    </div>
   </div>
   <div class="s-foot">
     <div class="av" id="user-initials">··</div>
@@ -1019,6 +1023,72 @@ select.fi{cursor:pointer}
   </div>
 </div>
 
+<!-- ADMINISTRACIÓN (solo rol admin) -->
+<div class="mod" id="mod-admin">
+  <div class="subnav">
+    <div class="sntab active" onclick="goSub('admin','config',this)">Configuración</div>
+    <div class="sntab" onclick="goSub('admin','bitacora',this)">Bitácora</div>
+  </div>
+
+  <div class="submod active" id="sub-admin-config">
+    <div class="card">
+      <div class="ch">
+        <div><div class="ct">Valores configurables</div><div class="cs">Parámetros del sistema · editables sin modificar código. Un cambio entra en vigor ≤ 30 s.</div></div>
+        <div style="display:flex;gap:7px;align-items:center">
+          <label class="fl" style="margin-bottom:0">Categoría</label>
+          <select id="config-category-filter" class="fi" style="max-width:200px" onchange="loadAdminConfig()">
+            <option value="">Todas</option>
+          </select>
+          <button class="btn sm" onclick="loadAdminConfig()">Actualizar</button>
+        </div>
+      </div>
+      <div class="tw"><table>
+        <thead><tr>
+          <th>Clave</th><th>Descripción</th><th>Categoría</th><th>Valor</th><th>Tipo</th><th>Actualizado</th><th>Acciones</th>
+        </tr></thead>
+        <tbody id="admin-config-tbody">
+          <tr><td colspan="7" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <div class="submod" id="sub-admin-bitacora">
+    <div class="card">
+      <div class="ch">
+        <div><div class="ct">Bitácora de cambios</div><div class="cs">Todas las acciones del sistema con detalle de quién, cuándo, qué entidad y qué cambió.</div></div>
+        <button class="btn sm" onclick="downloadXlsx(buildAuditExportUrl(), 'bitacora.xlsx')">⬇ Descargar XLSX</button>
+      </div>
+      <div class="cb" style="padding:12px 16px 0">
+        <div class="fg" style="display:grid;grid-template-columns:repeat(5, 1fr);gap:10px;margin-bottom:0">
+          <div><label class="fl">Búsqueda</label><input class="fi" id="audit-q" placeholder="descripción, usuario…"></div>
+          <div><label class="fl">Acción</label>
+            <select class="fi" id="audit-accion"><option value="">Todas</option></select>
+          </div>
+          <div><label class="fl">Entidad</label>
+            <select class="fi" id="audit-entidad"><option value="">Todas</option></select>
+          </div>
+          <div><label class="fl">Desde</label><input class="fi" id="audit-from" type="date"></div>
+          <div><label class="fl">Hasta</label><input class="fi" id="audit-to" type="date"></div>
+        </div>
+        <div style="display:flex;gap:8px;margin:10px 0 6px">
+          <button class="btn p sm" onclick="loadAdminAudit()">Filtrar</button>
+          <button class="btn sm" onclick="clearAuditFilters()">Limpiar</button>
+          <span id="audit-count" style="margin-left:auto;color:var(--text3);font-size:12px">—</span>
+        </div>
+      </div>
+      <div class="tw"><table>
+        <thead><tr>
+          <th>Fecha</th><th>Usuario</th><th>Rol</th><th>Acción</th><th>Entidad</th><th>Descripción</th><th>Cambios</th><th>IP</th><th></th>
+        </tr></thead>
+        <tbody id="admin-audit-tbody">
+          <tr><td colspan="9" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+</div>
+
 <script>
 const API_URL = '/api';
 
@@ -1097,9 +1167,18 @@ function renderUserChip() {
   if (el('user-initials')) el('user-initials').textContent = initials;
   if (el('user-name'))     el('user-name').textContent = u.nombre || u.email;
   if (el('user-role'))     el('user-role').textContent = u.rol || '';
+  // Admin-only nav items — show only for rol === 'admin'.
+  document.querySelectorAll('[data-admin-only="true"]').forEach((node) => {
+    node.style.display = (u.rol === 'admin') ? '' : 'none';
+  });
 }
 
-function logout() {
+async function logout() {
+  // Best-effort: tell the server so it can write a `logout` row to the
+  // bitácora. Never blocks the UI sign-out.
+  try {
+    await apiFetch(`${API_URL}/auth/logout`, { method: 'POST' });
+  } catch { /* ignore */ }
   AUTH.clear();
   showLogin();
 }
@@ -1424,6 +1503,242 @@ async function loadPronostico() {
     console.warn('⚠ loadPronostico:', err);
     tbody.innerHTML = '<tr><td colspan="11" style="padding:16px;color:var(--red);text-align:center">No se pudo cargar el pronóstico.</td></tr>';
   }
+}
+
+// ===== Administración (Phase-5b) =====
+const ADMIN_CFG_CATEGORIES = ['forecasting', 'approval', 'conciliacion', 'ot', 'system', 'general'];
+
+async function loadAdminConfig() {
+  const tbody = document.getElementById('admin-config-tbody');
+  if (!tbody) return;
+
+  // Populate category filter once.
+  const sel = document.getElementById('config-category-filter');
+  if (sel && sel.options.length <= 1) {
+    for (const c of ADMIN_CFG_CATEGORIES) {
+      const opt = document.createElement('option');
+      opt.value = c; opt.textContent = c;
+      sel.appendChild(opt);
+    }
+  }
+  const catFilter = sel ? sel.value : '';
+  const url = `${API_URL}/admin/config${catFilter ? `?category=${encodeURIComponent(catFilter)}` : ''}`;
+
+  try {
+    const res = await apiFetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const rows = await res.json();
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="padding:16px;color:var(--text3);text-align:center">Sin parámetros en esta categoría.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map((r) => {
+      const valueJson = JSON.stringify(r.value);
+      const dataAttr = `data-key="${esc(r.key)}" data-type="${esc(r.dataType)}"`;
+      return `<tr>
+        <td class="mono" style="font-size:11px">${esc(r.key)}</td>
+        <td style="font-size:11px">${esc(r.description || '—')}</td>
+        <td><span class="badge bn">${esc(r.category)}</span></td>
+        <td class="mono" style="max-width:280px;word-break:break-all;font-size:11px">${esc(valueJson)}</td>
+        <td><span class="badge bb">${esc(r.dataType)}</span></td>
+        <td style="font-size:11px">${r.updatedAt ? fmtDateDMY(r.updatedAt) : '—'}</td>
+        <td><button class="btn sm" ${dataAttr} onclick="editAdminConfig(this)" style="padding:2px 8px;font-size:11px">Editar</button></td>
+      </tr>`;
+    }).join('');
+  } catch (err) {
+    console.warn('⚠ loadAdminConfig:', err);
+    tbody.innerHTML = '<tr><td colspan="7" style="padding:16px;color:var(--red);text-align:center">No se pudo cargar la configuración.</td></tr>';
+  }
+}
+
+async function editAdminConfig(btn) {
+  const key = btn.dataset.key;
+  const dataType = btn.dataset.type;
+  try {
+    const res = await apiFetch(`${API_URL}/admin/config/${encodeURIComponent(key)}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const cfg = await res.json();
+
+    const currentJson = JSON.stringify(cfg.value, null, 2);
+    const helpHint = {
+      number:  'Ej: 0.70  ·  sin comillas',
+      string:  'Ej: "USD"  ·  con comillas',
+      boolean: 'Ej: true  o  false',
+      array:   'Ej: ["admin","rh"]  ·  JSON válido',
+      object:  'Ej: {"ingenieria":"Juan"}  ·  JSON válido',
+    }[dataType] || '';
+
+    openModal({
+      title: `Editar · ${key}`,
+      bodyHtml: `
+        <div style="margin-bottom:8px;font-size:12px;color:var(--text3)">${esc(cfg.description || '')}</div>
+        <div class="fg">
+          <label class="fl">Valor (${esc(dataType)})</label>
+          <textarea id="cfg-edit-value" class="fi" style="min-height:140px;font-family:var(--mono);font-size:12px">${esc(currentJson)}</textarea>
+          <div style="font-size:11px;color:var(--text3);margin-top:4px">${esc(helpHint)}</div>
+        </div>
+        <div class="modal-error" id="cfg-edit-error"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn sm" onclick="closeModal()">Cancelar</button>
+          <button type="button" class="btn p sm" id="cfg-edit-save" onclick="submitAdminConfigEdit('${esc(key)}','${esc(dataType)}')">Guardar</button>
+        </div>`,
+    });
+  } catch (err) {
+    alert(`No se pudo abrir la edición: ${err.message}`);
+  }
+}
+
+async function submitAdminConfigEdit(key, dataType) {
+  const errEl = document.getElementById('cfg-edit-error');
+  const btn = document.getElementById('cfg-edit-save');
+  const ta = document.getElementById('cfg-edit-value');
+  errEl.textContent = '';
+  btn.disabled = true; btn.textContent = 'Guardando…';
+  try {
+    const raw = ta.value.trim();
+    let parsed;
+    try {
+      parsed = JSON.parse(raw);
+    } catch (pe) {
+      throw new Error('JSON inválido: ' + pe.message);
+    }
+    // Light type validation.
+    const actualType = Array.isArray(parsed) ? 'array' : (parsed === null ? 'null' : typeof parsed);
+    const expected = dataType === 'array' ? 'array' : dataType;
+    if (expected !== 'array' && actualType === 'array') {
+      throw new Error(`Se esperaba un ${expected} pero se recibió un array.`);
+    }
+    if (expected !== 'object' && actualType === 'object' && !Array.isArray(parsed)) {
+      throw new Error(`Se esperaba un ${expected} pero se recibió un objeto.`);
+    }
+    const res = await apiFetch(`${API_URL}/admin/config/${encodeURIComponent(key)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ value: parsed }),
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
+    closeModal();
+    await loadAdminConfig();
+  } catch (err) {
+    errEl.textContent = err.message;
+    btn.disabled = false; btn.textContent = 'Guardar';
+  }
+}
+
+// ---- Bitácora (audit log) ----
+function buildAuditQueryParams() {
+  const params = new URLSearchParams();
+  const add = (k, id) => { const v = document.getElementById(id)?.value?.trim(); if (v) params.set(k, v); };
+  add('q',       'audit-q');
+  add('accion',  'audit-accion');
+  add('entidad', 'audit-entidad');
+  add('from',    'audit-from');
+  add('to',      'audit-to');
+  return params;
+}
+
+function buildAuditExportUrl() {
+  const params = buildAuditQueryParams();
+  const qs = params.toString();
+  return `${API_URL}/admin/audit/export${qs ? `?${qs}` : ''}`;
+}
+
+function clearAuditFilters() {
+  ['audit-q', 'audit-accion', 'audit-entidad', 'audit-from', 'audit-to'].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  loadAdminAudit();
+}
+
+async function populateAuditFilterDropdowns() {
+  for (const [field, elId] of [['accion', 'audit-accion'], ['entidad', 'audit-entidad']]) {
+    const el = document.getElementById(elId);
+    if (!el || el.options.length > 1) continue;
+    try {
+      const res = await apiFetch(`${API_URL}/admin/audit/distinct/${field}`);
+      if (!res.ok) continue;
+      const values = await res.json();
+      for (const v of values) {
+        const opt = document.createElement('option');
+        opt.value = v; opt.textContent = v;
+        el.appendChild(opt);
+      }
+    } catch { /* continue */ }
+  }
+}
+
+async function loadAdminAudit() {
+  const tbody = document.getElementById('admin-audit-tbody');
+  const countEl = document.getElementById('audit-count');
+  if (!tbody) return;
+  await populateAuditFilterDropdowns();
+
+  const params = buildAuditQueryParams();
+  params.set('limit', '100');
+  try {
+    const res = await apiFetch(`${API_URL}/admin/audit?${params.toString()}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const rows = data.rows || [];
+    if (countEl) countEl.textContent = `${rows.length} de ${data.count} evento(s)`;
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="9" style="padding:16px;color:var(--text3);text-align:center">Sin eventos para los filtros aplicados.</td></tr>';
+      return;
+    }
+    const actionBadge = (a) => {
+      const cls = a === 'login'        ? 'bg'
+                : a === 'logout'       ? 'bn'
+                : a === 'login_failed' ? 'br'
+                : a === 'create'       ? 'bb'
+                : a === 'update'       ? 'ba'
+                : a === 'delete'       ? 'br'
+                : a === 'config_change'? 'ba'
+                : 'bn';
+      return `<span class="badge ${cls}">${esc(a)}</span>`;
+    };
+    tbody.innerHTML = rows.map((r) => {
+      const when = r.fecha ? new Date(r.fecha).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'medium' }) : '—';
+      const cambios = (r.metadatos?.fields_changed || []).join(', ');
+      const hasDetail = r.antes || r.despues;
+      return `<tr>
+        <td class="mono" style="font-size:11px">${esc(when)}</td>
+        <td>${esc(r.usuarioNombre) || '—'}</td>
+        <td>${esc(r.usuarioRol) || '—'}</td>
+        <td>${actionBadge(r.accion)}</td>
+        <td class="mono" style="font-size:11px">${esc(r.entidad)}${r.entidadId ? ` · ${esc(String(r.entidadId).slice(0, 14))}` : ''}</td>
+        <td style="font-size:11px">${esc(r.descripcion) || '—'}</td>
+        <td style="font-size:11px;color:var(--text3)">${esc(cambios) || '—'}</td>
+        <td class="mono" style="font-size:11px">${esc(r.ip) || '—'}</td>
+        <td>${hasDetail ? `<button class="btn sm" onclick='showAuditDetail(${JSON.stringify(r).replace(/'/g, "&#39;")})' style="padding:2px 8px;font-size:11px">Ver</button>` : ''}</td>
+      </tr>`;
+    }).join('');
+  } catch (err) {
+    console.warn('⚠ loadAdminAudit:', err);
+    tbody.innerHTML = '<tr><td colspan="9" style="padding:16px;color:var(--red);text-align:center">No se pudo cargar la bitácora.</td></tr>';
+  }
+}
+
+function showAuditDetail(row) {
+  const fmtJson = (v) => v == null ? '—' : `<pre style="margin:0;font-size:11px;background:var(--bg);padding:8px;border-radius:6px;overflow:auto;max-height:240px">${esc(JSON.stringify(v, null, 2))}</pre>`;
+  const when = row.fecha ? new Date(row.fecha).toLocaleString('es-MX') : '—';
+  openModal({
+    title: `Evento · ${row.accion} · ${row.entidad}`,
+    bodyHtml: `
+      <div style="font-size:12px;line-height:1.7;margin-bottom:10px">
+        <div><strong>Fecha:</strong> ${esc(when)}</div>
+        <div><strong>Usuario:</strong> ${esc(row.usuarioNombre) || '—'} (${esc(row.usuarioRol) || 'anon'})</div>
+        <div><strong>Entidad:</strong> ${esc(row.entidad)} · ${esc(row.entidadId) || '—'}</div>
+        <div><strong>Descripción:</strong> ${esc(row.descripcion) || '—'}</div>
+        <div><strong>IP:</strong> ${esc(row.ip) || '—'}</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div><div class="fl" style="margin-bottom:4px">Antes</div>${fmtJson(row.antes)}</div>
+        <div><div class="fl" style="margin-bottom:4px">Después</div>${fmtJson(row.despues)}</div>
+      </div>
+      <div class="modal-actions" style="margin-top:10px"><button type="button" class="btn sm" onclick="closeModal()">Cerrar</button></div>`,
+  });
 }
 
 async function refreshDashboard() {
@@ -2981,7 +3296,8 @@ const CFG = {
   horas:        { title: 'Horas de Mano de Obra',   crumb: '· ALE-030424-J83 · Ene–Mar 2026' },
   conciliacion: { title: 'Conciliación',           crumb: '· Gestión de checador y horas',    newLabel: '+ Cerrar Semana' },
   nomina:       { title: 'Nómina / CFDI',           crumb: '· Registro de nómina y CFDI' },
-  costomo:      { title: 'Costo de Mano de Obra',   crumb: '· Labor Directa / Indirecta · OT-1936' }
+  costomo:      { title: 'Costo de Mano de Obra',   crumb: '· Labor Directa / Indirecta · OT-1936' },
+  admin:        { title: 'Administración',          crumb: '· Configuración y bitácora · solo admin' }
 };
 
 // API Calls
@@ -3234,6 +3550,7 @@ function goMod(id) {
   if (id === 'horas') loadLaborCosts();
   if (id === 'pronostico') loadPronostico();
   if (id === 'conciliacion') loadConciliacionSemanas();
+  if (id === 'admin') loadAdminConfig();
   refreshAllDlButtons();
   const c = CFG[id] || {};
   document.getElementById('ttitle').textContent = c.title || id;
@@ -3278,6 +3595,10 @@ function goSub(mod, sub, el) {
     if (sub === 'inventario') loadInventory();
     if (sub === 'facturas')   loadInvoices();
     if (sub === 'entregas')   { loadDeliveries(); loadIncidents(); loadDeliveryKPIs(); }
+  }
+  if (mod === 'admin') {
+    if (sub === 'config')   loadAdminConfig();
+    if (sub === 'bitacora') loadAdminAudit();
   }
 }
 function checkDl(prefix) {

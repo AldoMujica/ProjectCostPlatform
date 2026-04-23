@@ -39,6 +39,8 @@
 
 **Phase-5 Pronóstico landed (2026-04-23).** Closed **G-PRON-1,2,3** in one slice. New `GET /api/forecasting` rollup endpoint aggregates material + labor costs per OT, normalized to the OT's quoted currency via its `exchangeRate`; KPIs (total cotizado USD, total real USD, avg variance %, alert count). Semáforo rules codified as named constants in `backend/src/routes/forecasting.js` — green ≤70% of cot, amber 70–100%, red >100%, blue for in-flight OTs with no real cost yet. Seed gains FX backfill so demo env shows meaningful variance. XLSX export via shared helper. FE replaces the hardcoded mockup with live KPIs + 11-col table + row highlighting + XLSX download. Module 4 now complete. Feature coverage now ~94 %.
 
+**Admin panel infra landed (2026-04-23 · Phase-5b).** New `system_config` + `audit_events` tables; admin-only module "Administración" with two pestañas: (1) Configuración — editor JSON para 13 claves tuneable hot (umbrales de Pronóstico, matriz roles por paso de aprobación, roles que pueden forzar conciliación, jefaturas por defecto, etc.); (2) Bitácora — log de eventos con filtros por usuario/acción/entidad/fecha + búsqueda libre + export XLSX + vista detalle JSON `antes/después`. Captura automática via hooks globales de Sequelize en 12 modelos (alta volumen excluidos); login / logout / config_change / forzar_conciliacion se registran manualmente. `AsyncLocalStorage` threads `req.user + req.ip` sin tocar cada servicio. `configService` cachea 30 s con invalidación al escribir. `passwordHash` nunca entra a los snapshots. Base para que ops pueda tunear reglas de negocio sin intervención técnica. Feature coverage now ~95 %.
+
 ---
 
 ## Frozen architecture decisions

@@ -15,6 +15,8 @@ const SupplierInvoice = require('./SupplierInvoice');
 const Delivery = require('./Delivery');
 const Incident = require('./Incident');
 const WorkOrderApproval = require('./WorkOrderApproval');
+const SystemConfig = require('./SystemConfig');
+const AuditEvent = require('./AuditEvent');
 
 // Associations (ADR-006: FK enforced, otNumber kept redundant)
 WorkOrder.hasMany(MaterialCost, { foreignKey: 'workOrderId', as: 'materialCosts' });
@@ -78,6 +80,15 @@ WorkOrderApproval.belongsTo(WorkOrder, { foreignKey: 'workOrderId', as: 'workOrd
 User.hasMany(WorkOrderApproval, { foreignKey: 'decidedBy', as: 'approvalsDecided' });
 WorkOrderApproval.belongsTo(User, { foreignKey: 'decidedBy', as: 'decidedByUser' });
 
+User.hasMany(AuditEvent, { foreignKey: 'usuarioId', as: 'auditEvents' });
+AuditEvent.belongsTo(User, { foreignKey: 'usuarioId', as: 'usuario' });
+
+// Phase-5b — attach global audit hooks. Must happen AFTER every model is
+// registered on the sequelize instance, but BEFORE the first request runs.
+// Failing silently here would leave the bitácora empty, so we keep the
+// require at the bottom of this file and let it crash-hard on misconfig.
+require('../services/auditService').attachAuditHooks(sequelize);
+
 module.exports = {
   sequelize,
   User,
@@ -95,4 +106,6 @@ module.exports = {
   Delivery,
   Incident,
   WorkOrderApproval,
+  SystemConfig,
+  AuditEvent,
 };

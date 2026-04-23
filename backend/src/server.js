@@ -6,6 +6,7 @@ require('dotenv').config();
 
 const { sequelize } = require('./models');
 const { assertJwtSecret, verificarJWT } = require('./middleware/auth');
+const { requestContext } = require('./middleware/requestContext');
 
 assertJwtSecret();
 
@@ -21,6 +22,7 @@ const supplierInvoiceRoutes = require('./routes/supplierInvoices');
 const deliveryRoutes = require('./routes/deliveries');
 const approvalRoutes = require('./routes/approvals');
 const forecastingRoutes = require('./routes/forecasting');
+const adminRoutes = require('./routes/admin');
 const conciliacionRoutes = require('./routes/conciliacionRoutes');
 
 const app = express();
@@ -65,8 +67,9 @@ app.get('/api/health', (req, res) => {
 // Public: auth only
 app.use('/api/auth', authRoutes);
 
-// Everything else requires a valid JWT
-app.use('/api', verificarJWT);
+// Everything else requires a valid JWT, and runs inside an AsyncLocalStorage
+// scope so Sequelize hooks + auditService can see who is making the call.
+app.use('/api', verificarJWT, requestContext);
 app.use('/api/work-orders', workOrderRoutes);
 app.use('/api/quotes', quoteRoutes);
 app.use('/api/costs', costRoutes);
@@ -78,6 +81,7 @@ app.use('/api/invoices', supplierInvoiceRoutes);
 app.use('/api/deliveries', deliveryRoutes);
 app.use('/api/approvals', approvalRoutes);
 app.use('/api/forecasting', forecastingRoutes);
+app.use('/api/admin', adminRoutes);
 app.use('/api/conciliacion', conciliacionRoutes);
 
 // Serve the app SPA at root

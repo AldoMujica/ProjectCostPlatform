@@ -5,7 +5,7 @@
 >
 > **Method:** Every visible UI element in `alenstec_app.html` was inventoried. For each, the backend (models + routes) and client JS wiring were inspected. Each element is classified **Implemented / Partial / Mockup** with a gap ID (`G-<MODULE>-<N>`) when work remains.
 >
-> **Headline:** After Phase 3 + the 2026-04-23 sweep (G-OT-2 / G-CONC-3,4 / G-COT-1 / G-DASH-5,6 / G-PRON-1,2,3 / html2canvas), roughly **94 %** of the ~72 grouped features are fully wired end-to-end. Remaining: Nómina (module 8 — entire module, Phase-4), Costo-MO (module 10 — blocked on client signoff of Costo/Real rule), and a handful of nice-to-haves (Horas Estimadas table, G-MAT-3 KPI extras, G-HOR-4 activity codes).
+> **Headline:** After Phase 3 + Pronóstico + the admin-panel infra (2026-04-23), roughly **95 %** of the ~72 grouped features are fully wired end-to-end. Remaining: Nómina (module 8 — entire module, Phase-4), Costo-MO (module 10 — blocked on client signoff of Costo/Real rule), and a handful of nice-to-haves (Horas Estimadas table, G-MAT-3 KPI extras, G-HOR-4 activity codes). **New module 11 "Administración" (admin-only): panel de configuración + bitácora de cambios.**
 
 ## Phase-1 closures (2026-04-20)
 
@@ -74,6 +74,23 @@ Gaps fully closed by the Phase-3 cumulative merge (all 21 work items + P3.18b):
 | P1.7 → P3.18b | Per-record supervisor ACL landed. Decision: ownership lives at the OT level via new `work_orders.supervisor_id` column (nullable; NULL = visible to all). `filtrarPorSupervisor` now filters `GET /api/work-orders` for supervisor-role users. |
 
 Phase-3 schema change summary — 4 migrations added 7 new tables (`purchase_orders_alenstec`, `inventory_items`, `stock_movements`, `supplier_invoices`, `deliveries`, `incidents`, `work_order_approvals`) and extended 3 existing tables: `empleados` (+10 cols), `work_orders` (+10 cols — `supervisor_id` for P3.18b plus 9 form-extras for G-OT-2), `quotes` (+9 cols for Control-Ventas round-trip).
+
+## Admin panel infra (2026-04-23 · Phase-5b)
+
+New module 11 "Administración" — admin-role only. Two pestañas:
+
+| Pestaña       | Qué hace                                                                                                  |
+|---------------|-----------------------------------------------------------------------------------------------------------|
+| Configuración | CRUD sobre `system_config`. 13 claves sembradas con los valores actualmente hardcoded (umbrales Pronóstico, matriz de roles por paso de aprobación, roles que pueden forzar conciliación, jefaturas por defecto, etc.). Editor JSON con validación de tipo. Cambios surten efecto ≤ 30 s (TTL de `configService`). |
+| Bitácora      | Query sobre `audit_events` con filtros por usuario, acción, entidad, rango de fechas + búsqueda libre. Export XLSX. Modal "Ver" muestra JSON `antes`/`después` lado a lado. |
+
+**Captura automática via Sequelize hooks** aplicada globalmente a 12 modelos (`WorkOrder`, `Quote`, `Supplier`, `Employee`, `PurchaseOrder`, `InventoryItem`, `SupplierInvoice`, `Delivery`, `Incident`, `WorkOrderApproval`, `User`, `SystemConfig`). Modelos de alto volumen (`MaterialCost`, `LaborCost`, `StockMovement`, `SupplierWorkOrder`) excluidos a propósito. Login / logout / login_failed / config_change / forzar_conciliacion / etc. se registran manualmente via `logAudit()`.
+
+**Threading de contexto:** `AsyncLocalStorage` (middleware `requestContext`) pasa el `req.user + req.ip` a través de las llamadas async sin tener que añadir `options.user` a cada llamada de servicio. Los hooks de Sequelize leen `currentContext()` y denormalizan `usuario_nombre` + `usuario_rol` en `audit_events` (así borrar un usuario no borra quién hizo qué).
+
+Nueva tabla: `system_config(key UNIQUE, value JSONB, category, data_type, updated_by, ...)`. Nueva tabla: `audit_events(id BIGSERIAL, usuario_id, usuario_nombre, usuario_rol, accion, entidad, entidad_id, descripcion, antes JSONB, despues JSONB, ip, metadatos JSONB, fecha)`. Índices por `(entidad, entidad_id, fecha)` para trails por entidad, `(usuario_id, fecha)` para bitácora por persona, y `(fecha)` para el listado global.
+
+**Tratamiento de contraseñas:** `passwordHash` está en la lista `EXCLUDED_FIELDS` del `auditService` — nunca aparece en los snapshots `antes`/`después`.
 
 ### Phase-1 deferrals
 

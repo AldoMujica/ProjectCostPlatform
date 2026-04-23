@@ -15,6 +15,7 @@ const {
   Incident,
 } = require('../models');
 const seedConciliacionDemo = require('./conciliacion-demo');
+const { seedSystemConfigDefaults } = require('./system-config-defaults');
 
 const DEFAULT_PASSWORD = process.env.SEED_DEFAULT_PASSWORD || 'alenstec_dev_2026';
 
@@ -37,6 +38,11 @@ async function seedDatabase() {
     await User.upsert({ ...u, passwordHash, activo: true });
   }
   console.log(`✓ Seeded ${seedUsers.length} users (default password: ${DEFAULT_PASSWORD})`);
+
+  // Phase-5b — admin-panel config defaults. Idempotent (findOrCreate per
+  // key), so re-running after an operator has tuned values is safe.
+  const n = await seedSystemConfigDefaults();
+  console.log(`✓ Seeded ${n} system_config defaults (idempotent)`);
 
   // Conciliación + empleados master seed runs every time (it's an upsert and
   // Phase-3 extended the empleado schema — legacy DBs need the new columns
