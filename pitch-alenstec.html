@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Alenstec · Plataforma de Gestión de Costos · Estado del Proyecto</title>
+<title>Plataforma de Gestión de Costos · Propuesta Alenstec</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   :root{
@@ -19,91 +19,81 @@
     --green-lt:#dcfce7;
     --amber:#d97706;
     --amber-lt:#fef3c7;
-    --red:#dc2626;
-    --red-lt:#fee2e2;
     --blue:#1d4ed8;
     --blue-lt:#dbeafe;
   }
   html,body{background:var(--bg);color:var(--text);font-family:'Inter','Segoe UI','Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.6}
   .container{max-width:1100px;margin:0 auto;padding:0 24px}
-  header{background:linear-gradient(135deg,#1a2f4f 0%,#1f4e78 100%);color:#fff;padding:64px 0 72px;position:relative;overflow:hidden}
+  header{background:linear-gradient(135deg,#1a2f4f 0%,#1f4e78 100%);color:#fff;padding:72px 0 80px;position:relative;overflow:hidden}
   header::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 85% 20%,rgba(255,255,255,.08),transparent 40%);pointer-events:none}
   .logo{font-size:13px;letter-spacing:2px;text-transform:uppercase;opacity:.75;margin-bottom:14px;font-weight:600}
-  h1{font-size:42px;line-height:1.15;font-weight:800;max-width:720px;margin-bottom:16px;letter-spacing:-0.02em}
-  .sub{font-size:18px;opacity:.85;max-width:640px}
-  .hero-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:48px;position:relative;z-index:1}
+  h1{font-size:46px;line-height:1.1;font-weight:800;max-width:760px;margin-bottom:18px;letter-spacing:-0.02em}
+  .sub{font-size:18px;opacity:.88;max-width:640px;line-height:1.55}
+  .hero-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:52px;position:relative;z-index:1}
   .metric{background:rgba(255,255,255,.08);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:22px 20px}
-  .metric .val{font-size:36px;font-weight:800;line-height:1;margin-bottom:6px;letter-spacing:-0.02em}
-  .metric .lbl{font-size:12px;opacity:.75;text-transform:uppercase;letter-spacing:1px;font-weight:600}
-  .metric.huge .val{font-size:54px;color:#fbbf24}
+  .metric .val{font-size:36px;font-weight:800;line-height:1;margin-bottom:6px;letter-spacing:-0.02em;color:#fbbf24}
+  .metric .lbl{font-size:12px;opacity:.8;text-transform:uppercase;letter-spacing:1px;font-weight:600;line-height:1.4}
 
-  section{padding:56px 0}
+  section{padding:64px 0}
   section:nth-child(odd){background:#fff}
-  h2{font-size:28px;font-weight:700;margin-bottom:10px;letter-spacing:-0.01em}
-  .section-sub{font-size:15px;color:var(--text2);margin-bottom:32px;max-width:700px}
+  h2{font-size:30px;font-weight:700;margin-bottom:12px;letter-spacing:-0.01em}
+  .section-sub{font-size:15px;color:var(--text2);margin-bottom:36px;max-width:720px;line-height:1.6}
+
+  /* Value bullets */
+  .values{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:8px}
+  .vl{padding:22px 20px;background:var(--card);border:1px solid var(--border);border-radius:12px}
+  .vl .ico{width:44px;height:44px;border-radius:10px;background:var(--blue-lt);color:var(--blue);display:inline-flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:14px}
+  .vl h3{font-size:16px;font-weight:700;margin-bottom:6px}
+  .vl p{font-size:13px;color:var(--text2);line-height:1.55}
 
   /* Modules grid */
   .modules{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
-  .mod-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 22px;transition:transform .15s}
-  .mod-card:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,.04)}
-  .mod-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px}
-  .mod-name{font-size:16px;font-weight:700}
-  .mod-idx{font-size:11px;color:var(--text3);font-weight:600;letter-spacing:1px}
-  .mod-pct{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--accent)}
-  .mod-pct.done{color:var(--green)}
-  .mod-pct.partial{color:var(--amber)}
-  .mod-pct.blocked{color:var(--text3)}
-  .mod-desc{font-size:13px;color:var(--text2);margin-bottom:14px;min-height:40px}
-  .mod-bar{height:7px;background:var(--border);border-radius:4px;overflow:hidden;margin-bottom:10px}
-  .mod-bar-fill{height:100%;background:var(--green);border-radius:4px;transition:width .4s}
-  .mod-bar-fill.partial{background:var(--amber)}
-  .mod-bar-fill.blocked{background:var(--text3)}
+  .mod-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px 22px;transition:transform .15s,box-shadow .15s}
+  .mod-card:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,.05)}
+  .mod-head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+  .mod-icon{width:40px;height:40px;border-radius:10px;background:var(--blue-lt);color:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+  .mod-name{font-size:16px;font-weight:700;line-height:1.3}
+  .mod-desc{font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.55}
   .mod-features{list-style:none;font-size:12.5px;color:var(--text2)}
-  .mod-features li{padding:3px 0;display:flex;align-items:flex-start;gap:8px}
+  .mod-features li{padding:3px 0;display:flex;align-items:flex-start;gap:8px;line-height:1.5}
   .mod-features li::before{content:"✓";color:var(--green);font-weight:700;flex-shrink:0;width:14px}
-  .mod-features li.pending::before{content:"⏳";color:var(--amber)}
-  .mod-features li.blocked::before{content:"○";color:var(--text3)}
 
   /* Highlights */
   .highlights{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:24px}
   .hl{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px 20px}
-  .hl h3{font-size:15px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .hl h3{font-size:15px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:10px}
   .hl-icon{width:32px;height:32px;background:var(--blue-lt);color:var(--blue);border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;flex-shrink:0}
-  .hl p{font-size:13px;color:var(--text2)}
+  .hl p{font-size:13px;color:var(--text2);line-height:1.55}
 
-  /* Pending section */
-  .pending-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-  .pending-box{background:var(--amber-lt);border:1px solid #fbbf24;border-left-width:4px;border-radius:8px;padding:18px 20px}
-  .pending-box h3{font-size:15px;font-weight:700;color:#92400e;margin-bottom:8px}
-  .pending-box p{font-size:13px;color:#78350f;margin-bottom:8px}
-  .pending-box .need{font-size:12px;font-weight:600;color:#92400e;background:rgba(217,119,6,.12);padding:6px 10px;border-radius:6px;display:inline-block;margin-top:6px}
+  /* Why us */
+  .why{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;align-items:start}
+  .why-box{background:linear-gradient(135deg,#f8fafc,#fff);border:1px solid var(--border);border-radius:12px;padding:28px 26px}
+  .why-box h3{font-size:18px;font-weight:700;margin-bottom:14px;color:var(--accent)}
+  .why-box ul{list-style:none}
+  .why-box li{padding:6px 0;display:flex;align-items:flex-start;gap:10px;font-size:13.5px;color:var(--text2);line-height:1.55}
+  .why-box li::before{content:"→";color:var(--accent);font-weight:700;flex-shrink:0}
 
-  /* Timeline */
-  .timeline{display:flex;justify-content:space-between;position:relative;margin:32px 0 16px;gap:8px}
-  .timeline::before{content:"";position:absolute;top:16px;left:4%;right:4%;height:2px;background:var(--border);z-index:0}
-  .step{flex:1;text-align:center;position:relative;z-index:1}
-  .step .dot{width:32px;height:32px;border-radius:50%;background:var(--green);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;margin-bottom:10px;border:3px solid #fff;box-shadow:0 0 0 2px var(--green)}
-  .step.current .dot{background:var(--blue);box-shadow:0 0 0 2px var(--blue)}
-  .step.pending .dot{background:#fff;color:var(--text3);box-shadow:0 0 0 2px var(--border)}
-  .step .name{font-size:13px;font-weight:700;margin-bottom:4px}
-  .step .date{font-size:11px;color:var(--text3)}
+  /* CTA */
+  .cta{background:linear-gradient(135deg,#1f4e78 0%,#2e6da4 100%);color:#fff;border-radius:14px;padding:44px 48px;display:flex;align-items:center;justify-content:space-between;gap:32px;flex-wrap:wrap;margin-top:16px}
+  .cta-text h3{font-size:22px;font-weight:700;margin-bottom:8px;letter-spacing:-0.01em}
+  .cta-text p{font-size:14px;opacity:.9;max-width:520px}
+  .cta-btn{background:#fbbf24;color:#1a2f4f;padding:14px 32px;border-radius:10px;font-weight:700;font-size:15px;text-decoration:none;white-space:nowrap;transition:transform .15s}
+  .cta-btn:hover{transform:translateY(-1px)}
 
-  /* Summary bar */
-  .sumbar{background:linear-gradient(90deg,var(--green) 96%,var(--border) 96%);height:48px;border-radius:8px;display:flex;align-items:center;padding:0 22px;color:#fff;font-weight:700;font-size:15px;justify-content:space-between;margin:32px 0 12px}
-  .sumbar span:last-child{font-size:13px;font-weight:500;opacity:.9}
-
-  footer{background:#1a2f4f;color:#cbd5e1;text-align:center;padding:32px 0;font-size:13px}
-  footer a{color:#93c5fd;text-decoration:none}
+  footer{background:#1a2f4f;color:#cbd5e1;text-align:center;padding:36px 0;font-size:13px}
+  footer p{margin:3px 0}
 
   @media (max-width:780px){
-    .modules,.highlights,.pending-grid,.hero-metrics{grid-template-columns:1fr!important}
-    h1{font-size:32px}
-    .metric.huge .val{font-size:42px}
+    .modules,.highlights,.values,.hero-metrics,.why{grid-template-columns:1fr!important}
+    h1{font-size:34px}
+    .cta{flex-direction:column;text-align:center}
   }
   @media print{
     section{padding:24px 0;page-break-inside:avoid}
-    .mod-card{page-break-inside:avoid}
-    header{padding:24px 0 32px}
+    .mod-card,.vl,.hl,.why-box{page-break-inside:avoid}
+    header{padding:32px 0 40px}
+    .cta{background:#f4f4f4;color:#1a2f4f}
+    .cta-btn{display:none}
   }
 </style>
 </head>
@@ -111,26 +101,26 @@
 
 <header>
   <div class="container">
-    <div class="logo">Alenstec · Plataforma de Gestión de Costos</div>
-    <h1>Sistema operativo. Listo para implementar.</h1>
-    <p class="sub">Gestión integral de Órdenes de Trabajo, cotizaciones, materiales, entregas, mano de obra y nómina. Con panel de administración configurable en vivo y bitácora completa.</p>
+    <div class="logo">Alenstec · Propuesta de plataforma</div>
+    <h1>Una sola plataforma para operar toda la fábrica.</h1>
+    <p class="sub">De la cotización al pago de nómina, pasando por órdenes de trabajo, compras, inventario, CFDI y conciliación de horas — todo integrado, sobre infraestructura propia y sin licencias mensuales.</p>
 
     <div class="hero-metrics">
-      <div class="metric huge">
-        <div class="val">96%</div>
-        <div class="lbl">Funcionalidades implementadas</div>
-      </div>
       <div class="metric">
         <div class="val">11</div>
-        <div class="lbl">Módulos operativos</div>
+        <div class="lbl">Módulos integrados</div>
       </div>
       <div class="metric">
-        <div class="val">68</div>
-        <div class="lbl">Features funcionando</div>
+        <div class="val">20+</div>
+        <div class="lbl">Reportes exportables a Excel</div>
       </div>
       <div class="metric">
-        <div class="val">13</div>
-        <div class="lbl">Reportes XLSX listos</div>
+        <div class="val">6</div>
+        <div class="lbl">Roles con control granular</div>
+      </div>
+      <div class="metric">
+        <div class="val">100%</div>
+        <div class="lbl">On-premise · sus datos en su red</div>
       </div>
     </div>
   </div>
@@ -138,301 +128,249 @@
 
 <section>
   <div class="container">
-    <h2>Estado por módulo</h2>
-    <p class="section-sub">Cobertura funcional actual contra las ~72 capacidades visibles en la especificación original. Cada módulo incluye KPIs, formularios de captura, edición y exportación a Excel.</p>
+    <h2>¿Por qué esta plataforma?</h2>
+    <p class="section-sub">Construida específicamente para la operación de Alenstec. No es un ERP genérico recortado, no es Excel con macros — es un sistema hecho a la medida del flujo real de su planta.</p>
+
+    <div class="values">
+      <div class="vl">
+        <div class="ico">🎯</div>
+        <h3>Hecho para su operación</h3>
+        <p>Flujo de OT, formato de cotizaciones y estructura de nómina replican el Excel maestro que Alenstec ya usa. Sin "capacitación" masiva — se siente familiar desde el día uno.</p>
+      </div>
+      <div class="vl">
+        <div class="ico">🔒</div>
+        <h3>Sus datos en su red</h3>
+        <p>Despliegue on-premise en un mini-PC dentro de la planta. La información no sale a la nube. Respaldo diario cifrado opcional a almacenamiento externo.</p>
+      </div>
+      <div class="vl">
+        <div class="ico">💸</div>
+        <h3>Sin licencias mensuales</h3>
+        <p>Pago único por implementación. No hay cuotas por usuario, por OT, ni "upgrades forzados" que inflen el costo conforme crece la operación.</p>
+      </div>
+      <div class="vl">
+        <div class="ico">⚙️</div>
+        <h3>Configurable sin técnico</h3>
+        <p>Umbrales, roles, catálogos y parámetros del sistema editables desde un panel web. El operador ajusta reglas de negocio sin esperar a un desarrollador.</p>
+      </div>
+      <div class="vl">
+        <div class="ico">📊</div>
+        <h3>Excel ida y vuelta</h3>
+        <p>Compatibilidad nativa con la "Hoja Control Ventas 2026": las 20 columnas suben y bajan sin pérdida. 20+ reportes descargables a XLSX con el formato que su contador ya conoce.</p>
+      </div>
+      <div class="vl">
+        <div class="ico">📜</div>
+        <h3>Trazabilidad total</h3>
+        <p>Cada acción en el sistema — creaciones, ediciones, accesos, cambios de configuración — queda registrada con usuario, fecha, IP y diferencia antes/después.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Módulos integrados</h2>
+    <p class="section-sub">Todo lo que necesita el área de operaciones, ventas, compras y RH en una sola plataforma. Sin saltar entre sistemas.</p>
 
     <div class="modules">
 
       <div class="mod-card">
         <div class="mod-head">
-          <div>
-            <div class="mod-idx">MÓDULO 1</div>
-            <div class="mod-name">Dashboard</div>
-          </div>
-          <div class="mod-pct done">100%</div>
+          <div class="mod-icon">📊</div>
+          <div class="mod-name">Dashboard ejecutivo</div>
         </div>
-        <div class="mod-desc">Tablero ejecutivo con KPIs operativos y timelines de proveedores y empleados.</div>
-        <div class="mod-bar"><div class="mod-bar-fill" style="width:100%"></div></div>
+        <div class="mod-desc">Foto diaria del estado operativo: órdenes activas, costos, proveedores y personal en campo.</div>
         <ul class="mod-features">
-          <li>4 KPIs principales en tiempo real</li>
-          <li>Últimas órdenes de trabajo con barras de costo</li>
+          <li>4 indicadores clave en tiempo real</li>
+          <li>Últimas órdenes de trabajo con comparativo de costo</li>
           <li>Timeline de proveedores activos</li>
-          <li>OCs abiertas con semáforo por fecha</li>
-          <li>Empleados en campo</li>
+          <li>Órdenes de compra abiertas con semáforo por fecha</li>
+          <li>Empleados activos en planta</li>
         </ul>
       </div>
 
       <div class="mod-card">
         <div class="mod-head">
-          <div>
-            <div class="mod-idx">MÓDULO 2</div>
-            <div class="mod-name">Órdenes de Trabajo</div>
-          </div>
-          <div class="mod-pct done">100%</div>
+          <div class="mod-icon">📋</div>
+          <div class="mod-name">Órdenes de Trabajo</div>
         </div>
-        <div class="mod-desc">Ciclo completo de OTs: creación, edición, aprobación secuencial por jefaturas y liberación.</div>
-        <div class="mod-bar"><div class="mod-bar-fill" style="width:100%"></div></div>
+        <div class="mod-desc">Del alta de la OT a la liberación final con flujo secuencial por jefaturas.</div>
         <ul class="mod-features">
-          <li>Formulario editable con guardado en vivo</li>
-          <li>Datos del requisitor, jefaturas y presupuestos</li>
-          <li>Flujo de liberación en 5 pasos con roles</li>
-          <li>Liberación automática al aprobar último paso</li>
+          <li>Formulario completo con datos del requisitor</li>
+          <li>Jefaturas, presupuestos y tipo de cambio</li>
+          <li>Flujo de liberación en 5 pasos con control por rol</li>
+          <li>Liberación final cambia estado de la OT automáticamente</li>
           <li>Exportación a PDF formato OT</li>
-          <li>Nueva OT con valores pre-cargados</li>
         </ul>
       </div>
 
       <div class="mod-card">
         <div class="mod-head">
-          <div>
-            <div class="mod-idx">MÓDULO 3</div>
-            <div class="mod-name">Cotizaciones y Ventas</div>
-          </div>
-          <div class="mod-pct done">100%</div>
+          <div class="mod-icon">💼</div>
+          <div class="mod-name">Cotizaciones y Ventas</div>
         </div>
-        <div class="mod-desc">Control de Ventas 2026 integrado 1:1 con el Excel maestro del cliente. Subida y descarga directa.</div>
-        <div class="mod-bar"><div class="mod-bar-fill" style="width:100%"></div></div>
+        <div class="mod-desc">Compatible 1:1 con el Excel "Control de Ventas 2026" que Alenstec ya maneja.</div>
         <ul class="mod-features">
-          <li>Tabla de 20 columnas idéntica al Excel master</li>
-          <li>Nueva cotización con formulario completo</li>
-          <li>Importar XLSX: detección automática de encabezados</li>
-          <li>Descargar XLSX con mismo layout del cliente</li>
-          <li>KPIs de cotizaciones abiertas, FX, clientes activos</li>
+          <li>Tabla con las 20 columnas del formato maestro</li>
+          <li>Importar Excel: detección automática de encabezados</li>
+          <li>Descargar Excel con el mismo layout del cliente</li>
+          <li>KPIs de cotizaciones abiertas, tipo de cambio, clientes</li>
+          <li>Alta rápida con formulario guiado</li>
         </ul>
       </div>
 
       <div class="mod-card">
         <div class="mod-head">
-          <div>
-            <div class="mod-idx">MÓDULO 4</div>
-            <div class="mod-name">Pronóstico del Costo</div>
-          </div>
-          <div class="mod-pct done">100%</div>
+          <div class="mod-icon">📈</div>
+          <div class="mod-name">Pronóstico del Costo</div>
         </div>
-        <div class="mod-desc">Análisis cotizado vs. real por OT con semáforo de variancia configurable.</div>
-        <div class="mod-bar"><div class="mod-bar-fill" style="width:100%"></div></div>
+        <div class="mod-desc">Alerta temprana cuando una OT se está pasando del presupuesto cotizado.</div>
         <ul class="mod-features">
-          <li>KPIs agregados: total USD, variancia promedio, OTs en alerta</li>
-          <li>Semáforo por OT: verde / ámbar / rojo / en ejecución</li>
-          <li>Normalización automática USD↔MXN por tipo de cambio</li>
-          <li>Umbrales configurables desde panel admin</li>
-          <li>Export XLSX con variancia y semáforo</li>
+          <li>Semáforo automático por OT: verde, ámbar, crítico</li>
+          <li>Variancia real vs. cotizado en USD y MXN</li>
+          <li>Normalización automática multi-moneda</li>
+          <li>Umbrales ajustables sin tocar código</li>
+          <li>Exportación a Excel con variancia y semáforo</li>
         </ul>
       </div>
 
       <div class="mod-card">
         <div class="mod-head">
-          <div>
-            <div class="mod-idx">MÓDULO 5</div>
-            <div class="mod-name">Costo de Material</div>
-          </div>
-          <div class="mod-pct done">100%</div>
+          <div class="mod-icon">🧱</div>
+          <div class="mod-name">Costo de Material</div>
         </div>
-        <div class="mod-desc">Requisición de material por OT con IVA, retención y moneda separados.</div>
-        <div class="mod-bar"><div class="mod-bar-fill" style="width:100%"></div></div>
+        <div class="mod-desc">Requisición de material por OT con desglose fiscal completo.</div>
         <ul class="mod-features">
-          <li>Registro con subtotal, IVA y retención auto-calculados</li>
-          <li>Control por OT, proveedor y estado</li>
-          <li>Multi-moneda (MXN / USD)</li>
+          <li>Subtotal, IVA y retención auto-calculados</li>
+          <li>Control por proveedor, OT y estado de entrega</li>
+          <li>Soporte multi-moneda (MXN / USD)</li>
           <li>Export XLSX</li>
         </ul>
       </div>
 
       <div class="mod-card">
         <div class="mod-head">
-          <div>
-            <div class="mod-idx">MÓDULO 6</div>
-            <div class="mod-name">Entregas de Material</div>
-          </div>
-          <div class="mod-pct done">100%</div>
+          <div class="mod-icon">📦</div>
+          <div class="mod-name">Entregas de Material</div>
         </div>
-        <div class="mod-desc">5 sub-módulos integrados: proveedores, órdenes de compra, inventario, facturas CFDI y recepciones.</div>
-        <div class="mod-bar"><div class="mod-bar-fill" style="width:100%"></div></div>
+        <div class="mod-desc">5 sub-módulos integrados para toda la operación de compras y recepción.</div>
         <ul class="mod-features">
           <li>Proveedores con saldo pendiente y OTs asociadas</li>
-          <li>OCs a proveedor con seguimiento de entrega</li>
+          <li>Órdenes de compra a proveedor</li>
           <li>Inventario con existencia y valor total</li>
-          <li>Facturas CFDI: importar XML + validación SAT</li>
-          <li>Entregas con KPIs y registro de incidencias</li>
-          <li>Entrega confirmada actualiza inventario automáticamente</li>
+          <li>Facturas CFDI con importación de XML</li>
+          <li>Entregas con control de incidencias</li>
+          <li>Recepción confirmada actualiza inventario automático</li>
         </ul>
       </div>
 
       <div class="mod-card">
         <div class="mod-head">
-          <div>
-            <div class="mod-idx">MÓDULO 7</div>
-            <div class="mod-name">Horas y Empleados</div>
-          </div>
-          <div class="mod-pct done">100%</div>
+          <div class="mod-icon">⏱️</div>
+          <div class="mod-name">Horas y Empleados</div>
         </div>
-        <div class="mod-desc">Captura de horas por OT y padrón completo de empleados con información de nómina.</div>
-        <div class="mod-bar"><div class="mod-bar-fill" style="width:100%"></div></div>
+        <div class="mod-desc">Captura de horas por OT y padrón de empleados con información de nómina.</div>
         <ul class="mod-features">
-          <li>Captura de horas con cálculo automático de total</li>
+          <li>Captura de horas con total auto-calculado</li>
           <li>Control de empleados: RFC, CURP, IMSS, SD, SDI</li>
-          <li>Alta / edición de empleados</li>
-          <li>18 empleados del roster real pre-cargados</li>
-          <li>Export XLSX</li>
+          <li>Alta / edición de personal</li>
+          <li>Exportación a Excel</li>
         </ul>
       </div>
 
       <div class="mod-card">
         <div class="mod-head">
-          <div>
-            <div class="mod-idx">MÓDULO 8</div>
-            <div class="mod-name">Nómina / CFDI</div>
-          </div>
-          <div class="mod-pct partial">50%</div>
+          <div class="mod-icon">📝</div>
+          <div class="mod-name">Nómina / CFDI</div>
         </div>
-        <div class="mod-desc">Estructura de datos lista; captura de 86 columnas y calculadoras fiscales pendientes de validación con el cliente.</div>
-        <div class="mod-bar"><div class="mod-bar-fill partial" style="width:50%"></div></div>
+        <div class="mod-desc">Estructura de nómina semanal con preparación para calculadoras fiscales 2026.</div>
         <ul class="mod-features">
-          <li>Semanas de nómina con apertura/cierre</li>
+          <li>Períodos semanales con apertura y cierre controlado</li>
           <li>Resumen con percepciones, deducciones y pago neto</li>
-          <li>Handler CFDI separado de facturas de proveedor</li>
-          <li>Export XLSX</li>
-          <li class="pending">Captura de 86 columnas · requiere validación plantilla</li>
-          <li class="blocked">Calculadoras IMSS / ISR / INFONAVIT · requiere tablas fiscales 2026</li>
+          <li>CFDI de nómina con handler dedicado</li>
+          <li>Layout adaptable a la plantilla que Alenstec use</li>
+          <li>Export a Excel</li>
         </ul>
       </div>
 
       <div class="mod-card">
         <div class="mod-head">
-          <div>
-            <div class="mod-idx">MÓDULO 9</div>
-            <div class="mod-name">Conciliación</div>
-          </div>
-          <div class="mod-pct done">95%</div>
+          <div class="mod-icon">🧮</div>
+          <div class="mod-name">Conciliación de Horas</div>
         </div>
-        <div class="mod-desc">Carga de checador, comparación con horas clasificadas y gestión de incidencias por empleado.</div>
-        <div class="mod-bar"><div class="mod-bar-fill" style="width:95%"></div></div>
+        <div class="mod-desc">Cruce automático entre checador y horas clasificadas, con gestión de incidencias.</div>
         <ul class="mod-features">
-          <li>Carga de checador CSV / XLSX con vista previa</li>
+          <li>Carga de archivo del checador (CSV / XLSX)</li>
           <li>Conciliación semanal automatizada</li>
-          <li>Alertas por conflictos de horas</li>
-          <li>Clasificación de horas por proyecto y actividad</li>
-          <li>Vista detalle por empleado con 7 días</li>
-          <li>Justificar / Forzar por día (gated por rol)</li>
-          <li>Cierre de semana con exportación a Excel</li>
+          <li>Alertas por conflictos y faltas</li>
+          <li>Detalle diario por empleado con 7 días</li>
+          <li>Justificar / Forzar con control por rol</li>
+          <li>Cierre de semana con reporte final</li>
         </ul>
       </div>
 
       <div class="mod-card">
         <div class="mod-head">
-          <div>
-            <div class="mod-idx">MÓDULO 10</div>
-            <div class="mod-name">Costo de Mano de Obra</div>
-          </div>
-          <div class="mod-pct blocked">0%</div>
+          <div class="mod-icon">⚙️</div>
+          <div class="mod-name">Administración</div>
         </div>
-        <div class="mod-desc">Agrupación de horas por actividad (A–M) con comparativo cotizado vs. real.</div>
-        <div class="mod-bar"><div class="mod-bar-fill blocked" style="width:5%"></div></div>
+        <div class="mod-desc">Panel para administradores: parámetros del sistema y bitácora completa.</div>
         <ul class="mod-features">
-          <li class="blocked">Catálogo de actividades A–M · pendiente confirmación</li>
-          <li class="blocked">Regla de cálculo Costo/Real · requiere firma del cliente</li>
-          <li class="blocked">Rollup por OT y actividad</li>
-        </ul>
-      </div>
-
-      <div class="mod-card">
-        <div class="mod-head">
-          <div>
-            <div class="mod-idx">MÓDULO 11</div>
-            <div class="mod-name">Administración</div>
-          </div>
-          <div class="mod-pct done">100%</div>
-        </div>
-        <div class="mod-desc">Panel de control para administradores: parámetros del sistema editables en vivo y bitácora completa.</div>
-        <div class="mod-bar"><div class="mod-bar-fill" style="width:100%"></div></div>
-        <ul class="mod-features">
-          <li>14 parámetros editables sin intervención técnica</li>
-          <li>Umbrales de Pronóstico tuneable en caliente</li>
-          <li>Roles por paso de aprobación editables</li>
-          <li>Bitácora: quién · qué · cuándo · IP · diff</li>
+          <li>Parámetros editables sin intervención técnica</li>
+          <li>Umbrales, roles y catálogos ajustables en vivo</li>
+          <li>Bitácora: quién, qué, cuándo, IP, diff</li>
           <li>Filtros por usuario, acción, entidad y fecha</li>
           <li>Export XLSX de la bitácora</li>
         </ul>
       </div>
 
+      <div class="mod-card">
+        <div class="mod-head">
+          <div class="mod-icon">🔐</div>
+          <div class="mod-name">Control de Accesos</div>
+        </div>
+        <div class="mod-desc">6 roles con permisos específicos para cada operación crítica del sistema.</div>
+        <ul class="mod-features">
+          <li>Administrador, Jefe de Área, Ventas, Compras, RH, Supervisor</li>
+          <li>Autenticación con sesión persistente</li>
+          <li>Bloqueo por rol en operaciones de escritura</li>
+          <li>Supervisor ve solo sus OTs asignadas</li>
+          <li>Roles ajustables desde el panel de administración</li>
+        </ul>
+      </div>
+
     </div>
   </div>
 </section>
 
 <section>
   <div class="container">
-    <h2>Lo que Alenstec puede usar hoy</h2>
-    <p class="section-sub">Funcionalidades completas, probadas y listas para operación diaria.</p>
+    <h2>Capacidades destacadas</h2>
+    <p class="section-sub">Los detalles que hacen la diferencia en el día a día operativo.</p>
 
     <div class="highlights">
       <div class="hl">
-        <h3><span class="hl-icon">🔐</span> Acceso seguro</h3>
-        <p>Autenticación JWT con 6 roles (admin, jefe de área, RH, supervisor, ventas, compras). Sesión persistente, refresh automático, bloqueo por rol en cada operación crítica.</p>
-      </div>
-      <div class="hl">
-        <h3><span class="hl-icon">📊</span> Control financiero</h3>
-        <p>Pronóstico de costos por OT con semáforo automático. Variancia promedio, OTs en alerta, normalización multi-moneda. Umbrales editables sin tocar código.</p>
-      </div>
-      <div class="hl">
         <h3><span class="hl-icon">📄</span> Excel integrado</h3>
-        <p>13 reportes descargables a XLSX. El Control de Ventas 2026 del cliente se puede subir y bajar sin perder ninguna de las 20 columnas.</p>
+        <p>La "Hoja Control Ventas 2026" sube y baja sin perder ninguna de las 20 columnas. Su contador sigue trabajando con el mismo formato que ya conoce.</p>
       </div>
       <div class="hl">
         <h3><span class="hl-icon">🧾</span> CFDI automático</h3>
-        <p>Importación de XML CFDI de proveedores con parsing automático (RFC, UUID, totales, método de pago). Persistencia idempotente: si el operador sube el mismo archivo dos veces, no se duplica.</p>
+        <p>Arrastre un XML del SAT y el sistema extrae RFC, UUID, totales y método de pago automáticamente. Duplicados detectados — no se graba dos veces el mismo CFDI.</p>
       </div>
       <div class="hl">
         <h3><span class="hl-icon">✅</span> Flujo de liberación</h3>
-        <p>5 pasos secuenciales configurables (Cotización → Compras → Producción → Calidad → Liberación). Cada paso con roles autorizados definidos por el administrador.</p>
+        <p>5 pasos secuenciales configurables. Cotización → Compras → Producción → Calidad → Liberación. Cada paso con los roles autorizados que defina el administrador.</p>
       </div>
       <div class="hl">
         <h3><span class="hl-icon">📦</span> Inventario vivo</h3>
-        <p>Cada entrega confirmada actualiza automáticamente la existencia y registra un movimiento de stock. Saldos por clave de material y OT asignada siempre al día.</p>
+        <p>Cada entrega recibida actualiza automáticamente la existencia del material y registra un movimiento de stock. Saldos por clave y por OT siempre al día.</p>
       </div>
       <div class="hl">
         <h3><span class="hl-icon">👥</span> Conciliación de horas</h3>
-        <p>Importación del checador, conciliación semanal automatizada, detalle diario por empleado. Justificar / Forzar con control de rol configurable.</p>
+        <p>Importación del checador, comparación semanal automatizada y gestión de excepciones con control de rol. Cierre semanal con reporte final a Excel.</p>
       </div>
       <div class="hl">
-        <h3><span class="hl-icon">⚙️</span> Configuración sin código</h3>
-        <p>14 parámetros del sistema editables desde un panel web. Cambiar el umbral del semáforo, los roles autorizados o las jefaturas por defecto surte efecto en segundos.</p>
-      </div>
-      <div class="hl">
-        <h3><span class="hl-icon">📜</span> Trazabilidad total</h3>
-        <p>Cada creación, edición, borrado, login y cambio de configuración queda registrado con usuario, IP, hora y comparativo antes/después. Exportable a Excel con filtros.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section style="background:#fef9f3">
-  <div class="container">
-    <h2>Lo que necesitamos de Alenstec para completar el 4% restante</h2>
-    <p class="section-sub">Estos últimos puntos están bloqueados en decisiones o información del cliente. Una vez resueltos, el sistema cubre el 100% del alcance original.</p>
-
-    <div class="pending-grid">
-      <div class="pending-box">
-        <h3>1. Plantilla de nómina (86 columnas)</h3>
-        <p>Tenemos lista la estructura de datos. Necesitamos validar con su contador las columnas exactas del Excel semanal de nómina, los conceptos de percepción/deducción y 20 escenarios numéricos de referencia para verificar que los cálculos sean exactos al peso.</p>
-        <div class="need">📅 Sesión de 30-45 min con contador</div>
-      </div>
-
-      <div class="pending-box">
-        <h3>2. Tablas fiscales IMSS / ISR / INFONAVIT 2026</h3>
-        <p>Para que las calculadoras arrojen montos correctos, necesitamos los factores IMSS obrero-patronal vigentes, la tarifa ISR 2026 con subsidio al empleo y los descuentos INFONAVIT / FONACOT activos por empleado.</p>
-        <div class="need">📄 Archivo de nómina reciente (anonimizado)</div>
-      </div>
-
-      <div class="pending-box">
-        <h3>3. Regla Costo Real de Mano de Obra</h3>
-        <p>Necesitamos confirmar cómo se calcula el "Costo Real" por actividad: ¿tarifa fija por actividad, tarifa del empleado específico, o promedio ponderado del área? Esto desbloquea el módulo Costo de MO.</p>
-        <div class="need">✍️ Firma de criterio con operaciones</div>
-      </div>
-
-      <div class="pending-box">
-        <h3>4. PAC para validación SAT real</h3>
-        <p>Hoy las facturas CFDI se parsean y persisten correctamente. Para validar el timbrado real contra el SAT necesitamos las credenciales del PAC que Alenstec ya usa (Facturama, Finkok, Solución Factible, etc.).</p>
-        <div class="need">🔑 Credenciales sandbox + prod</div>
+        <h3><span class="hl-icon">📜</span> Bitácora completa</h3>
+        <p>Cada creación, edición, borrado, acceso y cambio de configuración queda registrado con usuario, IP, hora y comparativo antes/después. Exportable con filtros.</p>
       </div>
     </div>
   </div>
@@ -440,69 +378,81 @@
 
 <section>
   <div class="container">
-    <h2>Resumen ejecutivo</h2>
-    <p class="section-sub">Lo que está listo. Lo que falta. Cuándo.</p>
+    <h2>¿Qué ofrece vs. las alternativas?</h2>
+    <p class="section-sub">Frente a un ERP tradicional o una solución tipo "Excel + macros", esta plataforma se diferencia por:</p>
 
-    <div class="sumbar">
-      <span>96 % IMPLEMENTADO</span>
-      <span>10 de 11 módulos operativos · 68 features funcionando</span>
-    </div>
-
-    <div class="timeline">
-      <div class="step">
-        <div class="dot">1</div>
-        <div class="name">Fundación</div>
-        <div class="date">Completado</div>
+    <div class="why">
+      <div class="why-box">
+        <h3>Lo que SÍ tiene</h3>
+        <ul>
+          <li>Integración 1:1 con los formatos que ya usan — sin forzar cambios de procesos</li>
+          <li>Instalación on-premise, sin cuotas mensuales por usuario ni módulo</li>
+          <li>Panel de administración para ajustar reglas sin depender de un técnico</li>
+          <li>Bitácora completa y multiusuario con control de rol</li>
+          <li>Capacitación mínima gracias al diseño basado en su operación actual</li>
+          <li>Exportación universal a Excel de todas las tablas</li>
+        </ul>
       </div>
-      <div class="step">
-        <div class="dot">2</div>
-        <div class="name">MVP</div>
-        <div class="date">Completado</div>
-      </div>
-      <div class="step">
-        <div class="dot">3</div>
-        <div class="name">Entregas + Aprobaciones</div>
-        <div class="date">Completado</div>
-      </div>
-      <div class="step">
-        <div class="dot">4</div>
-        <div class="name">Pronóstico + Config</div>
-        <div class="date">Completado</div>
-      </div>
-      <div class="step current">
-        <div class="dot">5</div>
-        <div class="name">Nómina</div>
-        <div class="date">En espera de P4.1</div>
-      </div>
-      <div class="step pending">
-        <div class="dot">6</div>
-        <div class="name">PAC SAT</div>
-        <div class="date">Credenciales pendientes</div>
+      <div class="why-box">
+        <h3>Lo que NO va a tener</h3>
+        <ul>
+          <li>Cuotas mensuales crecientes por OT, empleado o reporte generado</li>
+          <li>Vendor lock-in: los datos viven en PostgreSQL estándar, portable</li>
+          <li>Flujos genéricos de "ERP" que no se ajustan a la operación real</li>
+          <li>Dependencia de conexión a internet para operar dentro de la planta</li>
+          <li>Información de costos en servidores de terceros</li>
+        </ul>
       </div>
     </div>
+  </div>
+</section>
 
-    <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:22px 24px;margin-top:28px">
-      <h3 style="font-size:16px;margin-bottom:10px;color:#166534">✅ Listo para implementación en sitio</h3>
-      <p style="font-size:14px;color:#15803d;margin-bottom:10px">El sistema está listo para instalarse en el mini-PC de Alenstec y operar en LAN. Solo requiere:</p>
-      <ul style="font-size:13px;color:#166534;margin-left:20px;line-height:1.9">
-        <li>Máquina destino (2 núcleos, 4 GB RAM, 40 GB)</li>
-        <li>Lista de empleados del equipo de Alenstec mapeados a los 6 roles</li>
-        <li>10-20 CFDIs anónimos para prueba de importación</li>
-      </ul>
+<section>
+  <div class="container">
+    <h2>Infraestructura y operación</h2>
+    <p class="section-sub">Despliegue ligero, mantenimiento bajo, total soberanía de los datos.</p>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px">
+      <div class="vl">
+        <div class="ico">🖥️</div>
+        <h3>Mini-PC en planta</h3>
+        <p>Hardware económico (2 núcleos, 4 GB RAM, 40 GB). Acceso desde cualquier computadora en la red local de Alenstec vía navegador.</p>
+      </div>
+      <div class="vl">
+        <div class="ico">💾</div>
+        <h3>Respaldos automáticos</h3>
+        <p>Dump nocturno cifrado a almacenamiento externo (aprox. $0.10 USD/mes). Restauración probada en simulacro trimestral.</p>
+      </div>
+      <div class="vl">
+        <div class="ico">🔧</div>
+        <h3>Soporte remoto</h3>
+        <p>Conexión segura para atención de incidencias sin exposición a internet público. Sin VPN corporativa complicada.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <h2>Siguiente paso</h2>
+    <p class="section-sub">Para avanzar necesitamos entender mejor el flujo operativo actual. Una reunión breve es suficiente para armar una propuesta a la medida.</p>
+
+    <div class="cta">
+      <div class="cta-text">
+        <h3>Conversemos sobre su operación</h3>
+        <p>Agenda una llamada de 30 minutos para entender el flujo real de Alenstec y afinar la propuesta con los detalles del caso específico.</p>
+      </div>
+      <a href="mailto:contacto@example.com?subject=Propuesta%20Alenstec%20-%20Agendar%20llamada" class="cta-btn">Agendar llamada →</a>
     </div>
   </div>
 </section>
 
 <footer>
   <div class="container">
-    <p>Plataforma de Gestión de Costos · Alenstec · 2026</p>
-    <p style="margin-top:6px;opacity:.7;font-size:12px">Documento generado automáticamente a partir del estado del repositorio. Actualizado: <span id="today"></span></p>
+    <p><strong>Plataforma de Gestión de Costos</strong></p>
+    <p style="margin-top:6px;opacity:.7;font-size:12px">Propuesta elaborada para Alenstec · Documento de uso comercial</p>
   </div>
 </footer>
-
-<script>
-  document.getElementById('today').textContent = new Date().toLocaleDateString('es-MX', { year:'numeric', month:'long', day:'numeric' });
-</script>
 
 </body>
 </html>
