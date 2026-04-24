@@ -21,6 +21,8 @@ const AUDITED_MODELS = new Set([
   'WorkOrderApproval',
   'User',
   'SystemConfig',
+  'PayrollWeek',
+  'PayrollLine',
 ]);
 
 // Fields excluded from `antes`/`despues` snapshots. Avoids accidentally
@@ -163,6 +165,8 @@ function describeInstance(modelName, inst) {
       case 'WorkOrderApproval': return `Paso ${v.step} → ${v.status}`;
       case 'User':            return `Usuario ${v.email || v.id}`;
       case 'SystemConfig':    return `Config ${v.key}`;
+      case 'PayrollWeek':     return `Nómina · semana ${v.semana} / ${v.anio}`;
+      case 'PayrollLine':     return `Nómina · ${v.nombre || v.numero_lista || v.numeroLista || v.id}`;
       default:                return `${modelName} · ${v.id}`;
     }
   } catch {

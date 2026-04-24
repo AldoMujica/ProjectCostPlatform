@@ -17,6 +17,8 @@ const Incident = require('./Incident');
 const WorkOrderApproval = require('./WorkOrderApproval');
 const SystemConfig = require('./SystemConfig');
 const AuditEvent = require('./AuditEvent');
+const PayrollWeek = require('./PayrollWeek');
+const PayrollLine = require('./PayrollLine');
 
 // Associations (ADR-006: FK enforced, otNumber kept redundant)
 WorkOrder.hasMany(MaterialCost, { foreignKey: 'workOrderId', as: 'materialCosts' });
@@ -83,6 +85,12 @@ WorkOrderApproval.belongsTo(User, { foreignKey: 'decidedBy', as: 'decidedByUser'
 User.hasMany(AuditEvent, { foreignKey: 'usuarioId', as: 'auditEvents' });
 AuditEvent.belongsTo(User, { foreignKey: 'usuarioId', as: 'usuario' });
 
+// Phase-4 Nómina · PayrollWeek 1→N PayrollLine; PayrollLine N→1 Employee.
+PayrollWeek.hasMany(PayrollLine, { foreignKey: 'payrollWeekId', as: 'lines' });
+PayrollLine.belongsTo(PayrollWeek, { foreignKey: 'payrollWeekId', as: 'week' });
+PayrollLine.belongsTo(Employee, { foreignKey: 'empleadoId', as: 'empleado' });
+Employee.hasMany(PayrollLine, { foreignKey: 'empleadoId', as: 'payrollLines' });
+
 // Phase-5b — attach global audit hooks. Must happen AFTER every model is
 // registered on the sequelize instance, but BEFORE the first request runs.
 // Failing silently here would leave the bitácora empty, so we keep the
@@ -108,4 +116,6 @@ module.exports = {
   WorkOrderApproval,
   SystemConfig,
   AuditEvent,
+  PayrollWeek,
+  PayrollLine,
 };

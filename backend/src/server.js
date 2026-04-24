@@ -23,6 +23,7 @@ const deliveryRoutes = require('./routes/deliveries');
 const approvalRoutes = require('./routes/approvals');
 const forecastingRoutes = require('./routes/forecasting');
 const adminRoutes = require('./routes/admin');
+const payrollRoutes = require('./routes/payroll');
 const conciliacionRoutes = require('./routes/conciliacionRoutes');
 
 const app = express();
@@ -82,6 +83,7 @@ app.use('/api/deliveries', deliveryRoutes);
 app.use('/api/approvals', approvalRoutes);
 app.use('/api/forecasting', forecastingRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/payroll', payrollRoutes);
 app.use('/api/conciliacion', conciliacionRoutes);
 
 // Serve the app SPA at root

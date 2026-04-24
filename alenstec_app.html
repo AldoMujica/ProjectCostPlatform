@@ -888,8 +888,18 @@ select.fi{cursor:pointer}
     <div class="sntab" onclick="goSub('nomina','resumen',this)">Resumen</div>
   </div>
   <div class="submod active" id="sub-nomina-captura">
+    <div class="card" style="margin-bottom:12px">
+      <div class="ch">
+        <div><div class="ct">Semana de nómina</div><div class="cs">Backend skeleton listo (P4.2) · layout de 86 columnas se confirma en P4.1 con cliente</div></div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <label class="fl" style="margin-bottom:0">Semana</label>
+          <select id="payroll-week-selector" class="fi" style="max-width:320px"><option value="">Cargando…</option></select>
+          <button class="btn sm" onclick="showNewPayrollWeekModal()">+ Nueva semana</button>
+        </div>
+      </div>
+    </div>
     <div class="card">
-      <div class="ch"><div><div class="ct">Nómina / CFDI</div><div class="cs">Registro de nómina y CFDI con estructura de cálculo completa</div></div><button class="btn p sm">+ Nueva línea</button></div>
+      <div class="ch"><div><div class="ct">Nómina / CFDI</div><div class="cs">Captura de 86 columnas por línea · pendiente de firma cliente P4.1</div></div><button class="btn p sm" id="payroll-new-line-btn" disabled title="Se habilita cuando el cliente apruebe el layout (P4.1)">+ Nueva línea</button></div>
       <div class="tw" style="overflow-x:auto;">
         <table style="min-width:2400px;border-collapse:collapse;">
           <thead>
@@ -985,8 +995,8 @@ select.fi{cursor:pointer}
   </div>
   <div class="submod" id="sub-nomina-cfdi">
     <div class="card">
-      <div class="ch"><div><div class="ct">CFDI</div><div class="cs">Importa XML de CFDI y valida el registro</div></div><button class="btn sm" onclick="document.getElementById('nominaXmlFileInput').click()">+ Cargar CFDI</button></div>
-      <input type="file" id="nominaXmlFileInput" accept=".xml" style="display:none" onchange="handleXMLUpload(event)">
+      <div class="ch"><div><div class="ct">CFDI de nómina</div><div class="cs">Complemento de nómina 1.2 · handler dedicado (P4.11–P4.12 pendiente)</div></div><button class="btn sm" onclick="document.getElementById('nominaXmlFileInput').click()">+ Cargar CFDI nómina</button></div>
+      <input type="file" id="nominaXmlFileInput" accept=".xml" style="display:none" onchange="handleNominaCfdiUpload(event)">
       <div class="cb" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
         <div class="fgg"><label class="fl">RFC Emisor</label><input class="fi" placeholder="AAA010101AAA"></div>
         <div class="fgg"><label class="fl">RFC Receptor</label><input class="fi" placeholder="ALE010410123"></div>
@@ -1003,20 +1013,20 @@ select.fi{cursor:pointer}
   </div>
   <div class="submod" id="sub-nomina-resumen">
     <div class="kg">
-      <div class="kpi"><div class="kl">Registros de nómina</div><div class="kv">0</div><div class="ks">Líneas capturadas</div></div>
-      <div class="kpi"><div class="kl">Percepciones totales</div><div class="kv">$0</div><div class="ks">CFDI / nómina</div></div>
-      <div class="kpi"><div class="kl">Deducciones totales</div><div class="kv">$0</div><div class="ks">ISR · IMSS · INFONAVIT</div></div>
-      <div class="kpi"><div class="kl">Pago de nómina</div><div class="kv">$0</div><div class="ks">Monto neto</div></div>
+      <div class="kpi"><div class="kl">Registros de nómina</div><div class="kv" id="kpi-nom-lineas">0</div><div class="ks">Líneas capturadas</div></div>
+      <div class="kpi"><div class="kl">Percepciones totales</div><div class="kv" id="kpi-nom-percepciones">—</div><div class="ks">MXN · acumulado semana</div></div>
+      <div class="kpi"><div class="kl">Deducciones totales</div><div class="kv" id="kpi-nom-deducciones">—</div><div class="ks">ISR · IMSS · INFONAVIT</div></div>
+      <div class="kpi"><div class="kl">Pago de nómina</div><div class="kv" id="kpi-nom-pago">—</div><div class="ks">Monto neto</div></div>
     </div>
     <div class="card">
-      <div class="ch"><div><div class="ct">Detalle de nómina</div><div class="cs">Información general y líneas de captura</div></div></div>
+      <div class="ch">
+        <div><div class="ct">Detalle de nómina</div><div class="cs">Información general de la semana seleccionada</div></div>
+        <button class="btn sm" onclick="downloadXlsx(`${API_URL}/payroll/export${_payrollWeekId ? '?weekId='+encodeURIComponent(_payrollWeekId) : ''}`, 'nomina.xlsx')">⬇ Descargar XLSX</button>
+      </div>
       <div class="tw"><table>
         <thead><tr><th>Campo</th><th>Valor</th></tr></thead>
-        <tbody>
-          <tr><td>Período</td><td>2026 · Semana 1</td></tr>
-          <tr><td>Total empleados</td><td>0</td></tr>
-          <tr><td>Total días en nómina</td><td>0</td></tr>
-          <tr><td>Total horas trabajadas</td><td>0</td></tr>
+        <tbody id="nom-detalle-tbody">
+          <tr><td colspan="2" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
         </tbody>
       </table></div>
     </div>
@@ -2141,6 +2151,150 @@ async function showNewProveedorModal() {
       err.textContent = e2.message;
       submitBtn.disabled = false;
       submitBtn.textContent = 'Agregar';
+    }
+  });
+}
+
+// G-NOM-3 · CFDI de nómina tiene su propio handler, separado del de
+// facturas de proveedor. El parser real (complemento nómina 1.2) llega
+// en P4.11; por ahora informamos al operador que la función está
+// pendiente en lugar de ingresar el CFDI a la tabla equivocada.
+function handleNominaCfdiUpload(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+  event.target.value = '';
+  alert(
+    'Carga de CFDI de nómina pendiente (Fase 4 · P4.11).\n\n'
+    + 'El parser del complemento de nómina 1.2 se integra cuando el '
+    + 'cliente confirme la plantilla (P4.1). Mientras tanto, esta '
+    + 'entrada NO se mezcla con las facturas de proveedor — se '
+    + 'guardará en `payroll_lines` una vez esté lista.'
+  );
+}
+
+// ===== Nómina skeleton (Phase-4 P4.2) =====
+//
+// Backend + selector de semana + KPIs listos. El grid de captura de 86
+// columnas y el + Nueva línea quedan deshabilitados hasta P4.1 (plantilla
+// firmada con cliente).
+let _payrollWeekId = null;
+let _payrollWeeks = [];
+
+async function loadPayrollWeeks(preferId) {
+  const sel = document.getElementById('payroll-week-selector');
+  if (!sel) return;
+  try {
+    const res = await apiFetch(`${API_URL}/payroll/weeks`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    _payrollWeeks = await res.json();
+    if (!_payrollWeeks.length) {
+      sel.innerHTML = '<option value="">Sin semanas configuradas</option>';
+      _payrollWeekId = null;
+      loadPayrollResumen();
+      return;
+    }
+    sel.innerHTML = _payrollWeeks.map((w) => {
+      const ini = fmtDateDMY(w.fechaInicio);
+      const fin = fmtDateDMY(w.fechaFin);
+      const closed = w.cerrada ? ' 🔒' : '';
+      return `<option value="${esc(w.id)}">${w.anio} · Semana ${w.semana} · ${ini}–${fin}${closed}</option>`;
+    }).join('');
+    const target = (preferId && _payrollWeeks.find((w) => w.id === preferId)) ? preferId : _payrollWeeks[0].id;
+    sel.value = target;
+    _payrollWeekId = target;
+    loadPayrollResumen();
+  } catch (err) {
+    console.warn('⚠ loadPayrollWeeks:', err);
+    sel.innerHTML = '<option value="">(error al cargar)</option>';
+  }
+}
+
+async function loadPayrollResumen() {
+  const tbody = document.getElementById('nom-detalle-tbody');
+  const setKpi = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  if (!_payrollWeekId) {
+    setKpi('kpi-nom-lineas', '0');
+    setKpi('kpi-nom-percepciones', '—');
+    setKpi('kpi-nom-deducciones', '—');
+    setKpi('kpi-nom-pago', '—');
+    if (tbody) tbody.innerHTML = '<tr><td colspan="2" style="padding:16px;color:var(--text3);text-align:center">Selecciona una semana.</td></tr>';
+    return;
+  }
+  try {
+    const res = await apiFetch(`${API_URL}/payroll/resumen?weekId=${encodeURIComponent(_payrollWeekId)}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const r = await res.json();
+    setKpi('kpi-nom-lineas',       String(r.lineasCapturadas));
+    setKpi('kpi-nom-percepciones', fmtCurrency(r.totalPercepciones, 'MXN'));
+    setKpi('kpi-nom-deducciones',  fmtCurrency(r.totalDeducciones, 'MXN'));
+    setKpi('kpi-nom-pago',         fmtCurrency(r.pagoNomina, 'MXN'));
+
+    const week = _payrollWeeks.find((w) => w.id === _payrollWeekId);
+    if (tbody) {
+      const row = (k, v) => `<tr><td>${esc(k)}</td><td class="mono">${esc(String(v))}</td></tr>`;
+      tbody.innerHTML = [
+        row('Período',             week ? `${week.anio} · Semana ${week.semana}` : '—'),
+        row('Fecha inicio',        week ? fmtDateDMY(week.fechaInicio) : '—'),
+        row('Fecha fin',           week ? fmtDateDMY(week.fechaFin) : '—'),
+        row('Estado',              week?.cerrada ? 'Cerrada 🔒' : 'Abierta'),
+        row('Líneas capturadas',   r.lineasCapturadas),
+        row('Empleados distintos', r.empleadosDistintos),
+        row('Total días en nómina',Number(r.totalDias).toFixed(2)),
+        row('Total horas',         Number(r.totalHoras).toFixed(2)),
+      ].join('');
+    }
+  } catch (err) {
+    console.warn('⚠ loadPayrollResumen:', err);
+    if (tbody) tbody.innerHTML = '<tr><td colspan="2" style="padding:16px;color:var(--red);text-align:center">No se pudo cargar el resumen.</td></tr>';
+  }
+}
+
+function showNewPayrollWeekModal() {
+  const today = new Date().toISOString().slice(0, 10);
+  openModal({
+    title: '+ Nueva semana de nómina',
+    bodyHtml: `
+      <form id="new-pw-form">
+        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+          <div><label>Año *</label><input name="anio" type="number" min="2020" max="2100" required value="${new Date().getFullYear()}"></div>
+          <div><label>Mes *</label><input name="mes" type="number" min="1" max="12" required value="${new Date().getMonth() + 1}"></div>
+          <div><label>Bimestre</label><input name="bimestre" type="number" min="1" max="6"></div>
+        </div>
+        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+          <div><label>Semana *</label><input name="semana" type="number" min="1" max="53" required></div>
+          <div><label>Fecha inicio *</label><input name="fechaInicio" type="date" required value="${today}"></div>
+          <div><label>Fecha fin *</label><input name="fechaFin" type="date" required></div>
+        </div>
+        <div class="fg"><label>Notas</label><textarea name="notas"></textarea></div>
+        <div class="modal-error" id="new-pw-error"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn sm" onclick="closeModal()">Cancelar</button>
+          <button type="submit" class="btn p sm" id="new-pw-submit">Crear semana</button>
+        </div>
+      </form>`,
+  });
+  document.getElementById('new-pw-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const err = document.getElementById('new-pw-error');
+    const btn = document.getElementById('new-pw-submit');
+    err.textContent = '';
+    btn.disabled = true; btn.textContent = 'Creando…';
+    try {
+      const fd = new FormData(form);
+      const payload = Object.fromEntries([...fd.entries()].map(([k, v]) => [k, v === '' ? null : v]));
+      ['anio', 'mes', 'bimestre', 'semana'].forEach((k) => { if (payload[k] != null) payload[k] = Number(payload[k]); });
+      const res = await apiFetch(`${API_URL}/payroll/weeks`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || body.mensaje || `HTTP ${res.status}`);
+      closeModal();
+      await loadPayrollWeeks(body.id);
+    } catch (e2) {
+      err.textContent = e2.message;
+      btn.disabled = false; btn.textContent = 'Crear semana';
     }
   });
 }
@@ -3549,6 +3703,7 @@ function goMod(id) {
   if (id === 'ot' && _selectedOtId) loadOTApprovals();
   if (id === 'horas') loadLaborCosts();
   if (id === 'pronostico') loadPronostico();
+  if (id === 'nomina') loadPayrollWeeks(_payrollWeekId);
   if (id === 'conciliacion') loadConciliacionSemanas();
   if (id === 'admin') loadAdminConfig();
   refreshAllDlButtons();
@@ -4362,6 +4517,12 @@ function handleXMLUpload(event) {
   document.getElementById('cot-import-file')?.addEventListener('change', (e) => {
     const file = e.target.files && e.target.files[0];
     if (file) uploadCotizacionesXlsx(file);
+  });
+
+  // Phase-4 · nómina: week selector change → recarga resumen.
+  document.getElementById('payroll-week-selector')?.addEventListener('change', (e) => {
+    _payrollWeekId = e.target.value || null;
+    loadPayrollResumen();
   });
 
   // P2.17 — Proveedores download; the other Entregas sub-tabs stay disabled

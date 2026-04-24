@@ -13,6 +13,7 @@ const {
   SupplierInvoice,
   Delivery,
   Incident,
+  PayrollWeek,
 } = require('../models');
 const seedConciliacionDemo = require('./conciliacion-demo');
 const { seedSystemConfigDefaults } = require('./system-config-defaults');
@@ -43,6 +44,20 @@ async function seedDatabase() {
   // key), so re-running after an operator has tuned values is safe.
   const n = await seedSystemConfigDefaults();
   console.log(`✓ Seeded ${n} system_config defaults (idempotent)`);
+
+  // Phase-4 · Nómina skeleton · una semana demo. Idempotent via
+  // UNIQUE(anio, semana). Sin líneas — se capturan cuando el cliente
+  // confirme el layout en P4.1.
+  await PayrollWeek.findOrCreate({
+    where: { anio: 2026, semana: 16 },
+    defaults: {
+      anio: 2026, mes: 4, bimestre: 2, semana: 16,
+      fechaInicio: '2026-04-13', fechaFin: '2026-04-17',
+      cerrada: false,
+      notas: 'Semana demo · estructura Phase-4, captura pendiente de P4.1.',
+    },
+  });
+  console.log('✓ Seeded PayrollWeek demo (2026 · semana 16)');
 
   // Conciliación + empleados master seed runs every time (it's an upsert and
   // Phase-3 extended the empleado schema — legacy DBs need the new columns

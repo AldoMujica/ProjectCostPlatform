@@ -115,7 +115,7 @@ Nueva tabla: `system_config(key UNIQUE, value JSONB, category, data_type, update
 | 5. Costo de Material         | 2                | 2              | 0          | 0         | Module complete (P2.9 + P2.10) |
 | 6. Entregas (5 sub-tabs)     | 12               | 12             | 0          | 0         | **Module complete (Phase-3)** — Proveedores / OCP / Inventario / Facturas / Entregas all wired with live CRUD + KPIs |
 | 7. Horas de Mano de Obra     | 4                | 4 (Resumen, Capturar, Control de Empleados wired)      | 0    | 0         | Activity codes (G-HOR-4) — Phase-5 |
-| 8. Nómina / CFDI             | 4                | 0              | 0          | 4         | No model at all — Phase-4 (the hardest phase) |
+| 8. Nómina / CFDI             | 8                | 4 (Resumen, Nueva semana, CFDI handler separado, XLSX) | 3 (Captura grid + Nueva línea bloqueados por P4.1, CFDI parser) | 1 (Calculadoras IMSS/ISR) | **Skeleton listo (Phase-4 P4.2)** — backend completo, grid de captura bloqueado en plantilla cliente P4.1 |
 | 9. Conciliación              | 15               | 12             | 1          | 2         | **Near-complete** — Ver detalle + Justificar/Forzar wired; remaining is proyectos-per-día drilldown (stretch) |
 |10. Costo de Mano de Obra     | 2                | 0              | 0          | 2         | No activity rollup endpoint — Phase 5 |
 | **Cross-cutting: Export**    | 15               | 14 (3 Phase-1 + 5 Phase-2 + 4 Phase-3 + 1 Phase-5 xlsx + Cotizaciones import) | 0 | 1 | Only Nómina + Costo-MO exports still disabled (blocked on Phase-4 models) |
@@ -220,12 +220,15 @@ Counts above group related controls; see per-module feature docs for the full fl
 
 | Feature                    | Status | Backing                                  | Gap           |
 |----------------------------|:------:|------------------------------------------|---------------|
-| Captura table (86 cols)    | ❌      | No model                                 | G-NOM-2,4,5   |
-| `+ Nueva línea`            | ❌      | No handler                               | G-NOM-1       |
-| CFDI sub-tab form          | ❌      | Placeholder only                         | G-NOM-2       |
-| `+ Cargar CFDI`            | ⚠️      | Triggers handler but misrouted to Facturas | G-NOM-3     |
+| Captura table (86 cols)    | ⚠️      | Phase-4 P4.2 · `payroll_weeks` + `payroll_lines` + CRUD listos. Totales tipados + detalle JSONB. Grid UI aún bloqueado en firma cliente P4.1 | G-NOM-2,4 |
+| `+ Nueva línea`            | ⚠️      | `POST /api/payroll/lines` listo (snapshot del empleado automático, unique por (week, empleado)). Botón UI deshabilitado hasta P4.1 | G-NOM-1 |
+| Calculadoras IMSS/ISR/INFONAVIT/FONACOT | ❌ | Pendientes P4.3–P4.6 — requieren tablas fiscales + 20 escenarios de referencia del cliente | G-NOM-5 |
+| CFDI sub-tab form          | ⚠️      | Placeholder                              | G-NOM-2       |
+| `+ Cargar CFDI nómina`     | ✅      | 2026-04-23 — handler dedicado `handleNominaCfdiUpload` (ya no misrouted a Facturas). Parser real del complemento 1.2 en P4.11 | ~~G-NOM-3~~ |
 | CFDI-nómina parsing        | ❌      | No complemento-nómina parser             | G-NOM-6       |
-| Resumen KPI strip          | ❌      | All zeros, no endpoint                   | —             |
+| Resumen KPI strip          | ✅      | 2026-04-23 — `GET /api/payroll/resumen?weekId=` con SUM agregados (percepciones, deducciones, pago neto, días, horas, empleados distintos); FE lee los KPIs + detalle de la semana seleccionada | — |
+| Nueva semana               | ✅      | 2026-04-23 — modal + POST /api/payroll/weeks (roles admin/rh); semana cerrada no acepta nuevas líneas | — |
+| XLSX export                | ✅      | 2026-04-23 — `GET /api/payroll/export?weekId=` 14 cols (identificación + totales) | ~~G-EXP-1~~ |
 
 ### Conciliación (module 9)
 
@@ -261,7 +264,7 @@ Counts above group related controls; see per-module feature docs for the full fl
 | Facturas CFDI XML import    | ✅      | Parsed and persisted to `supplier_invoices` via `POST /api/invoices/cfdi` (Phase-3 P3.9/P3.10) |
 | XLSX export buttons         | ✅      | **Majority live:** WO, quotes, material, labor, suppliers (P2.17) + OCP, inventory, invoices, deliveries, empleados (Phase-3) = **9 endpoints** + cotizaciones import. Only 3 exports still disabled (Pronóstico, Nómina, Costo-MO — those modules are mockup). | ~~G-EXP-1~~ |
 | Cotizaciones XLSX upload    | ✅      | 2026-04-23 — `POST /api/quotes/import` (multer + ExcelJS); upsert by `quoteNumber`; round-trips the master Control Ventas 2026 workbook |
-| Nómina CFDI import misrouted| ⚠️      | G-NOM-3  |
+| Nómina CFDI handler        | ✅      | Separado de Facturas (G-NOM-3 · 2026-04-23). Parser real pendiente (G-NOM-6 · P4.11). |
 | html2canvas loaded, unused  | ⚠️      | decision required |
 
 ---
@@ -289,7 +292,7 @@ Every gap mentioned above, grouped by recommended fix-before-regression-test pri
 - ~~**G-ENTR-1,2** — New `Delivery` + `Incident` models + CRUD.~~ **Closed 2026-04-23 (Phase-3 P3.12–P3.14).**
 - ~~**G-HOR-3** — New `Employee` master model.~~ **Closed 2026-04-23 (Phase-3 P3.16–P3.18, extending the existing `empleados` table).**
 - ~~**G-COT-1** — Wire `+ Nueva cotización` creation modal.~~ **Closed 2026-04-23.**
-- **G-NOM-3** — Separate CFDI-nómina upload handler from Facturas — **Phase-4 work.**
+- ~~**G-NOM-3** — Separate CFDI-nómina upload handler from Facturas.~~ **Closed 2026-04-23.**
 
 ### Priority 3 — Wiring existing endpoints
 
@@ -337,8 +340,13 @@ Every gap mentioned above, grouped by recommended fix-before-regression-test pri
 
 ## Remaining work (post Phase-3)
 
-**Phase-4 (Nómina) — not started:**
-- G-NOM-1..6 — `PayrollWeek` / `PayrollLine` + IMSS/ISR/INFONAVIT/FONACOT calculators + CFDI-nómina parser.
+**Phase-4 (Nómina) — skeleton listo, calculadoras pendientes:**
+- ~~G-NOM-4~~ — `PayrollWeek` + `PayrollLine` con detalle JSONB. **Closed 2026-04-23.**
+- ~~G-NOM-3~~ — CFDI-nómina handler separado. **Closed 2026-04-23.**
+- ~~G-NOM-2 (parcial)~~ — CRUD de weeks + lines + resumen KPIs + XLSX export. **Closed 2026-04-23.** UI grid de 86 columnas pendiente hasta P4.1.
+- G-NOM-1 — Botón `+ Nueva línea` con formulario completo — **bloqueado en P4.1** (requiere plantilla firmada del cliente).
+- G-NOM-5 — Calculadoras IMSS / ISR / INFONAVIT / FONACOT — **bloqueado en P4.3–P4.6** (requiere tablas fiscales + 20 escenarios de referencia).
+- G-NOM-6 — Parser del complemento de nómina 1.2 — **bloqueado en P4.11**.
 
 **Phase-5 (Analytics) — partial (Pronóstico done; Costo-MO pending):**
 - ~~G-PRON-1,2,3~~ — Pronóstico endpoint + variance/semáforo rules. **Closed 2026-04-23.**
