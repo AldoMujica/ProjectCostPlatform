@@ -489,10 +489,31 @@ select.fi{cursor:pointer}
         <button class="btn p sm" onclick="showNewCotizacionModal()">+ Nueva cotización</button>
       </div>
     </div>
-    <div class="tw"><table>
-      <thead><tr><th>Item</th><th>Cliente</th><th>COT Ref.</th><th>COT Alenstec</th><th>Fecha COT</th><th>Costo (USD s/IVA)</th><th>OC Cliente</th><th>T/C</th><th>No. OT</th><th>Tipo</th><th>Estado</th></tr></thead>
+    <div class="tw" style="overflow-x:auto"><table style="min-width:2600px">
+      <thead><tr>
+        <th>Item</th>
+        <th>Cliente</th>
+        <th>Proyecto / Programa</th>
+        <th>Celda</th>
+        <th>RFQ</th>
+        <th>MECR</th>
+        <th>COT Ref. Alenstec</th>
+        <th>COT Alenstec</th>
+        <th>Fecha COT</th>
+        <th>Costo COT-AL (USD)</th>
+        <th>OC Cliente</th>
+        <th>Tipo de Contrato</th>
+        <th>Fecha O.C.</th>
+        <th>Costo O.C. (USD)</th>
+        <th>Fecha Compromiso</th>
+        <th>T/C</th>
+        <th>OT Alenstec</th>
+        <th>Descripción de Proyecto</th>
+        <th>Tipo</th>
+        <th>Estado</th>
+      </tr></thead>
       <tbody id="cot-tbody">
-        <tr><td colspan="11" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
+        <tr><td colspan="20" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
       </tbody>
     </table></div>
   </div>
@@ -3271,24 +3292,37 @@ async function loadCotizaciones() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const quotes = await res.json();
 
-    // Table (P2.5)
+    // Table (P2.5) — 20 columnas alineadas 1:1 con el XLSX master
+    // "Control Ventas 2026" (mismo orden que el export/import para que
+    // el operador vea en pantalla exactamente lo que sube/baja).
     if (tbody) {
       if (!quotes.length) {
-        tbody.innerHTML = '<tr><td colspan="11" style="padding:16px;color:var(--text3);text-align:center">Sin cotizaciones registradas.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="20" style="padding:16px;color:var(--text3);text-align:center">Sin cotizaciones registradas.</td></tr>';
       } else {
         tbody.innerHTML = quotes.map((q, i) => {
           const amount = Number(q.amount) || 0;
+          const costoOC = q.costoOC != null ? fmtCurrency(Number(q.costoOC), 'USD') : '—';
           const fx = q.exchangeRate != null ? `$${Number(q.exchangeRate).toFixed(2)}` : '—';
+          const fechaCot = q.fechaCotizacion ? fmtDateDMY(q.fechaCotizacion) : fmtDateDMY(q.createdAt);
           return `<tr>
             <td class="mono">${i + 1}</td>
             <td>${esc(q.client) || '—'}</td>
+            <td>${esc(q.proyecto) || '—'}</td>
+            <td class="mono">${esc(q.celda) || '—'}</td>
+            <td class="mono">${esc(q.rfq) || '—'}</td>
+            <td class="mono">${esc(q.mecr) || '—'}</td>
             <td class="mono">${esc(q.cotRef) || '—'}</td>
             <td class="mono">${esc(q.quoteNumber) || '—'}</td>
-            <td>${fmtDateDMY(q.createdAt)}</td>
-            <td class="mono">${fmtCurrency(amount, q.currency || 'USD')}</td>
+            <td>${fechaCot}</td>
+            <td class="mono" style="font-weight:600">${fmtCurrency(amount, q.currency || 'USD')}</td>
             <td class="mono">${esc(q.ocCliente) || '—'}</td>
+            <td>${esc(q.tipoContrato) || '—'}</td>
+            <td>${q.fechaOC ? fmtDateDMY(q.fechaOC) : '—'}</td>
+            <td class="mono">${costoOC}</td>
+            <td>${q.fechaCompromiso ? fmtDateDMY(q.fechaCompromiso) : '—'}</td>
             <td class="mono">${fx}</td>
             <td class="mono">${esc(q.otNumber) || '—'}</td>
+            <td>${esc(q.description) || '—'}</td>
             <td>${quoteTipoBadge(q.tipo)}</td>
             <td>${quoteStatusBadge(q.status)}</td>
           </tr>`;
