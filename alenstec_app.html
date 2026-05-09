@@ -150,7 +150,7 @@ select.fi{cursor:pointer}
 .atag{display:inline-block;padding:1px 7px;border-radius:4px;font-size:10.5px;font-weight:600}
 
 /* SUBNAV */
-.subnav{display:flex;gap:3px;margin-bottom:18px;border-bottom:1px solid var(--border);padding-bottom:0;overflow-x:auto;scrollbar-width:auto}
+.subnav{display:flex;gap:3px;margin-bottom:18px;border-bottom:1px solid var(--border);padding-bottom:0;overflow-x:auto;scrollbar-width:auto;position:sticky;top:0;left:0;background:var(--bg);z-index:5;justify-content:flex-start}
 .subnav::-webkit-scrollbar{height:8px}
 .subnav::-webkit-scrollbar-thumb{background:var(--border);border-radius:999px}
 .sntab{padding:8px 14px;font-size:12.5px;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .12s,border-color .12s;white-space:nowrap}
@@ -220,6 +220,69 @@ select.fi{cursor:pointer}
 .logout-link{margin-left:auto;font-size:10px;color:var(--text3);cursor:pointer;text-decoration:underline}
 .logout-link:hover{color:var(--text2)}
 .s-foot{display:flex;align-items:center;gap:8px}
+
+/* ===== Admin · Apariencia + Permisos (Phase-5c) ===== */
+.adm-opt-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+.adm-opt-row:last-child{border-bottom:none}
+.adm-opt-lbl{font-size:12.5px}
+.adm-opt-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.adm-seg{display:inline-flex;background:var(--surface2);border-radius:7px;padding:3px;gap:2px}
+.adm-seg-i{padding:5px 11px;font-size:11.5px;cursor:pointer;border-radius:5px;color:var(--text2);transition:all .12s;border:none;background:transparent;font-family:inherit}
+.adm-seg-i.active{background:var(--surface);color:var(--text);font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.adm-seg-i:hover:not(.active){color:var(--text)}
+.adm-swatch-row{display:flex;gap:8px}
+.adm-swatch{width:26px;height:26px;border-radius:7px;cursor:pointer;border:2px solid transparent;transition:all .12s}
+.adm-swatch:hover{transform:scale(1.08)}
+.adm-swatch.sel{border-color:var(--text)}
+.adm-sw{position:relative;width:34px;height:19px;background:var(--surface2);border-radius:30px;cursor:pointer;border:1px solid var(--border);transition:all .15s;flex-shrink:0}
+.adm-sw::after{content:'';position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;background:var(--text2);transition:all .18s}
+.adm-sw.on{background:var(--green-lt);border-color:var(--green)}
+.adm-sw.on::after{left:17px;background:var(--green)}
+.adm-tag{font-size:10px;font-weight:600;letter-spacing:.4px;padding:2px 8px;border-radius:30px;background:var(--blue-lt);color:var(--blue);text-transform:uppercase}
+.adm-tag.admin{background:var(--red-lt);color:var(--red)}
+.adm-preview{background:var(--bg);border:1px dashed var(--border2);border-radius:9px;padding:14px;margin:8px 16px 14px}
+.adm-prv-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)}
+.adm-prv-row:last-child{border-bottom:none}
+
+/* permission matrix */
+.adm-mtx-toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;padding:12px 16px;background:var(--surface2);border-bottom:1px solid var(--border)}
+.adm-mtx-toolbar .adm-grp{display:flex;flex-direction:column;gap:4px}
+.adm-mtx-wrap{overflow:auto;max-height:62vh;position:relative}
+.adm-mtx-wrap::-webkit-scrollbar{width:8px;height:8px}
+.adm-mtx-wrap::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+table.mtx{border-collapse:separate;border-spacing:0;font-size:11.5px;width:max-content;min-width:100%}
+table.mtx th,table.mtx td{padding:6px 8px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);background:var(--surface);white-space:nowrap}
+table.mtx thead th{background:var(--surface2);font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--text2);position:sticky;top:0;z-index:3;text-align:center}
+table.mtx thead .mod-grp{background:var(--bg);color:var(--text);font-size:10.5px;border-bottom:1px solid var(--border2);padding:7px 8px}
+table.mtx .stk{position:sticky;left:0;z-index:2;background:var(--surface)}
+table.mtx thead .stk{z-index:4;background:var(--surface2)}
+table.mtx tbody tr:hover .stk,table.mtx tbody tr:hover td{background:var(--bg)}
+.adm-col-user{min-width:200px}
+.adm-col-role{min-width:115px}
+.adm-user-cell{display:flex;align-items:center;gap:9px}
+.adm-user-name{font-size:12.5px;font-weight:500}
+.adm-user-mail{font-size:10.5px;color:var(--text3)}
+.adm-role-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:30px;font-size:10.5px;font-weight:600;cursor:pointer}
+.adm-role-admin{background:var(--red-lt);color:var(--red)}
+.adm-role-rh{background:var(--blue-lt);color:var(--blue)}
+.adm-role-jefe{background:var(--amber-lt);color:var(--amber)}
+.adm-role-supervisor{background:#1c1f2e;color:#7d9bd4}
+.adm-role-compras{background:#1d2a1f;color:#7dba8a}
+.adm-role-ventas{background:#2a1d2c;color:#c98ec9}
+table.mtx td.cell{text-align:center;cursor:pointer;user-select:none;padding:0;vertical-align:middle;height:34px;width:42px}
+.adm-chk{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:5px;font-size:13px;font-weight:700;line-height:1}
+.adm-chk.inh-on{background:var(--green-lt);color:var(--green)}
+.adm-chk.inh-off{background:transparent;color:var(--text3);border:1px dashed var(--border2)}
+.adm-chk.add{background:var(--blue);color:#fff;box-shadow:0 0 0 2px var(--blue-lt)}
+.adm-chk.rem{background:transparent;color:var(--red);border:1px solid var(--red);text-decoration:line-through}
+.adm-chk.locked{background:var(--surface2);color:var(--text3);cursor:not-allowed}
+table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
+.adm-legend{display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:10px 16px;background:var(--bg);border-top:1px solid var(--border);font-size:11px;color:var(--text2)}
+.adm-legend-i{display:inline-flex;align-items:center;gap:6px}
+.adm-savebar{position:sticky;bottom:0;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;margin-top:12px;box-shadow:0 -4px 14px rgba(0,0,0,.25);z-index:5}
+.adm-savebar.dirty{border-color:var(--blue)}
+.adm-dirty-count{font-size:11.5px;color:var(--text2)}
+.adm-dirty-count strong{color:var(--blue)}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <!-- html2canvas removed 2026-04-23 — unused dependency (no code referenced it) -->
@@ -347,7 +410,7 @@ select.fi{cursor:pointer}
         <div class="pill-tab">Activas</div>
         <div class="pill-tab">Cerradas</div>
       </div>
-      <button class="btn p" id="ctrl-new">+ Nueva OT</button>
+      <button class="btn p" id="ctrl-new" data-perm-required="ot.create">+ Nueva OT</button>
     </div>
   </div>
 
@@ -484,9 +547,9 @@ select.fi{cursor:pointer}
       <div><div class="ct">Control de Ventas 2026</div><div class="cs">Datos reales · Hoja Control Ventas 2026</div></div>
       <div style="display:flex;gap:8px;align-items:center">
         <input type="file" id="cot-import-file" accept=".xlsx" style="display:none">
-        <button class="btn sm" id="btn-cot-upload" onclick="document.getElementById('cot-import-file').click()">⬆ Subir XLSX</button>
+        <button class="btn p sm" id="btn-cot-upload" onclick="document.getElementById('cot-import-file').click()" title="Sube el master &quot;Control Ventas 2026&quot; — el server hace upsert por COT Alenstec (quoteNumber)">⬆ Subir XLSX</button>
         <button class="btn sm" id="btn-cot-download" onclick="downloadXlsx(`${API_URL}/quotes/export`, 'control-ventas.xlsx')">⬇ Descargar XLSX</button>
-        <button class="btn p sm" onclick="showNewCotizacionModal()">+ Nueva cotización</button>
+        <button class="btn p sm" onclick="showNewCotizacionModal()" data-perm-required="quote.create">+ Nueva cotización</button>
       </div>
     </div>
     <div class="tw" style="overflow-x:auto"><table style="min-width:2600px">
@@ -550,7 +613,7 @@ select.fi{cursor:pointer}
     <div class="kpi"><div class="kl">Costo gral. real</div><div class="kv" style="color:var(--green)">$44,491</div><div class="ks">MXN · OT-1936</div></div>
   </div>
   <div class="card">
-    <div class="ch"><div><div class="ct">Requisición de Material Comercial por OT</div><div class="cs">Base de Datos OC · ERP Open Source · 2026</div></div><button class="btn p sm" id="mat-new-btn">+ Registrar material</button></div>
+    <div class="ch"><div><div class="ct">Requisición de Material Comercial por OT</div><div class="cs">Base de Datos OC · ERP Open Source · 2026</div></div><button class="btn p sm" id="mat-new-btn" data-perm-required="material.create">+ Registrar material</button></div>
     <div class="tw"><table>
       <thead><tr><th>Proveedor</th><th>Moneda</th><th>Descripción</th><th>OT</th><th>Pzas</th><th>Precio Unit.</th><th>Subtotal</th><th>IVA</th><th>Retención</th><th>Total</th><th>Estado</th></tr></thead>
       <tbody id="mat-tbody">
@@ -576,7 +639,7 @@ select.fi{cursor:pointer}
       <div class="ch">
         <div><div class="ct">Proveedores</div><div class="cs">Catálogo de proveedores activos</div></div>
         <div style="display:flex;gap:7px;align-items:center">
-          <button class="btn p sm" id="prov-new-btn">+ Agregar proveedor</button>
+          <button class="btn p sm" id="prov-new-btn" data-perm-required="supplier.create">+ Agregar proveedor</button>
           <button class="btn sm" id="btn-dl-prov" disabled style="opacity:.45">⬇ Descargar XLSX</button>
         </div>
       </div>
@@ -599,7 +662,7 @@ select.fi{cursor:pointer}
       <div class="ch">
         <div><div class="ct">Órdenes de Compra a Proveedores</div><div class="cs">OCs emitidas por Alenstec a proveedores</div></div>
         <div style="display:flex;gap:7px;align-items:center">
-          <button class="btn p sm" onclick="showNewOCPModal()">+ Capturar OCP</button>
+          <button class="btn p sm" onclick="showNewOCPModal()" data-perm-required="purchaseorder.create">+ Capturar OCP</button>
           <button class="btn sm" id="btn-dl-ocp" onclick="downloadXlsx(`${API_URL}/purchase-orders/export`, 'ocp.xlsx')">⬇ Descargar XLSX</button>
         </div>
       </div>
@@ -622,7 +685,7 @@ select.fi{cursor:pointer}
       <div class="ch">
         <div><div class="ct">Inventario</div><div class="cs">Existencias de material en almacén</div></div>
         <div style="display:flex;gap:7px;align-items:center">
-          <button class="btn p sm" onclick="showNewInventoryModal()">+ Agregar existencia</button>
+          <button class="btn p sm" onclick="showNewInventoryModal()" data-perm-required="inventory.create">+ Agregar existencia</button>
           <button class="btn sm" id="btn-dl-inv" onclick="downloadXlsx(`${API_URL}/inventory/export`, 'inventario.xlsx')">⬇ Descargar XLSX</button>
         </div>
       </div>
@@ -645,7 +708,7 @@ select.fi{cursor:pointer}
       <div class="ch">
         <div><div class="ct">Facturas de Proveedores</div><div class="cs">Facturas recibidas por compras de material</div></div>
         <div style="display:flex;gap:7px">
-          <button class="btn p sm" onclick="showNewInvoiceModal()">+ Agregar factura</button>
+          <button class="btn p sm" onclick="showNewInvoiceModal()" data-perm-required="invoice.create">+ Agregar factura</button>
           <button class="btn sm" onclick="triggerXMLUpload()">+ Agregar por XML</button>
           <input type="file" id="xmlFileInput" accept=".xml" style="display:none" onchange="handleXMLUpload(event)">
           <button class="btn sm" id="btn-dl-fact" onclick="downloadXlsx(`${API_URL}/invoices/export`, 'facturas.xlsx')">⬇ Descargar XLSX</button>
@@ -676,8 +739,8 @@ select.fi{cursor:pointer}
       <div class="ch">
         <div><div class="ct">Registro de Entregas de Material</div><div class="cs">Base de datos OC · ERP Open Source · 2026</div></div>
         <div style="display:flex;gap:7px">
-          <button class="btn sm" onclick="showNewIncidentModal()">+ Ingresar incidencia</button>
-          <button class="btn p sm" onclick="showNewDeliveryModal()">+ Registrar entrega</button>
+          <button class="btn sm" onclick="showNewIncidentModal()" data-perm-required="incident.create">+ Ingresar incidencia</button>
+          <button class="btn p sm" onclick="showNewDeliveryModal()" data-perm-required="delivery.create">+ Registrar entrega</button>
           <button class="btn sm" id="btn-dl-entr" onclick="downloadXlsx(`${API_URL}/deliveries/export`, 'entregas.xlsx')">⬇ Descargar XLSX</button>
         </div>
       </div>
@@ -693,7 +756,7 @@ select.fi{cursor:pointer}
       </table></div>
     </div>
     <div class="card">
-      <div class="ch"><div class="ct">Últimas Incidencias</div><button class="btn sm" onclick="showNewIncidentModal()">+ Ingresar incidencia</button></div>
+      <div class="ch"><div class="ct">Últimas Incidencias</div><button class="btn sm" onclick="showNewIncidentModal()" data-perm-required="incident.create">+ Ingresar incidencia</button></div>
       <div class="tw"><table>
         <thead><tr><th>Folio</th><th>OT</th><th>Proveedor</th><th>Descripción</th><th>Registrado por</th><th>Fecha</th><th>Estado</th></tr></thead>
         <tbody id="incidents-tbody">
@@ -729,7 +792,7 @@ select.fi{cursor:pointer}
   </div>
   <div class="submod" id="sub-horas-empleados">
     <div class="card">
-      <div class="ch"><div><div class="ct">Control de Empleados</div><div class="cs">Lista real de empleados con información de nómina</div></div><button class="btn p sm" id="emp-new-btn" onclick="showNewEmpleadoModal()">+ Nuevo empleado</button></div>
+      <div class="ch"><div><div class="ct">Control de Empleados</div><div class="cs">Lista real de empleados con información de nómina</div></div><button class="btn p sm" id="emp-new-btn" onclick="showNewEmpleadoModal()" data-perm-required="employee.create">+ Nuevo empleado</button></div>
       <div class="tw" style="overflow-x:auto;"><table style="min-width:1600px;">
         <thead><tr><th>No. listado de nómina</th><th>Nombre Rep Proc</th><th>Nombre</th><th>RFC</th><th>CURP</th><th>No. IMSS</th><th>Nivel de Estudios</th><th>Puesto</th><th>Departamento</th><th>Area</th><th>Fecha de ingreso</th><th>S.D</th><th>S.D.I 2</th></tr></thead>
         <tbody id="emp-tbody">
@@ -915,7 +978,7 @@ select.fi{cursor:pointer}
         <div style="display:flex;gap:8px;align-items:center">
           <label class="fl" style="margin-bottom:0">Semana</label>
           <select id="payroll-week-selector" class="fi" style="max-width:320px"><option value="">Cargando…</option></select>
-          <button class="btn sm" onclick="showNewPayrollWeekModal()">+ Nueva semana</button>
+          <button class="btn sm" onclick="showNewPayrollWeekModal()" data-perm-required="payroll.create">+ Nueva semana</button>
         </div>
       </div>
     </div>
@@ -1018,16 +1081,25 @@ select.fi{cursor:pointer}
     <div class="card">
       <div class="ch"><div><div class="ct">CFDI de nómina</div><div class="cs">Complemento de nómina 1.2 · handler dedicado (P4.11–P4.12 pendiente)</div></div><button class="btn sm" onclick="document.getElementById('nominaXmlFileInput').click()">+ Cargar CFDI nómina</button></div>
       <input type="file" id="nominaXmlFileInput" accept=".xml" style="display:none" onchange="handleNominaCfdiUpload(event)">
-      <div class="cb" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div class="fgg"><label class="fl">RFC Emisor</label><input class="fi" placeholder="AAA010101AAA"></div>
-        <div class="fgg"><label class="fl">RFC Receptor</label><input class="fi" placeholder="ALE010410123"></div>
-        <div class="fgg"><label class="fl">UUID / Folio</label><input class="fi" placeholder="EMF006602Q2"></div>
-        <div class="fgg"><label class="fl">Método de Pago</label><input class="fi" placeholder="PUE / PPD"></div>
-      </div>
-      <div class="tw" style="margin-top:14px"><table>
-        <thead><tr><th>RFC Emisor</th><th>UUID</th><th>Folio</th><th>Fecha</th><th>Moneda</th><th>Total</th><th>Estado</th></tr></thead>
+      <div class="tw"><table>
+        <thead><tr>
+          <!-- Identificación CFDI -->
+          <th>UUID</th><th>Serie</th><th>Folio</th><th>Fecha Timbrado</th><th>Tipo Nómina</th>
+          <!-- Emisor -->
+          <th>RFC Emisor</th><th>Reg. Patronal</th><th>Lugar Expedición</th>
+          <!-- Receptor / Empleado -->
+          <th>RFC Receptor</th><th>Núm Empleado</th><th>Nombre</th><th>CURP</th><th>NSS</th><th>Departamento</th><th>Puesto</th><th>Periodicidad</th>
+          <!-- Periodo -->
+          <th>Fecha Pago</th><th>F. Inicio</th><th>F. Fin</th><th>Días Pagados</th>
+          <!-- Montos -->
+          <th>Total Percepciones</th><th>T. Gravado</th><th>T. Exento</th><th>T. Deducciones</th><th>T. Otros Pagos</th><th>Subtotal</th><th>Total</th><th>Moneda</th><th>Tipo Cambio</th>
+          <!-- Pago -->
+          <th>Método Pago</th><th>Forma Pago</th>
+          <!-- Estado -->
+          <th>Estado SAT</th><th>Acciones</th>
+        </tr></thead>
         <tbody>
-          <tr><td colspan="7" style="padding:16px;text-align:center;color:var(--text3)">Carga un CFDI para ver datos de validación y procesos de nómina.</td></tr>
+          <tr><td colspan="33" style="padding:16px;text-align:center;color:var(--text3)">Carga un CFDI para ver datos de validación y procesos de nómina.</td></tr>
         </tbody>
       </table></div>
     </div>
@@ -1045,9 +1117,30 @@ select.fi{cursor:pointer}
         <button class="btn sm" onclick="downloadXlsx(`${API_URL}/payroll/export${_payrollWeekId ? '?weekId='+encodeURIComponent(_payrollWeekId) : ''}`, 'nomina.xlsx')">⬇ Descargar XLSX</button>
       </div>
       <div class="tw"><table>
-        <thead><tr><th>Campo</th><th>Valor</th></tr></thead>
+        <thead><tr>
+          <th># Lista</th>
+          <th>Nombre</th>
+          <th>RFC</th>
+          <th>CURP</th>
+          <th>IMSS</th>
+          <th>Puesto</th>
+          <th>Área</th>
+          <th>Departamento</th>
+          <th>Turno</th>
+          <th>Fecha Ingreso</th>
+          <th>SD</th>
+          <th>SDI</th>
+          <th>Días Nómina</th>
+          <th>Hrs Laboradas</th>
+          <th>Total Percepciones</th>
+          <th>Percepciones Gravadas</th>
+          <th>Total Deducciones</th>
+          <th>Pago Nómina</th>
+          <th>Notas</th>
+          <th>Acciones</th>
+        </tr></thead>
         <tbody id="nom-detalle-tbody">
-          <tr><td colspan="2" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
+          <tr><td colspan="20" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
         </tbody>
       </table></div>
     </div>
@@ -1057,34 +1150,12 @@ select.fi{cursor:pointer}
 <!-- ADMINISTRACIÓN (solo rol admin) -->
 <div class="mod" id="mod-admin">
   <div class="subnav">
-    <div class="sntab active" onclick="goSub('admin','config',this)">Configuración</div>
-    <div class="sntab" onclick="goSub('admin','bitacora',this)">Bitácora</div>
+    <div class="sntab active" onclick="goSub('admin','bitacora',this)">Bitácora</div>
+    <div class="sntab" onclick="goSub('admin','apariencia',this)">Apariencia</div>
+    <div class="sntab" onclick="goSub('admin','permisos',this)">Permisos</div>
   </div>
 
-  <div class="submod active" id="sub-admin-config">
-    <div class="card">
-      <div class="ch">
-        <div><div class="ct">Valores configurables</div><div class="cs">Parámetros del sistema · editables sin modificar código. Un cambio entra en vigor ≤ 30 s.</div></div>
-        <div style="display:flex;gap:7px;align-items:center">
-          <label class="fl" style="margin-bottom:0">Categoría</label>
-          <select id="config-category-filter" class="fi" style="max-width:200px" onchange="loadAdminConfig()">
-            <option value="">Todas</option>
-          </select>
-          <button class="btn sm" onclick="loadAdminConfig()">Actualizar</button>
-        </div>
-      </div>
-      <div class="tw"><table>
-        <thead><tr>
-          <th>Clave</th><th>Descripción</th><th>Categoría</th><th>Valor</th><th>Tipo</th><th>Actualizado</th><th>Acciones</th>
-        </tr></thead>
-        <tbody id="admin-config-tbody">
-          <tr><td colspan="7" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
-        </tbody>
-      </table></div>
-    </div>
-  </div>
-
-  <div class="submod" id="sub-admin-bitacora">
+  <div class="submod active" id="sub-admin-bitacora">
     <div class="card">
       <div class="ch">
         <div><div class="ct">Bitácora de cambios</div><div class="cs">Todas las acciones del sistema con detalle de quién, cuándo, qué entidad y qué cambió.</div></div>
@@ -1116,6 +1187,213 @@ select.fi{cursor:pointer}
           <tr><td colspan="9" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
         </tbody>
       </table></div>
+    </div>
+  </div>
+
+  <!-- ===== APARIENCIA ===== -->
+  <div class="submod" id="sub-admin-apariencia">
+    <div class="g2">
+      <div class="card">
+        <div class="ch">
+          <div><div class="ct">Mis preferencias</div><div class="cs">Solo te afectan a ti. Se guardan en tu sesión local.</div></div>
+          <button class="btn sm" onclick="resetMyAppearance()">Restablecer</button>
+        </div>
+        <div class="cb">
+          <div class="adm-opt-row">
+            <div><div class="adm-opt-lbl">Tema</div><div class="adm-opt-sub">Modo claro, oscuro o sigue el sistema</div></div>
+            <div class="adm-seg" data-pref="theme">
+              <button class="adm-seg-i" data-val="light"  onclick="setPref('theme','light',this)">☀ Claro</button>
+              <button class="adm-seg-i active" data-val="dark"   onclick="setPref('theme','dark',this)">🌙 Oscuro</button>
+              <button class="adm-seg-i" data-val="auto"   onclick="setPref('theme','auto',this)">⌥ Auto</button>
+            </div>
+          </div>
+          <div class="adm-opt-row">
+            <div><div class="adm-opt-lbl">Tamaño de fuente</div><div class="adm-opt-sub">Afecta toda la interfaz</div></div>
+            <div class="adm-seg" data-pref="fontSize">
+              <button class="adm-seg-i" data-val="12"   onclick="setPref('fontSize','12',this)">A</button>
+              <button class="adm-seg-i active" data-val="13"   onclick="setPref('fontSize','13',this)">A</button>
+              <button class="adm-seg-i" data-val="14.5" onclick="setPref('fontSize','14.5',this)" style="font-size:14px">A</button>
+              <button class="adm-seg-i" data-val="16"   onclick="setPref('fontSize','16',this)" style="font-size:15.5px">A</button>
+            </div>
+          </div>
+          <div class="adm-opt-row">
+            <div><div class="adm-opt-lbl">Densidad de tablas</div><div class="adm-opt-sub">Cómoda muestra menos filas pero más espacio</div></div>
+            <div class="adm-seg" data-pref="density">
+              <button class="adm-seg-i active" data-val="compact" onclick="setPref('density','compact',this)">Compacta</button>
+              <button class="adm-seg-i" data-val="cozy" onclick="setPref('density','cozy',this)">Cómoda</button>
+            </div>
+          </div>
+          <div class="adm-opt-row">
+            <div><div class="adm-opt-lbl">Formato de fecha</div><div class="adm-opt-sub">Cómo se muestran fechas en tablas</div></div>
+            <select class="fi" style="max-width:200px" data-pref="dateFormat" onchange="setPref('dateFormat',this.value)">
+              <option value="dmy">13/04/2026 (dd/mm/yyyy)</option>
+              <option value="iso">2026-04-13 (ISO)</option>
+              <option value="long">13 Abr 2026</option>
+            </select>
+          </div>
+          <div class="adm-opt-row">
+            <div><div class="adm-opt-lbl">Zona horaria</div><div class="adm-opt-sub">Hora local para timestamps</div></div>
+            <select class="fi" style="max-width:240px" data-pref="tz" onchange="setPref('tz',this.value)">
+              <option value="America/Mexico_City">America/Mexico_City (GMT-6)</option>
+              <option value="America/Tijuana">America/Tijuana (GMT-7)</option>
+              <option value="America/Cancun">America/Cancun (GMT-5)</option>
+            </select>
+          </div>
+          <div class="adm-opt-row">
+            <div><div class="adm-opt-lbl">Animaciones</div><div class="adm-opt-sub">Transiciones al cambiar de módulo</div></div>
+            <div class="adm-sw on" data-pref="animations" onclick="togglePref('animations',this)"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="ch">
+          <div><div class="ct">Defaults de la organización</div><div class="cs">Aplican a usuarios nuevos · solo admin.</div></div>
+          <span class="adm-tag admin">Admin</span>
+        </div>
+        <div class="cb">
+          <div class="adm-opt-row">
+            <div><div class="adm-opt-lbl">Tema por defecto</div><div class="adm-opt-sub">Para usuarios sin preferencia propia</div></div>
+            <div class="adm-seg">
+              <button class="adm-seg-i" onclick="segLocal(this)">☀ Claro</button>
+              <button class="adm-seg-i active" onclick="segLocal(this)">🌙 Oscuro</button>
+            </div>
+          </div>
+          <div class="adm-opt-row">
+            <div><div class="adm-opt-lbl">Forzar tema (lock)</div><div class="adm-opt-sub">Si se activa, nadie podrá cambiarlo</div></div>
+            <div class="adm-sw" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="adm-opt-row">
+            <div><div class="adm-opt-lbl">Color primario</div><div class="adm-opt-sub">Marca la app — botones y resaltados</div></div>
+            <div class="adm-swatch-row">
+              <div class="adm-swatch sel" style="background:#2E9E5A" title="Verde Alenstec" onclick="pickSwatch(this)"></div>
+              <div class="adm-swatch" style="background:#3B82F6" title="Azul" onclick="pickSwatch(this)"></div>
+              <div class="adm-swatch" style="background:#8B5CF6" title="Morado" onclick="pickSwatch(this)"></div>
+              <div class="adm-swatch" style="background:#F59E0B" title="Ámbar" onclick="pickSwatch(this)"></div>
+              <div class="adm-swatch" style="background:#EF4444" title="Rojo" onclick="pickSwatch(this)"></div>
+            </div>
+          </div>
+          <div class="adm-opt-row">
+            <div><div class="adm-opt-lbl">Logo de la empresa</div><div class="adm-opt-sub">PNG o SVG · máx 500 KB</div></div>
+            <button class="btn sm">⬆ Subir logo</button>
+          </div>
+          <div class="adm-opt-row">
+            <div><div class="adm-opt-lbl">Banner global</div><div class="adm-opt-sub">Mensaje visible para todos los usuarios</div></div>
+            <input class="fi" style="max-width:280px" placeholder="Ej. Mantenimiento 22:00–23:00">
+          </div>
+          <div class="adm-opt-row">
+            <div><div class="adm-opt-lbl">Mostrar tutorial inicial</div><div class="adm-opt-sub">Para usuarios nuevos al primer ingreso</div></div>
+            <div class="adm-sw on" onclick="this.classList.toggle('on')"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ch"><div><div class="ct">Vista previa</div><div class="cs">Así se verán las tablas con tus preferencias actuales</div></div></div>
+      <div class="adm-preview">
+        <div class="adm-prv-row" style="font-size:10px;font-weight:600;text-transform:uppercase;color:var(--text3)">
+          <span>OT</span><span>Cliente</span><span>Cotizado</span><span>Real</span><span>Var.</span>
+        </div>
+        <div class="adm-prv-row"><span class="mono">OT-2026-007</span><span>Volkswagen MX</span><span>$ 48,500</span><span>$ 47,120</span><span style="color:var(--green)">−2.8%</span></div>
+        <div class="adm-prv-row"><span class="mono">OT-2026-012</span><span>FEMSA Logística</span><span>$ 73,200</span><span>$ 81,340</span><span style="color:var(--amber)">+11.1%</span></div>
+        <div class="adm-prv-row"><span class="mono">OT-2026-019</span><span>Bimbo Querétaro</span><span>$ 22,000</span><span>$ 25,800</span><span style="color:var(--red)">+17.3%</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PERMISOS (matriz) ===== -->
+  <div class="submod" id="sub-admin-permisos">
+    <div class="kg" style="grid-template-columns:repeat(4,minmax(0,1fr))">
+      <div class="kpi"><div class="kl">Usuarios activos</div><div class="kv" id="perm-kpi-users">—</div><div class="ks">cargados desde <code>/api/auth/users</code></div></div>
+      <div class="kpi"><div class="kl">Roles definidos</div><div class="kv">6</div><div class="ks">admin · jefe · rh · sup · ventas · compras</div></div>
+      <div class="kpi"><div class="kl">Overrides activos</div><div class="kv" id="perm-kpi-ovr" style="color:var(--blue)">0</div><div class="ks">excepciones sobre el rol base</div></div>
+      <div class="kpi"><div class="kl">Última edición</div><div class="kv" style="font-size:14px" id="perm-kpi-last">—</div><div class="ks">por <span id="perm-kpi-last-by">—</span></div></div>
+    </div>
+
+    <div class="card">
+      <div class="ch">
+        <div><div class="ct">Matriz de permisos</div><div class="cs">Filas = usuarios · columnas = acciones por módulo · ✓ = permitido. Checks grises vienen del rol; los azules son <em>overrides</em>.</div></div>
+        <div style="display:flex;gap:7px">
+          <button class="btn sm" onclick="alert('Mockup — falta cablear POST /api/auth/users')">+ Agregar usuario</button>
+          <button class="btn sm" onclick="exportPermissionsCsv()">⬇ Exportar matriz</button>
+        </div>
+      </div>
+
+      <div class="adm-mtx-toolbar">
+        <div class="adm-grp"><label class="fl">Buscar usuario</label>
+          <input class="fi" id="perm-q" placeholder="nombre o email…" style="width:220px" oninput="filterPermUsers()">
+        </div>
+        <div class="adm-grp"><label class="fl">Filtrar rol</label>
+          <select class="fi" id="perm-rol" style="width:160px" onchange="filterPermUsers()">
+            <option value="">Todos</option>
+            <option value="admin">admin</option>
+            <option value="jefe_area">jefe_area</option>
+            <option value="rh">rh</option>
+            <option value="supervisor">supervisor</option>
+            <option value="compras">compras</option>
+            <option value="ventas">ventas</option>
+          </select>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:7px">
+          <button class="btn sm" onclick="resetAllPermOverrides()">↺ Resetear a roles</button>
+        </div>
+      </div>
+
+      <div class="adm-mtx-wrap">
+        <table class="mtx" id="perm-matrix">
+          <thead>
+            <tr>
+              <th rowspan="2" class="stk adm-col-user" style="text-align:left">Usuario</th>
+              <th rowspan="2" class="stk adm-col-role" style="left:200px;text-align:left">Rol base</th>
+              <th class="mod-grp">Dashboard</th>
+              <th class="mod-grp" colspan="4">Orden de Trabajo</th>
+              <th class="mod-grp" colspan="4">Cotizaciones</th>
+              <th class="mod-grp" colspan="2">Pronóstico</th>
+              <th class="mod-grp" colspan="3">Costo Material</th>
+              <th class="mod-grp" colspan="4">Entregas</th>
+              <th class="mod-grp" colspan="3">Horas</th>
+              <th class="mod-grp" colspan="3">Nómina</th>
+              <th class="mod-grp" colspan="4">Conciliación</th>
+              <th class="mod-grp">Costo MO</th>
+              <th class="mod-grp" colspan="2">Admin</th>
+            </tr>
+            <tr>
+              <th title="Ver">V</th>
+              <th title="Ver">V</th><th title="Crear">C</th><th title="Editar">E</th><th title="Borrar">B</th>
+              <th title="Ver">V</th><th title="Crear">C</th><th title="Editar">E</th><th title="Importar/Exportar XLSX">X</th>
+              <th title="Ver">V</th><th title="Exportar">X</th>
+              <th title="Ver">V</th><th title="Crear">C</th><th title="Editar">E</th>
+              <th title="Ver">V</th><th title="Crear">C</th><th title="Editar">E</th><th title="Exportar">X</th>
+              <th title="Ver">V</th><th title="Crear">C</th><th title="Editar">E</th>
+              <th title="Ver">V</th><th title="Crear">C</th><th title="Editar">E</th>
+              <th title="Ver">V</th><th title="Justificar">J</th><th title="Forzar">F</th><th title="Exportar">X</th>
+              <th title="Ver">V</th>
+              <th title="Ver">V</th><th title="Editar config">E</th>
+            </tr>
+          </thead>
+          <tbody id="perm-matrix-body">
+            <tr><td colspan="33" style="padding:16px;color:var(--text3);text-align:center">Cargando usuarios…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="adm-legend">
+        <span class="adm-legend-i"><span class="adm-chk inh-on">✓</span> Heredado del rol (permitido)</span>
+        <span class="adm-legend-i"><span class="adm-chk inh-off">·</span> Heredado (denegado)</span>
+        <span class="adm-legend-i"><span class="adm-chk add">✓</span> Override: <em>concedido</em></span>
+        <span class="adm-legend-i"><span class="adm-chk rem">✓</span> Override: <em>revocado</em></span>
+        <span class="adm-legend-i"><span class="adm-chk locked">🔒</span> Admin (bloqueado)</span>
+        <span style="margin-left:auto;font-size:10.5px">Click en una celda para ciclar entre estados</span>
+      </div>
+    </div>
+
+    <div class="adm-savebar" id="perm-savebar">
+      <div class="adm-dirty-count"><span id="perm-dirty-text">Sin cambios pendientes</span></div>
+      <div style="display:flex;gap:7px">
+        <button class="btn sm" onclick="discardPermChanges()">Descartar</button>
+        <button class="btn p sm" onclick="savePermChanges()">Guardar cambios</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1201,6 +1479,61 @@ function renderUserChip() {
   // Admin-only nav items — show only for rol === 'admin'.
   document.querySelectorAll('[data-admin-only="true"]').forEach((node) => {
     node.style.display = (u.rol === 'admin') ? '' : 'none';
+  });
+  applyRolePermissions();
+}
+
+// ===== Role helper (P1 5.8 / 6.5) =====
+// PERMS mirrors the `verificarRol(...)` lists of the backend POST/PUT/DELETE
+// endpoints so the UI can hide buttons that would 403. Source of truth is
+// still the backend — this is a UX courtesy, not a security boundary.
+const PERMS = {
+  'ot.create':         ['admin', 'ventas', 'jefe_area'],
+  'ot.delete':         ['admin'],
+  'quote.create':      ['admin', 'ventas'],
+  'supplier.create':   ['admin', 'compras'],
+  'material.create':   ['admin', 'compras', 'jefe_area'],
+  'labor.create':      ['admin', 'rh', 'jefe_area', 'supervisor'],
+  'employee.create':   ['admin', 'rh'],
+  'employee.delete':   ['admin'],
+  'purchaseorder.create': ['admin', 'compras', 'jefe_area'],
+  'inventory.create':  ['admin', 'compras', 'jefe_area'],
+  'invoice.create':    ['admin', 'compras', 'jefe_area'],
+  'delivery.create':   ['admin', 'compras', 'jefe_area'],
+  'incident.create':   ['admin', 'compras', 'jefe_area', 'supervisor'],
+  'payroll.create':    ['admin', 'rh'],
+  'conciliacion.cerrar': ['rh', 'admin'],
+};
+function canActAs(...roles) {
+  const flat = roles.flat();
+  const u = AUTH.user();
+  return !!u && flat.includes(u.rol);
+}
+function canPerm(perm) {
+  const allowed = PERMS[perm];
+  if (!allowed) { console.warn('Unknown perm key:', perm); return true; }
+  return canActAs(allowed);
+}
+// Walk all `[data-perm-required]` and disable+tooltip when the user lacks
+// the perm. We disable rather than hide so testers know the button exists
+// (the QA reportador asked for "tooltip" feedback in 5.8/6.5).
+function applyRolePermissions() {
+  document.querySelectorAll('[data-perm-required]').forEach((btn) => {
+    const perm = btn.dataset.permRequired;
+    if (canPerm(perm)) {
+      btn.disabled = false;
+      btn.style.opacity = '';
+      // Restore the original title only if we previously stamped one.
+      if (btn.dataset.permOriginalTitle != null) {
+        btn.title = btn.dataset.permOriginalTitle;
+        delete btn.dataset.permOriginalTitle;
+      }
+    } else {
+      if (btn.dataset.permOriginalTitle == null) btn.dataset.permOriginalTitle = btn.title || '';
+      btn.disabled = true;
+      btn.style.opacity = '.45';
+      btn.title = `Tu rol no permite esta acción (requiere: ${PERMS[perm].join(', ')}).`;
+    }
   });
 }
 
@@ -1782,6 +2115,286 @@ async function refreshDashboard() {
   ]);
 }
 
+// ===== Administración · Apariencia (Phase-5c) =====
+const ADM_PREFS_KEY = 'alenstec_user_prefs';
+const ADM_PREFS_DEFAULTS = {
+  theme: 'dark',
+  fontSize: '13',
+  density: 'compact',
+  dateFormat: 'dmy',
+  tz: 'America/Mexico_City',
+  animations: true,
+};
+function loadUserPrefs() {
+  try {
+    const raw = localStorage.getItem(ADM_PREFS_KEY);
+    return Object.assign({}, ADM_PREFS_DEFAULTS, raw ? JSON.parse(raw) : {});
+  } catch { return { ...ADM_PREFS_DEFAULTS }; }
+}
+function saveUserPrefs(p) { localStorage.setItem(ADM_PREFS_KEY, JSON.stringify(p)); }
+function applyUserPrefs(p) {
+  // font-size — body rule has higher specificity than html, so set on both
+  if (p.fontSize) {
+    document.documentElement.style.fontSize = p.fontSize + 'px';
+    if (document.body) document.body.style.fontSize = p.fontSize + 'px';
+  }
+  // theme — light flips CSS vars; auto follows the OS
+  applyTheme(p.theme);
+}
+function applyTheme(theme) {
+  const root = document.documentElement;
+  let t = theme;
+  if (theme === 'auto') {
+    t = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  }
+  if (t === 'light') {
+    root.style.setProperty('--bg',       '#FAFAF7');
+    root.style.setProperty('--surface',  '#FFFFFF');
+    root.style.setProperty('--surface2', '#F1EFEA');
+    root.style.setProperty('--border',   '#DDD9D2');
+    root.style.setProperty('--border2',  '#C7C2BA');
+    root.style.setProperty('--text',     '#1A1917');
+    root.style.setProperty('--text2',    '#4D4A45');
+    root.style.setProperty('--text3',    '#7A766F');
+  } else {
+    // restore dark defaults from :root
+    ['--bg','--surface','--surface2','--border','--border2','--text','--text2','--text3'].forEach(v => root.style.removeProperty(v));
+  }
+}
+function setPref(key, val, btn) {
+  const p = loadUserPrefs();
+  p[key] = val;
+  saveUserPrefs(p);
+  applyUserPrefs(p);
+  if (btn) {
+    btn.parentElement.querySelectorAll('.adm-seg-i').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+}
+function togglePref(key, el) {
+  el.classList.toggle('on');
+  const p = loadUserPrefs();
+  p[key] = el.classList.contains('on');
+  saveUserPrefs(p);
+  applyUserPrefs(p);
+}
+function resetMyAppearance() {
+  if (!confirm('¿Restablecer todas tus preferencias visuales a los valores por defecto?')) return;
+  saveUserPrefs({ ...ADM_PREFS_DEFAULTS });
+  applyUserPrefs(ADM_PREFS_DEFAULTS);
+  hydrateAparienciaUi();
+}
+function hydrateAparienciaUi() {
+  const p = loadUserPrefs();
+  document.querySelectorAll('[data-pref]').forEach(el => {
+    const key = el.dataset.pref;
+    if (el.classList.contains('adm-seg')) {
+      el.querySelectorAll('.adm-seg-i').forEach(b => b.classList.toggle('active', String(b.dataset.val) === String(p[key])));
+    } else if (el.classList.contains('adm-sw')) {
+      el.classList.toggle('on', !!p[key]);
+    } else if (el.tagName === 'SELECT') {
+      el.value = p[key];
+    }
+  });
+}
+function segLocal(el) {
+  el.parentElement.querySelectorAll('.adm-seg-i').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+}
+function pickSwatch(el) {
+  el.parentElement.querySelectorAll('.adm-swatch').forEach(s => s.classList.remove('sel'));
+  el.classList.add('sel');
+}
+// Apply prefs on boot.
+applyUserPrefs(loadUserPrefs());
+
+// ===== Administración · Permisos matrix (Phase-5c) =====
+const PERM_COLS = [
+  'dashboard.ver',
+  'ot.ver','ot.crear','ot.editar','ot.borrar',
+  'cot.ver','cot.crear','cot.editar','cot.xlsx',
+  'pron.ver','pron.xlsx',
+  'mat.ver','mat.crear','mat.editar',
+  'ent.ver','ent.crear','ent.editar','ent.xlsx',
+  'hor.ver','hor.crear','hor.editar',
+  'nom.ver','nom.crear','nom.editar',
+  'conc.ver','conc.justificar','conc.forzar','conc.xlsx',
+  'costomo.ver',
+  'adm.ver','adm.editar',
+];
+const PERM_ROLE_DEFAULTS = {
+  admin:      Array(PERM_COLS.length).fill(1),
+  jefe_area:  [1, 1,1,1,0, 1,1,1,1, 1,1, 1,1,1, 1,1,1,1, 1,1,1, 1,0,0, 1,1,0,1, 1, 0,0],
+  rh:         [1, 1,0,0,0, 1,0,0,0, 1,1, 0,0,0, 0,0,0,0, 1,1,1, 1,1,1, 1,1,1,1, 1, 0,0],
+  supervisor: [1, 1,0,1,0, 0,0,0,0, 1,0, 1,0,0, 0,0,0,0, 1,1,1, 0,0,0, 1,1,0,0, 1, 0,0],
+  compras:    [1, 1,0,0,0, 0,0,0,0, 0,0, 1,1,1, 1,1,1,1, 0,0,0, 0,0,0, 0,0,0,0, 0, 0,0],
+  ventas:     [1, 1,1,1,0, 1,1,1,1, 1,1, 0,0,0, 0,0,0,0, 0,0,0, 0,0,0, 0,0,0,0, 0, 0,0],
+};
+// Sample users (mockup) — when GET /api/auth/users is wired we'll replace this fetch.
+const PERM_SAMPLE_USERS = [
+  { id:1, nombre:'Admin Demo',       email:'admin@alenstec.mx',     rol:'admin'      },
+  { id:2, nombre:'Jefe de Área',     email:'jefe@alenstec.mx',      rol:'jefe_area'  },
+  { id:3, nombre:'Recursos Humanos', email:'rh@alenstec.mx',        rol:'rh'         },
+  { id:4, nombre:'Supervisor',       email:'supervisor@alenstec.mx',rol:'supervisor' },
+  { id:5, nombre:'Ventas',           email:'ventas@alenstec.mx',    rol:'ventas'     },
+  { id:6, nombre:'Compras',          email:'compras@alenstec.mx',   rol:'compras'    },
+];
+const PERM_AVATAR_COLOR = { admin:'red', rh:'blue', jefe_area:'amber', supervisor:'', compras:'', ventas:'' };
+let _permUsers = null;
+const _permOverrides = {}; // { userId: { colIdx: 1|0 } }
+
+function permInitials(nombre) {
+  return nombre.split(' ').map(p => p[0]).slice(0,2).join('').toUpperCase();
+}
+function permRolePill(rol) {
+  const cls = 'adm-role-pill adm-role-' + (rol === 'jefe_area' ? 'jefe' : rol);
+  return `<span class="${cls}">${esc(rol)}</span>`;
+}
+async function loadAdminPermisos() {
+  const tbody = document.getElementById('perm-matrix-body');
+  if (!tbody) return;
+  // TODO: replace with `apiFetch('/api/auth/users')` once that endpoint lands.
+  _permUsers = PERM_SAMPLE_USERS;
+  document.getElementById('perm-kpi-users').textContent = _permUsers.length;
+  document.getElementById('perm-kpi-last').textContent = '—';
+  document.getElementById('perm-kpi-last-by').textContent = '—';
+  renderPermMatrix();
+}
+function renderPermMatrix() {
+  const tbody = document.getElementById('perm-matrix-body');
+  if (!tbody || !_permUsers) return;
+  tbody.innerHTML = '';
+  _permUsers.forEach(u => {
+    const tr = document.createElement('tr');
+    tr.dataset.userId = u.id;
+    tr.dataset.rol    = u.rol;
+    tr.dataset.search = (u.nombre + ' ' + u.email).toLowerCase();
+
+    const tdU = document.createElement('td');
+    tdU.className = 'stk adm-col-user';
+    tdU.style.textAlign = 'left';
+    const av = PERM_AVATAR_COLOR[u.rol] || '';
+    tdU.innerHTML = `
+      <div class="adm-user-cell">
+        <div class="av ${av}">${permInitials(u.nombre)}</div>
+        <div>
+          <div class="adm-user-name">${esc(u.nombre)}</div>
+          <div class="adm-user-mail">${esc(u.email)}</div>
+        </div>
+      </div>`;
+    tr.appendChild(tdU);
+
+    const tdR = document.createElement('td');
+    tdR.className = 'stk adm-col-role';
+    tdR.style.left = '200px';
+    tdR.style.textAlign = 'left';
+    tdR.innerHTML = permRolePill(u.rol);
+    tr.appendChild(tdR);
+
+    const def = PERM_ROLE_DEFAULTS[u.rol] || PERM_ROLE_DEFAULTS.ventas;
+    PERM_COLS.forEach((col, idx) => {
+      const td = document.createElement('td');
+      td.className = 'cell';
+      td.title = col;
+      const isAdmin = u.rol === 'admin';
+      td.onclick = isAdmin ? null : () => cyclePermCell(td, u.id, idx, def[idx]);
+      renderPermCell(td, u.id, idx, def[idx], isAdmin);
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+  refreshPermDirty();
+  filterPermUsers();
+}
+function renderPermCell(td, userId, colIdx, def, locked) {
+  const ovr = _permOverrides[userId] && _permOverrides[userId][colIdx];
+  const final = ovr === undefined ? def : ovr;
+  let cls = 'adm-chk', sym = '';
+  if (locked) {
+    cls += ' locked'; sym = final ? '🔒' : '·';
+  } else if (ovr === undefined) {
+    cls += final ? ' inh-on' : ' inh-off';
+    sym = final ? '✓' : '·';
+  } else if (ovr === 1 && def === 0) {
+    cls += ' add'; sym = '✓';
+  } else if (ovr === 0 && def === 1) {
+    cls += ' rem'; sym = '✓';
+  } else {
+    cls += final ? ' inh-on' : ' inh-off';
+    sym = final ? '✓' : '·';
+  }
+  td.innerHTML = `<span class="${cls}">${sym}</span>`;
+}
+function cyclePermCell(td, userId, colIdx, def) {
+  if (!_permOverrides[userId]) _permOverrides[userId] = {};
+  const cur = _permOverrides[userId][colIdx];
+  if (cur === undefined) {
+    _permOverrides[userId][colIdx] = def === 1 ? 0 : 1;
+  } else {
+    delete _permOverrides[userId][colIdx];
+    if (Object.keys(_permOverrides[userId]).length === 0) delete _permOverrides[userId];
+  }
+  renderPermCell(td, userId, colIdx, def, false);
+  refreshPermDirty();
+}
+function refreshPermDirty() {
+  const total = Object.values(_permOverrides).reduce((s,o) => s + Object.keys(o).length, 0);
+  const bar = document.getElementById('perm-savebar');
+  const txt = document.getElementById('perm-dirty-text');
+  document.getElementById('perm-kpi-ovr').textContent = total;
+  if (!bar || !txt) return;
+  if (total === 0) {
+    bar.classList.remove('dirty');
+    txt.innerHTML = 'Sin cambios pendientes';
+  } else {
+    bar.classList.add('dirty');
+    const users = Object.keys(_permOverrides).length;
+    txt.innerHTML = `<strong>${total}</strong> override${total===1?'':'s'} sin guardar — en ${users} usuario${users===1?'':'s'}`;
+  }
+}
+function resetAllPermOverrides() {
+  if (Object.keys(_permOverrides).length === 0) return;
+  if (!confirm('¿Resetear todos los permisos a los defaults del rol? Se perderán todos los overrides no guardados.')) return;
+  for (const k of Object.keys(_permOverrides)) delete _permOverrides[k];
+  renderPermMatrix();
+}
+function discardPermChanges() { resetAllPermOverrides(); }
+function savePermChanges() {
+  // TODO: when endpoint lands → POST /api/admin/permissions/overrides
+  const diff = Object.entries(_permOverrides).map(([userId, cols]) => ({
+    userId: Number(userId),
+    overrides: Object.entries(cols).map(([idx, val]) => ({ permiso: PERM_COLS[idx], allow: val === 1 })),
+  }));
+  alert('Mockup — payload que se mandaría al backend:\n\n' + JSON.stringify(diff, null, 2));
+}
+function filterPermUsers() {
+  const q   = (document.getElementById('perm-q')?.value || '').toLowerCase();
+  const rol = document.getElementById('perm-rol')?.value || '';
+  document.querySelectorAll('#perm-matrix-body tr').forEach(tr => {
+    const matchQ = !q || (tr.dataset.search || '').includes(q);
+    const matchR = !rol || tr.dataset.rol === rol;
+    tr.style.display = (matchQ && matchR) ? '' : 'none';
+  });
+}
+function exportPermissionsCsv() {
+  if (!_permUsers) return;
+  const header = ['usuario','email','rol', ...PERM_COLS];
+  const rows = [header];
+  _permUsers.forEach(u => {
+    const def = PERM_ROLE_DEFAULTS[u.rol] || [];
+    const ovr = _permOverrides[u.id] || {};
+    const cells = PERM_COLS.map((_, i) => (ovr[i] === undefined ? def[i] : ovr[i]) ? '1' : '0');
+    rows.push([u.nombre, u.email, u.rol, ...cells]);
+  });
+  const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'permisos-matriz.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+
 // ===== Cotizaciones (P2.5 + P2.6) =====
 function quoteTipoBadge(tipo) {
   if (!tipo) return '<span class="mono">—</span>';
@@ -1977,8 +2590,16 @@ async function saveOTDetail() {
     if (!res.ok) throw new Error(body.error || body.mensaje || `HTTP ${res.status}`);
     // Refresh the detail so the banner + description reflect the saved state.
     await loadOTDetail(_selectedOtId);
-    if (btn) btn.textContent = '✓ Guardado';
-    setTimeout(() => { if (btn) btn.textContent = originalLabel || '💾 Guardar cambios'; }, 1500);
+    if (btn) {
+      btn.textContent = '✓ Guardado';
+      btn.classList.add('p'); // Greens the button via existing .btn.p style.
+    }
+    setTimeout(() => {
+      if (btn) {
+        btn.textContent = originalLabel || '💾 Guardar cambios';
+        btn.classList.remove('p');
+      }
+    }, 2000);
   } catch (err) {
     alert(`No se pudo guardar: ${err.message}`);
     if (btn) btn.textContent = originalLabel || '💾 Guardar cambios';
@@ -1992,7 +2613,7 @@ function showNewOTModal() {
     title: '+ Nueva OT',
     bodyHtml: `
       <form id="new-ot-form">
-        <div class="fg"><label>No. de OT *</label><input name="otNumber" required placeholder="OT-AL-####"></div>
+        <div class="fg"><label>No. de OT *</label><input name="otNumber" required pattern="OT-AL-\d{4}" title="Formato esperado: OT-AL-#### (ej. OT-AL-0042). Solo se permiten 4 dígitos al final." placeholder="OT-AL-####"></div>
         <div class="fg"><label>Cliente *</label><input name="client" required></div>
         <div class="fg"><label>Descripción *</label><textarea name="description" required></textarea></div>
         <div class="fg"><label>Tipo *</label>
@@ -2238,35 +2859,57 @@ async function loadPayrollResumen() {
     setKpi('kpi-nom-percepciones', '—');
     setKpi('kpi-nom-deducciones', '—');
     setKpi('kpi-nom-pago', '—');
-    if (tbody) tbody.innerHTML = '<tr><td colspan="2" style="padding:16px;color:var(--text3);text-align:center">Selecciona una semana.</td></tr>';
+    if (tbody) tbody.innerHTML = '<tr><td colspan="20" style="padding:16px;color:var(--text3);text-align:center">Selecciona una semana.</td></tr>';
     return;
   }
   try {
-    const res = await apiFetch(`${API_URL}/payroll/resumen?weekId=${encodeURIComponent(_payrollWeekId)}`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const r = await res.json();
+    // KPIs from /resumen, lines from /lines — fire in parallel.
+    const qs = `weekId=${encodeURIComponent(_payrollWeekId)}`;
+    const [resKpi, resLines] = await Promise.all([
+      apiFetch(`${API_URL}/payroll/resumen?${qs}`),
+      apiFetch(`${API_URL}/payroll/lines?${qs}`),
+    ]);
+    if (!resKpi.ok)   throw new Error(`HTTP ${resKpi.status}`);
+    if (!resLines.ok) throw new Error(`HTTP ${resLines.status}`);
+    const r     = await resKpi.json();
+    const lines = await resLines.json();
     setKpi('kpi-nom-lineas',       String(r.lineasCapturadas));
     setKpi('kpi-nom-percepciones', fmtCurrency(r.totalPercepciones, 'MXN'));
     setKpi('kpi-nom-deducciones',  fmtCurrency(r.totalDeducciones, 'MXN'));
     setKpi('kpi-nom-pago',         fmtCurrency(r.pagoNomina, 'MXN'));
 
-    const week = _payrollWeeks.find((w) => w.id === _payrollWeekId);
-    if (tbody) {
-      const row = (k, v) => `<tr><td>${esc(k)}</td><td class="mono">${esc(String(v))}</td></tr>`;
-      tbody.innerHTML = [
-        row('Período',             week ? `${week.anio} · Semana ${week.semana}` : '—'),
-        row('Fecha inicio',        week ? fmtDateDMY(week.fechaInicio) : '—'),
-        row('Fecha fin',           week ? fmtDateDMY(week.fechaFin) : '—'),
-        row('Estado',              week?.cerrada ? 'Cerrada 🔒' : 'Abierta'),
-        row('Líneas capturadas',   r.lineasCapturadas),
-        row('Empleados distintos', r.empleadosDistintos),
-        row('Total días en nómina',Number(r.totalDias).toFixed(2)),
-        row('Total horas',         Number(r.totalHoras).toFixed(2)),
-      ].join('');
+    if (!tbody) return;
+    if (!lines.length) {
+      tbody.innerHTML = '<tr><td colspan="20" style="padding:16px;color:var(--text3);text-align:center">Sin líneas capturadas para esta semana.</td></tr>';
+      return;
     }
+    const num = (v) => v == null ? '—' : Number(v).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const txt = (v) => v == null || v === '' ? '—' : esc(String(v));
+    tbody.innerHTML = lines.map((l) => `<tr>
+      <td class="mono">${txt(l.numeroLista)}</td>
+      <td>${txt(l.nombre)}</td>
+      <td class="mono">${txt(l.rfc)}</td>
+      <td class="mono">${txt(l.curp)}</td>
+      <td class="mono">${txt(l.imss)}</td>
+      <td>${txt(l.puesto)}</td>
+      <td>${txt(l.area)}</td>
+      <td>${txt(l.departamento)}</td>
+      <td>${txt(l.turno)}</td>
+      <td>${l.fechaIngreso ? fmtDateDMY(l.fechaIngreso) : '—'}</td>
+      <td class="mono" style="text-align:right">${num(l.sd)}</td>
+      <td class="mono" style="text-align:right">${num(l.sdi)}</td>
+      <td class="mono" style="text-align:right">${num(l.diasNomina)}</td>
+      <td class="mono" style="text-align:right">${num(l.hrsLaboradas)}</td>
+      <td class="mono" style="text-align:right">${num(l.totalPercepciones)}</td>
+      <td class="mono" style="text-align:right">${num(l.percepcionesGravadas)}</td>
+      <td class="mono" style="text-align:right">${num(l.totalDeducciones)}</td>
+      <td class="mono" style="text-align:right;font-weight:600">${num(l.pagoNomina)}</td>
+      <td>${txt(l.notas)}</td>
+      <td><button class="btn sm" disabled style="padding:2px 8px;font-size:11px">Ver</button></td>
+    </tr>`).join('');
   } catch (err) {
     console.warn('⚠ loadPayrollResumen:', err);
-    if (tbody) tbody.innerHTML = '<tr><td colspan="2" style="padding:16px;color:var(--red);text-align:center">No se pudo cargar el resumen.</td></tr>';
+    if (tbody) tbody.innerHTML = '<tr><td colspan="20" style="padding:16px;color:var(--red);text-align:center">No se pudo cargar el detalle.</td></tr>';
   }
 }
 
@@ -3739,7 +4382,7 @@ function goMod(id) {
   if (id === 'pronostico') loadPronostico();
   if (id === 'nomina') loadPayrollWeeks(_payrollWeekId);
   if (id === 'conciliacion') loadConciliacionSemanas();
-  if (id === 'admin') loadAdminConfig();
+  if (id === 'admin') loadAdminAudit();
   refreshAllDlButtons();
   const c = CFG[id] || {};
   document.getElementById('ttitle').textContent = c.title || id;
@@ -3750,9 +4393,10 @@ function goMod(id) {
   const dates  = document.getElementById('ctrl-dates');
   const tabs   = document.getElementById('ctrl-tabs');
   const newBtn = document.getElementById('ctrl-new');
-  otSel.style.display = (id !== 'dashboard') ? 'flex' : 'none';
-  dates.style.display  = (id !== 'dashboard' && id !== 'ot' && id !== 'conciliacion') ? 'flex' : 'none';
+  otSel.style.display = (id !== 'dashboard' && id !== 'admin') ? 'flex' : 'none';
+  dates.style.display  = (id !== 'dashboard' && id !== 'ot' && id !== 'conciliacion' && id !== 'admin') ? 'flex' : 'none';
   tabs.style.display   = (id === 'dashboard') ? 'flex' : 'none';
+  document.querySelector('.topbar').style.display = (id === 'admin') ? 'none' : 'flex';
   newBtn.textContent   = c.newLabel || '+ Nueva OT';
 }
 
@@ -3786,8 +4430,13 @@ function goSub(mod, sub, el) {
     if (sub === 'entregas')   { loadDeliveries(); loadIncidents(); loadDeliveryKPIs(); }
   }
   if (mod === 'admin') {
-    if (sub === 'config')   loadAdminConfig();
-    if (sub === 'bitacora') loadAdminAudit();
+    if (sub === 'bitacora')   loadAdminAudit();
+    if (sub === 'apariencia') hydrateAparienciaUi();
+    if (sub === 'permisos')   loadAdminPermisos();
+  }
+  if (mod === 'nomina') {
+    // Hide topbar on CFDI/Resumen so they align like the admin sub-tabs; restore on Captura.
+    document.querySelector('.topbar').style.display = (sub === 'cfdi' || sub === 'resumen') ? 'none' : 'flex';
   }
 }
 function checkDl(prefix) {

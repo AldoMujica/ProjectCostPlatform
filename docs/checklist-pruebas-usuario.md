@@ -6,10 +6,11 @@
 >
 > **Cómo usar:** marca cada escenario como `[x] Pasa`, `[!] Falla`, o anota observaciones en la columna "Notas". Reporta fallos al equipo técnico con: número del escenario + pasos + qué ves vs qué esperabas + captura si aplica.
 >
-> **Última actualización:** 2026-04-23 · corresponde al estado post-Phase 5b (panel de administración + migración de valores a `system_config`).
+> **Última actualización:** 2026-05-06 · pase QA cliente 2026-05 · 5 P0 abiertos pendientes de diagnóstico (sección 0 abajo).
 
 ## Tabla de contenido
 
+0. [**🔴 Diagnóstico prioritario · pase QA 2026-05**](#0--diagnóstico-prioritario--pase-qa-2026-05) ← **HACER PRIMERO**
 1. [Preparación del entorno](#1-preparación-del-entorno)
 2. [Autenticación y roles](#2-autenticación-y-roles)
 3. [Navegación global](#3-navegación-global)
@@ -26,6 +27,214 @@
 14. [Módulo 11 · Administración](#14-módulo-11--administración)
 15. [Flujos transversales](#15-flujos-transversales)
 16. [Hoja de firmas](#16-hoja-de-firmas)
+
+---
+
+## 0. 🔴 Diagnóstico prioritario · pase QA 2026-05
+
+> **Bloquea el resto del checklist.** Este bloque captura información de DevTools para 5 bugs P0 reportados que requieren causa raíz antes de poder ser fixeados. **Ejecuta esta sección antes que cualquier otra y entrega los resultados al equipo técnico** — un solo dump de Console + Network puede tachar varios items a la vez.
+>
+> Hipótesis abierta: un único error JS en orden temprano del archivo está rompiendo `addEventListener` de varios botones a la vez (P0.4). El fix de uno puede caer varios.
+>
+> Detalle de hipótesis e investigación previa: [docs/qa-findings-2026-05-06.md](qa-findings-2026-05-06.md).
+
+### 0.0 Setup común
+
+1. Abre la SPA en **Chrome / Edge ≥ 120**.
+2. Pulsa **F12** para abrir DevTools.
+3. En DevTools, prepara dos pestañas visibles: **Console** y **Network**.
+4. En **Network**, marca el checkbox **`Preserve log`** (parte superior) — así no se pierden requests al cambiar de módulo.
+5. Antes de cada repro: limpia ambas (botón 🚫 en cada panel).
+6. Tip: para más espacio puedes desacoplar DevTools — ⋮ (esquina superior derecha del panel) → "Dock side" → "Undock into separate window".
+
+### 0.1 Cotización falla con notNull (P0 · 6.2)
+
+**Repro:**
+1. Login como `admin@alenstec.mx`.
+2. Click módulo **Cotizaciones y Ventas**.
+3. Limpia Console + Network.
+4. Click **`+ Nueva cotización`**.
+5. Llena los 4 campos obligatorios:
+   - COT Alenstec * → `CZ-2026-999`
+   - Cliente * → `Test`
+   - Descripción del proyecto * → `Test 6.2`
+   - Costo COT (USD s/IVA) * → `1000`
+6. Click **`Crear cotización`**.
+
+**Qué capturar (Network → fila roja `quotes` POST → click):**
+- Pestaña **Headers** → `Status Code`.
+- Pestaña **Payload** → click _"view source"_ y copia TODO el JSON.
+- Pestaña **Response** → copia el contenido completo.
+
+**Qué capturar (Console):** primer mensaje rojo, si lo hay.
+
+**Pegar resultados:**
+````
+### 0.1 · Resultado
+
+Status: ___
+Request Payload:
+{ ... pega aquí el JSON ... }
+
+Response:
+{ ... pega aquí ... }
+
+Console:
+[copy-paste del error o "sin errores"]
+````
+
+- [ ] Resultado entregado al equipo técnico
+
+---
+
+### 0.2 Descargar XLSX Pronóstico no descarga (P0 · 7.3)
+
+**Repro:**
+1. Login como `admin`.
+2. Click módulo **Pronóstico del Costo**.
+3. Limpia Console + Network.
+4. Click **`⬇ Descargar XLSX`** dentro del card "Pronóstico del Costo por OT…".
+
+**Qué capturar (Network → fila `export` GET):**
+- `Status Code`.
+- `Content-Type` y `Content-Disposition` (de Response Headers).
+- Si Status ≠ 200 → pestaña **Response** → copia todo.
+- Si Status = 200 pero el archivo no aparece en Descargas → confírmalo en texto.
+
+**Qué capturar (Console):** rojo si lo hay. Si aparece un alert tipo _"No se pudo descargar: …"_ → copia el texto literal del alert.
+
+**Pegar resultados:**
+````
+### 0.2 · Resultado
+
+Status: ___
+Content-Type: ___
+Content-Disposition: ___
+
+Response (si !=200):
+[pega aquí]
+
+Alert visto en pantalla:
+"___"
+
+Console:
+[pega aquí]
+````
+
+- [ ] Resultado entregado
+
+---
+
+### 0.3 CFDI duplicado al subir 2 veces (P0 · 9.4.d)
+
+**Texto rápido — responde directo:**
+1. ¿Los 2 XMLs subidos eran **el mismo archivo** (mismo nombre y contenido), o **2 facturas distintas del mismo proveedor**?
+2. Después del segundo upload, en la tabla **Facturas** del módulo Entregas, ¿la columna UUID muestra valores **idénticos** o **distintos** entre los renglones supuestamente duplicados?
+
+**Verificación adicional (opcional, una de las 2):**
+
+a) Si tienes acceso a la DB, en `psql` / pgAdmin / DBeaver:
+```sql
+SELECT id, uuid_fiscal, folio, rfc_emisor, total, created_at
+FROM supplier_invoices
+ORDER BY created_at DESC
+LIMIT 5;
+```
+
+b) Si no: en DevTools → Network, mientras estás en módulo Entregas → sub-tab Facturas, busca el GET `/api/invoices` → pestaña Response → copia el JSON.
+
+**Pegar resultados:**
+````
+### 0.3 · Resultado
+
+XMLs subidos: [iguales | distintos del mismo proveedor]
+UUIDs en tabla: [iguales | distintos]
+
+SQL (o JSON de /api/invoices):
+[pega aquí]
+````
+
+- [ ] Resultado entregado
+
+---
+
+### 0.4 Bundle Entregas · varios botones "no funciona" (P0 · 9.2.b/9.2.c/9.3.b/9.4.b/9.5.b/9.5.c)
+
+> **Importante:** este caso es donde más vale la pena el dump de Console al cargar la SPA — un solo error temprano puede romper varios botones. Por eso este bloque va PRIMERO antes de tocar cualquier otro caso.
+
+**Repro:**
+1. Cierra todas las pestañas del browser. Abre una nueva.
+2. Pulsa **F12** ANTES de cargar la SPA — para capturar errores tempranos.
+3. Pega la URL del SPA, **Enter**.
+4. Espera carga completa.
+5. **Screenshot del Console completo** (todos los mensajes que aparezcan al cargar) — me interesan rojos y amarillos.
+6. Login como `admin`.
+7. Limpia Console (botón 🚫) — Network NO la limpies.
+8. Click módulo **Entregas de Material**.
+9. Click sub-tab **OCP** → click **`+ Capturar OCP`**. Anota: ¿abre modal? ¿alert? ¿nada?
+10. Si nada visible → screenshot del Console después del click.
+11. Repite para los demás botones (limpia Console entre cada uno):
+    - Sub-tab **Inventario** → `+ Agregar existencia`
+    - Sub-tab **Facturas** → `+ Agregar factura`
+    - Sub-tab **Entregas** → `+ Registrar entrega`
+    - Sub-tab **Entregas** → `+ Ingresar incidencia`
+
+**Pegar resultados:**
+````
+### 0.4 · Resultado
+
+Console al cargar la SPA (screenshot o paste):
+[pega aquí]
+
+Botón → comportamiento observado:
+- + Capturar OCP:        [abre modal | nada | alert "..."]
+- + Agregar existencia:  [...]
+- + Agregar factura:     [...]
+- + Registrar entrega:   [...]
+- + Ingresar incidencia: [...]
+
+Console después del primer click roto:
+[pega aquí]
+````
+
+- [ ] Resultado entregado
+
+---
+
+### 0.5 Conciliación · Importar a BD + Cierre semana (P0 · 12.3 / 12.11)
+
+**Solo 4 preguntas de texto:**
+
+**12.3 (Importar a BD no responde):**
+1. ¿Clickeaste **"Previsualizar"** ANTES de "Importar a BD"? (Es precondición — sin previsualización el botón no hace nada útil.)
+2. Cuando clickeas "Importar a BD", ¿el botón está **gris/deshabilitado**, o sí se puede clickear?
+3. ¿Sale algún alert? Si sí, copia el texto.
+
+**12.11 (Cierre de semana + XLSX):**
+4. ¿Querés **un botón combinado** (un solo botón que cierra Y descarga el Excel del cierre) o está bien con **dos botones separados** ("Cerrar Semana" + "Exportar Excel") con etiquetas más claras?
+
+**Pegar resultados:**
+````
+### 0.5 · Resultado
+
+12.3:
+1. Previsualizar antes: [sí | no]
+2. Estado del botón: [habilitado | gris]
+3. Alert: "..."
+
+12.11:
+4. [un botón combinado | dos separados]
+````
+
+- [ ] Resultado entregado
+
+---
+
+### 0.99 Cierre del bloque
+
+Una vez entregados los 5 resultados al equipo técnico, **continuar con la sección 1 (Preparación del entorno)**. El equipo abrirá los fixes correspondientes y volverá a ti con confirmación de cierre por cada P0.
+
+- [ ] Bloque 0 completo · pase desbloqueado
 
 ---
 
@@ -48,7 +257,7 @@ Antes de empezar:
 > En producción la contraseña vendrá de la variable `SEED_DEFAULT_PASSWORD`; el cliente debe cambiarla en el primer login.
 
 - [ ] **Datos semilla** cargados (6 OTs, 4 cotizaciones, 3 proveedores, 18 empleados, 6 OCPs, 7 items de inventario, 5 CFDIs, 8 entregas, 2 incidencias)
-- [ ] **Navegador moderno** (Chrome / Edge / Firefox actualizado)
+- [ ] **Navegador moderno y soportado:** Chrome ≥ 120, Edge ≥ 120, Firefox ≥ 120 (Safari no se prueba contra esta release; reportar bugs solo si el cliente lo usa). Verificar versión en `chrome://version` / `edge://version` / `about:support`.
 - [ ] **Hoja del Excel de control de ventas** disponible para la prueba de importación (opcional)
 
 ---
@@ -108,14 +317,24 @@ Antes de empezar:
 
 ### 2.6 Acceso denegado por rol (escritura sin permiso)
 
-**Rol:** `supervisor`
+**Rol:** `supervisor` · **Precondición:** sesión iniciada como `supervisor`.
 
-1. Login como supervisor
-2. Ir al módulo "Costo de Material"
-3. Clic en "+ Registrar material", llenar el formulario
-4. Clic en "Registrar"
+> Tras P1.3 (helper `canActAs`), los botones de acción **se deshabilitan visualmente** según el rol con un tooltip explicativo, antes de que el server tenga que rechazar el POST. Este caso valida tanto la capa visual (FE) como la de seguridad (backend).
 
-**Esperado:** error "Acceso denegado. Roles permitidos: admin, compras, jefe_area" (o similar). El registro NO se crea.
+1. Login como `supervisor` (`supervisor@alenstec.mx`).
+2. Ir al módulo "Costo de Material".
+3. Pasar el cursor sobre el botón **`+ Registrar material`** (NO debe abrir el modal).
+
+**Esperado capa FE:** el botón aparece **deshabilitado** (opacity ~.45) y el tooltip dice _"Tu rol no permite esta acción (requiere: admin, compras, jefe_area)."_
+
+4. Para verificar la capa server-side: abrir DevTools → Console → ejecutar:
+   ```js
+   document.getElementById('mat-new-btn').disabled = false;
+   document.getElementById('mat-new-btn').click();
+   ```
+   Llenar el form y hacer "Registrar".
+
+**Esperado capa backend:** error _"Acceso denegado. Roles permitidos: admin, compras, jefe_area"_ devuelto por el server. El registro NO se crea.
 
 - [ ] Pasa · Notas: ________________________________________
 
@@ -153,9 +372,15 @@ Antes de empezar:
 
 ### 3.4 Responsive (ventana angosta)
 
-1. Reducir el ancho del navegador a ~700 px
+> **Cómo simular un viewport angosto sin redimensionar la ventana real:** abrir **DevTools (F12) → ícono "Toggle device toolbar"** (📱, esquina superior izquierda del panel DevTools, atajo `Ctrl+Shift+M`). En la barra que aparece arriba, elegir **"Responsive"** y forzar el ancho a `700` (escribir 700 en el campo de ancho, dejar la altura libre). Esto simula tablets en portrait sin afectar la ventana del browser.
 
-**Esperado:** el sidebar colapsa a solo iconos (se oculta el texto). Grids de KPI se reorganizan.
+1. Abrir DevTools en el navegador (Chrome / Edge / Firefox ≥ 120).
+2. Activar el modo responsive y fijar viewport en **700 × 900 px**.
+3. Recargar (`F5`) para que el layout se evalúe con el nuevo viewport.
+
+**Esperado:** el sidebar colapsa a solo iconos (se oculta el texto). Los grids de KPI (`.kg`, `.g2`, `.g3`) se reorganizan a 1 o 2 columnas. Las tablas con `overflow-x:auto` mantienen scroll horizontal sin romper layout.
+
+**Cuándo NO es bug:** si una tabla con `min-width:2400px` (ej. captura de nómina) no es legible — esa tabla es por diseño desktop-only.
 
 - [ ] Pasa · Notas: ________________________________________
 
@@ -221,11 +446,15 @@ Antes de empezar:
 
 ### 5.2 Crear nueva OT
 
+> **Formato obligatorio del No. OT:** `OT-AL-####` (4 dígitos). El form aplica `pattern="OT-AL-\d{4}"`; cualquier otro formato (ej. `OT-AL-9001`) será rechazado por el browser con un tooltip antes de llegar al server. Esto es **intencional** — preserva la convención interna de Alenstec.
+
 1. En la barra superior, clic en "+ Nueva OT"
-2. Llenar: No. OT = `OT-TEST-001`, Cliente = `Cliente Prueba`, Descripción = `Escenario 5.2`, Tipo = `Servicio`, Costo cotizado = `5000`
+2. Llenar: No. OT = `OT-AL-9001`, Cliente = `Cliente Prueba`, Descripción = `Escenario 5.2`, Tipo = `Servicio`, Costo cotizado = `5000`
 3. Clic en "Crear OT"
 
-**Esperado:** el modal cierra, el selector de OT ahora incluye OT-TEST-001 y está seleccionada.
+**Esperado:** el modal cierra, el selector de OT ahora incluye `OT-AL-9001` y está seleccionada.
+
+**Caso negativo (opcional):** intenta usar `OT-AL-9001` como No. OT. **Esperado:** el browser bloquea el submit y muestra un tooltip "Formato esperado: OT-AL-#### (ej. OT-AL-0042)…".
 
 - [ ] Pasa · Notas: ________________________________________
 
@@ -243,7 +472,7 @@ Antes de empezar:
 
 **Precondición:** escenario 5.2 (OT recién creada) · [`ot.jefaturas_default`](./implementation-audit.md) tiene valores.
 
-1. Seleccionar la OT-TEST-001
+1. Seleccionar la OT-AL-9001
 2. Revisar las 4 casillas en "Liberado a (Jefaturas)"
 
 **Esperado:** precargados con los nombres configurados por defecto (Cristian Durán, Jesús Lara, Jessica Fuentes, N/A) sin que el operador los haya escrito.
@@ -382,16 +611,34 @@ Antes de empezar:
 
 ### 7.4 Cambio de umbral afecta el semáforo en caliente *(requiere admin)*
 
-1. Login como admin
-2. Ir a "Administración" → "Configuración"
-3. Editar clave `forecasting.semaforo.ok_max`, cambiar su valor de `0.7` a `0.05`, guardar
-4. Volver a "Pronóstico del Costo" y esperar ~30 s o refrescar
+> ℹ️ **Cambio de UI:** la pestaña _Administración → Configuración_ fue removida del frontend (mayo 2026). El endpoint backend `PUT /api/admin/config/:key` sigue activo. Para esta prueba se usa **curl** o **REST client** (Postman/Insomnia/Thunder Client en VS Code). El cambio sigue surtiendo efecto en ≤ 30 s gracias al TTL de `configService`.
+
+**Repro vía curl** (Linux/Mac/Git Bash):
+
+1. Login como admin en el navegador y copiar el `Access Token` desde `localStorage` (DevTools → Application → Local Storage → `alenstec_access_token`).
+2. En terminal:
+   ```bash
+   TOKEN="<pega-aquí-el-token>"
+   curl -X PUT http://localhost:3000/api/admin/config/forecasting.semaforo.ok_max \
+     -H "Authorization: Bearer $TOKEN" \
+     -H "Content-Type: application/json" \
+     -d '{"value":0.05}'
+   ```
+3. Volver a "Pronóstico del Costo" en el navegador y esperar ~30 s o refrescar (`F5`).
 
 **Esperado:** OTs que antes estaban en `OK` (verde) ahora muestran `Atención` (ámbar), incluso las que apenas tienen costos.
 
-5. Restaurar el valor a `0.7`
+4. Restaurar el valor a `0.7`:
+   ```bash
+   curl -X PUT http://localhost:3000/api/admin/config/forecasting.semaforo.ok_max \
+     -H "Authorization: Bearer $TOKEN" \
+     -H "Content-Type: application/json" \
+     -d '{"value":0.7}'
+   ```
 
-**Esperado:** los semáforos vuelven a la clasificación original.
+**Esperado:** los semáforos vuelven a la clasificación original tras ~30 s.
+
+**Verificación adicional:** la **Bitácora** (Administración → Bitácora) debe mostrar 2 eventos `config_change` con el detalle `antes`/`después`.
 
 - [ ] Pasa · Notas: ________________________________________
 
@@ -653,6 +900,8 @@ Este módulo tiene 5 pestañas. Verifica cada una.
 - [ ] Pasa · Notas: ________________________________________
 
 ### 12.4 Resumen semanal con empleados
+
+> ⚠ **Precondición obligatoria para 12.4–12.10:** completar **12.2 + 12.3** primero. El `npm run seed` carga empleados + 1 semana vacía pero **NO importa el checador automáticamente** — la tabla aparecerá en blanco hasta que subas el CSV (`backend/fixtures/checador-sample.csv`) e importes a BD.
 
 1. Ir a sub-pestaña "Conciliación Semanal"
 
