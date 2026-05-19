@@ -3936,36 +3936,34 @@ async function loadCotizaciones() {
     const quotes = await res.json();
 
     // Table (P2.5) — 20 columnas alineadas 1:1 con el XLSX master
-    // "Control Ventas 2026" (mismo orden que el export/import para que
-    // el operador vea en pantalla exactamente lo que sube/baja).
     if (tbody) {
       if (!quotes.length) {
         tbody.innerHTML = '<tr><td colspan="20" style="padding:16px;color:var(--text3);text-align:center">Sin cotizaciones registradas.</td></tr>';
       } else {
         tbody.innerHTML = quotes.map((q, i) => {
           const amount = Number(q.amount) || 0;
-          const costoOC = q.costoOC != null ? fmtCurrency(Number(q.costoOC), 'USD') : '—';
-          const fx = q.exchangeRate != null ? `$${Number(q.exchangeRate).toFixed(2)}` : '—';
-          const fechaCot = q.fechaCotizacion ? fmtDateDMY(q.fechaCotizacion) : fmtDateDMY(q.createdAt);
+          const costoCotUsd = Number(q.costoCotUsd) || 0;
+          const costoOcUsd = Number(q.costoOcUsd) || 0;
+          const tipoCambio = q.tipoCambio != null ? `${Number(q.tipoCambio).toFixed(2)}` : '—';
           return `<tr>
             <td class="mono">${i + 1}</td>
-            <td>${esc(q.client) || '—'}</td>
+            <td>${esc(q.cliente) || esc(q.client) || '—'}</td>
             <td>${esc(q.proyecto) || '—'}</td>
             <td class="mono">${esc(q.celda) || '—'}</td>
             <td class="mono">${esc(q.rfq) || '—'}</td>
             <td class="mono">${esc(q.mecr) || '—'}</td>
-            <td class="mono">${esc(q.cotRef) || '—'}</td>
+            <td class="mono">${esc(q.cotRefAlenstec) || esc(q.cotRef) || '—'}</td>
             <td class="mono">${esc(q.quoteNumber) || '—'}</td>
-            <td>${fechaCot}</td>
-            <td class="mono" style="font-weight:600">${fmtCurrency(amount, q.currency || 'USD')}</td>
+            <td>${fmtDateDMY(q.fechaCot || q.createdAt)}</td>
+            <td class="mono" style="font-weight:600">${fmtCurrency(costoCotUsd || amount, 'USD')}</td>
             <td class="mono">${esc(q.ocCliente) || '—'}</td>
             <td>${esc(q.tipoContrato) || '—'}</td>
-            <td>${q.fechaOC ? fmtDateDMY(q.fechaOC) : '—'}</td>
-            <td class="mono">${costoOC}</td>
-            <td>${q.fechaCompromiso ? fmtDateDMY(q.fechaCompromiso) : '—'}</td>
-            <td class="mono">${fx}</td>
+            <td>${fmtDateDMY(q.fechaOc)}</td>
+            <td class="mono">${fmtCurrency(costoOcUsd, 'USD')}</td>
+            <td>${fmtDateDMY(q.fechaCompromiso)}</td>
+            <td class="mono">${tipoCambio}</td>
             <td class="mono">${esc(q.otNumber) || '—'}</td>
-            <td>${esc(q.description) || '—'}</td>
+            <td>${esc(q.descripcionProyecto) || esc(q.description) || '—'}</td>
             <td>${quoteTipoBadge(q.tipo)}</td>
             <td>${quoteStatusBadge(q.status)}</td>
           </tr>`;
@@ -3979,20 +3977,20 @@ async function loadCotizaciones() {
     // Sum only USD quotes — mixing currencies would require an FX pass.
     const usdTotal = quotes
       .filter((q) => (q.currency || 'USD') === 'USD')
-      .reduce((sum, q) => sum + (Number(q.amount) || 0), 0);
+      .reduce((sum, q) => sum + (Number(q.costoCotUsd || q.amount) || 0), 0);
     setKpi('kpi-cot-amount', fmtCurrencyCompact(usdTotal, 'USD'));
 
-    // Most recent quote with an exchangeRate (by createdAt DESC).
+    // Most recent quote with a tipoCambio (by fechaCot DESC).
     const withFx = quotes
-      .filter((q) => q.exchangeRate != null)
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    setKpi('kpi-cot-fx', withFx.length ? `$${Number(withFx[0].exchangeRate).toFixed(2)}` : '—');
+      .filter((q) => q.tipoCambio != null)
+      .sort((a, b) => new Date(b.fechaCot || b.createdAt) - new Date(a.fechaCot || a.createdAt));
+    setKpi('kpi-cot-fx', withFx.length ? `$${Number(withFx[0].tipoCambio).toFixed(2)}` : '—');
 
-    const clients = new Set(quotes.map((q) => q.client).filter(Boolean));
+    const clients = new Set(quotes.map((q) => (q.cliente || q.client)).filter(Boolean));
     setKpi('kpi-cot-clients', String(clients.size));
   } catch (err) {
     console.warn('⚠ loadCotizaciones:', err);
-    if (tbody) tbody.innerHTML = '<tr><td colspan="11" style="padding:16px;color:var(--red);text-align:center">No se pudieron cargar las cotizaciones.</td></tr>';
+    if (tbody) tbody.innerHTML = '<tr><td colspan="19" style="padding:16px;color:var(--red);text-align:center">No se pudieron cargar las cotizaciones.</td></tr>';
   }
 }
 
@@ -5241,6 +5239,140 @@ function handleXMLUpload(event) {
   dates.style.display = 'none';
   otSel.style.display = 'none';
 })();
+
+// ===== Cotizaciones — Modal Nueva Cotización (Estructura Completa) =====
+function showNewCotizacionModal() {
+  let orders = _otCache;
+  if (!orders.length) {
+    try {
+      const res = apiFetch(`${API_URL}/work-orders`);
+      res.then(r => {
+        if (r.ok) r.json().then(orders => { _otCache = orders; });
+      }).catch(() => { /* continue */ });
+    } catch { /* continue */ }
+  }
+  const otOptions = orders.map((o) => `<option value="${esc(o.id)}" data-number="${esc(o.otNumber)}">${esc(o.otNumber)} · ${esc(o.client)}</option>`).join('');
+
+  const actividadesOptions = [
+    'Actividad no especificada',
+    'Desarrollo y preventa',
+    'Compras',
+    'Planeacion y Ctrl prod (procesos)',
+    'Seguridad Industrial',
+    'Gestion de calidad (ISO)',
+    'Almacen',
+    'Control de Costo',
+    'Supervicion',
+    'Mantenimiento',
+    'Actividades administrativas/contables/RH',
+    'Juntas',
+    'Curso/capacitacion',
+  ].map((a) => `<option value="${esc(a)}">${esc(a)}</option>`).join('');
+
+  const bodyHtml = `
+    <form id="new-cot-form" style="max-height:70vh;overflow-y:auto;padding-right:12px">
+
+      <!-- SECCIÓN 1: DATOS BÁSICOS -->
+      <fieldset>
+        <legend>📋 Datos Básicos</legend>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="fg"><label>Cliente *</label><input name="cliente" required></div>
+          <div class="fg"><label>Proyecto / Programa</label><input name="proyecto"></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+          <div class="fg"><label>Celda</label><input name="celda"></div>
+          <div class="fg"><label>RFQ</label><input name="rfq"></div>
+          <div class="fg"><label>MECR</label><input name="mecr"></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="fg"><label>COT REF. ALENSTEC (COT-AL) *</label><input name="cotRefAlenstec" placeholder="CZ-2026-###" required></div>
+          <div class="fg"><label>Fecha COT (dd/mm/yyyy) *</label><input name="fechaCot" type="date" required></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="fg"><label>COSTO COT-AL (USD) (Sin IVA) *</label><input name="costoCotUsd" type="number" step="0.01" min="0" required></div>
+          <div class="fg"><label>Orden de Compra (Cliente)</label><input name="ocCliente"></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="fg"><label>Tipo de Contrato</label>
+            <select name="tipoContrato">
+              <option value="">—</option>
+              <option value="Abierta">Abierta</option>
+              <option value="Cerrada">Cerrada</option>
+              <option value="Administración">Administración</option>
+              <option value="Marco">Marco</option>
+            </select>
+          </div>
+          <div class="fg"><label>Fecha O.C. (dd/mm/yyyy)</label><input name="fechaOc" type="date"></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="fg"><label>COSTO O.C. (USD) (Sin IVA)</label><input name="costoOcUsd" type="number" step="0.01" min="0"></div>
+          <div class="fg"><label>Fecha Compromiso Entrega (dd/mm/yyyy)</label><input name="fechaCompromiso" type="date"></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="fg"><label>Tipo de Cambio (USD) [MXN-USD]</label><input name="tipoCambio" type="number" step="0.01" min="0" placeholder="17.50"></div>
+          <div class="fg"><label>OT. ALENSTEC (OT-AL)</label>
+            <select name="otId">
+              <option value="">—</option>
+              ${otOptions}
+            </select>
+          </div>
+        </div>
+
+        <div class="fg"><label>Descripción de Proyecto</label><textarea name="descripcionProyecto" placeholder="Detalle del proyecto…" style="min-height:80px"></textarea></div>
+      </fieldset>
+
+      <div class="modal-error" id="new-cot-error"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn sm" onclick="closeModal()">Cancelar</button>
+        <button type="submit" class="btn p sm" id="new-cot-submit">Crear Cotización</button>
+      </div>
+    </form>
+  `;
+
+  openModal({
+    title: '+ Nueva Cotización',
+    bodyHtml: bodyHtml,
+  });
+
+  const form = document.getElementById('new-cot-form');
+  const err  = document.getElementById('new-cot-error');
+  const submitBtn = document.getElementById('new-cot-submit');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    err.textContent = '';
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Creando…';
+
+    try {
+      const data = Object.fromEntries(new FormData(form).entries());
+      ['costoCotUsd', 'costoOcUsd', 'tipoCambio'].forEach((k) => { if (data[k] !== '' && data[k] != null) data[k] = Number(data[k]); });
+
+      const res = await apiFetch(`${API_URL}/quotes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || body.mensaje || `HTTP ${res.status}`);
+
+      closeModal();
+      await loadCotizaciones();
+    } catch (e2) {
+      err.textContent = e2.message;
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Crear Cotización';
+    }
+  });
+}
 
 </script>
 </body>
