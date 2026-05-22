@@ -18,6 +18,8 @@ const InventoryItem = sequelize.define('InventoryItem', {
   tableName: 'inventory_items',
   timestamps: true,
   underscored: true,
+  paranoid: true,
+  deletedAt: 'deleted_at',
 });
 
 module.exports = InventoryItem;

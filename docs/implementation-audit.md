@@ -96,6 +96,22 @@ Nueva tabla: `system_config(key UNIQUE, value JSONB, category, data_type, update
 
 **P1.7 (per-record supervisor ACL)** — ✅ **closed in Phase-3 P3.18b.** See table above.
 
+## Soft-delete transversal (2026-05-22 · ADR-008)
+
+Cliente solicitó poder borrar items en cualquier módulo. Hasta ese punto la SPA no hacía una sola llamada DELETE y solo 7 endpoints backend la soportaban. Resuelto en un work-item transversal post-Phase-3:
+
+| Cambio                                                                                                       | Resolución |
+|--------------------------------------------------------------------------------------------------------------|------------|
+| Soft-delete en 16 modelos (`paranoid: true` + columna `deleted_at`). Migración `20260522-0007-soft-delete.js`. | ✅ |
+| DELETE + restore endpoints para todas las entidades operativas (8 routes con DELETE nuevo, 3 actualizados, 13 endpoints restore). | ✅ |
+| Cascade-soft-delete transaccional en `DELETE /api/work-orders/:id` (costos, OCPs, inventario, facturas, entregas, incidencias, aprobaciones). 409 si la OT está `Liberada` sin `?force=true`. | ✅ |
+| `DELETE /api/suppliers/:id` devuelve 409 con lista de dependientes; `?cascade=true` (admin) borra OCPs/facturas/entregas/incidencias. | ✅ |
+| Pantalla "Papelera" en módulo Admin (sub-tab nuevo). `GET /api/admin/recycle-bin` lista resumen + detalle por entidad. | ✅ |
+| 14 funciones `deleteRow_*` en SPA + 2 helpers nuevos (`confirmDialog`, `toast`) + botones 🗑 por fila en 11 tablas. PERMS extendidas con 13 entradas `*.delete` + `admin.restore`. | ✅ |
+| Roles: `admin` + `jefe_area` para borrar (por defecto). Excepciones: `employees` y `payroll/*` también permiten `rh`. Restore: solo `admin`. | ✅ |
+
+Tablas **excluidas** del soft-delete por diseño: `usuarios`, `system_config`, `bitacora` (identidad / auditoría inmutable).
+
 ## Legend
 
 | Symbol | Meaning                                                   |

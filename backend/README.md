@@ -38,6 +38,19 @@ All `/api/*` routes except `/api/auth/*` and `/api/health` require a valid JWT i
 - `GET  /api/auth/me` — current user
 - `/api/work-orders`, `/api/quotes` (+ `/export`, `/import`), `/api/costs/{material,labor}`, `/api/suppliers`, `/api/conciliacion/*`
 
+### Soft-delete & restore (ADR-008)
+
+Every operational entity supports soft-delete via Sequelize `paranoid` mode (a `deleted_at TIMESTAMP NULL` column added by migration `20260522-0007-soft-delete.js`). Tables excluded by design: `usuarios`, `system_config`, `bitacora` (auditoría inmutable).
+
+- `DELETE /api/work-orders/:id?force=true` — cascade-soft-delete de costos, OCPs, inventario, facturas, entregas, incidencias y aprobaciones. `force=true` (admin) requerido si la OT está `Liberada`.
+- `DELETE /api/suppliers/:id?cascade=true` — sin `cascade` devuelve 409 con lista de dependientes; con `cascade=true` (admin) borra también OCPs/facturas/entregas/incidencias asociadas.
+- `DELETE /api/{quotes,costs/material,costs/labor,purchase-orders,inventory,supplier-invoices,deliveries,deliveries/incidents,employees,payroll/weeks,payroll/lines}/:id` — soft-delete simple.
+- `POST /api/<recurso>/:id/restore` — restore admin-only por entidad.
+- `GET /api/admin/recycle-bin` — resumen de borrados por entidad (admin only).
+- `GET /api/admin/recycle-bin?entity=<name>&limit=N&offset=N` — listado paginado de registros borrados de una entidad.
+
+**Roles por defecto:** `admin` + `jefe_area` para borrar. Excepciones: `employees` y `payroll/*` también permiten `rh`. Restore: solo `admin`.
+
 See [`implementation-roadmap.md`](../docs/implementation-roadmap.md) §Phase 2 for the full MVP endpoint list.
 
 ## Roles

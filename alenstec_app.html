@@ -467,10 +467,13 @@ table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
 <div class="mod" id="mod-ot">
   <div class="ot-banner">
     <div>
-      <div class="ot-num">OT-AL-1948</div>
-      <div class="ot-desc">Adient Lerma · Trab. adic. por cambio de ubic. de botón en vestidura para maq. exis. del proy. Rivian y Toyota · Planta Adient Lerma</div>
+      <div class="ot-num">—</div>
+      <div class="ot-desc">Selecciona una OT para ver el detalle.</div>
     </div>
-    <div class="ot-acts"><button class="ot-btn" onclick="generateOTPDF()">⬇ Imprimir PDF</button></div>
+    <div class="ot-acts">
+      <button class="ot-btn" onclick="generateOTPDF()">⬇ Imprimir PDF</button>
+      <button class="ot-btn" data-perm-required="ot.delete" onclick="deleteSelectedOT()" style="background:var(--red, #dc2626);color:#fff">🗑 Eliminar OT</button>
+    </div>
   </div>
   <div class="g2">
     <div class="card">
@@ -512,14 +515,11 @@ table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
     </div>
   </div>
   <div class="card">
-    <div class="ch"><div><div class="ct">Horas Estimadas del Proyecto</div><div class="cs">OT-AL-1948 · Manufactura e Instalación en Planta Cliente</div></div></div>
+    <div class="ch"><div><div class="ct">Horas Estimadas del Proyecto</div><div class="cs">Captura pendiente</div></div></div>
     <div class="tw"><table>
       <thead><tr><th>Área</th><th>Ing./Diseño</th><th>Corte</th><th>Fabricación</th><th>Maquinado</th><th>L. Ensamble</th><th>L. Eléctrica</th><th>Automatiz.</th><th>Supervisor</th><th>Méc./Téc.</th><th>Eléctrico</th><th>Programador</th><th>Total</th></tr></thead>
       <tbody>
-        <tr><td style="font-weight:600;color:var(--green)">Manufactura (Est.)</td><td class="mono">36</td><td class="mono">2</td><td class="mono">15</td><td class="mono">84</td><td class="mono">17</td><td class="mono">5</td><td class="mono">0</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td><td class="mono" style="font-weight:600">159</td></tr>
-        <tr><td style="font-weight:600;color:var(--blue)">Inst. Planta (Est.)</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td><td class="mono">0</td><td class="mono" style="color:var(--amber);font-weight:600">30</td><td class="mono" style="color:var(--amber);font-weight:600">24</td><td class="mono" style="color:var(--amber);font-weight:600">30</td><td class="mono" style="font-weight:600">84</td></tr>
-        <tr style="background:var(--green-lt)"><td style="font-weight:600;color:var(--green)">Manufactura (Reales)</td><td class="mono">0</td><td class="mono">0</td><td class="mono">0</td><td class="mono">0</td><td class="mono">0</td><td class="mono">0</td><td class="mono">0</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td><td class="mono" style="font-weight:600">0</td></tr>
-        <tr style="background:var(--surface2)"><td colspan="12" style="font-weight:600;color:var(--text2)">TOTAL HORAS ESTIMADAS</td><td class="mono" style="font-size:14px;font-weight:600;color:var(--green)">243</td></tr>
+        <tr><td colspan="13" style="padding:16px;color:var(--text3);text-align:center">Sin datos. Selecciona una OT para ver sus horas estimadas.</td></tr>
       </tbody>
     </table></div>
   </div>
@@ -574,9 +574,10 @@ table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
         <th>Descripción de Proyecto</th>
         <th>Tipo</th>
         <th>Estado</th>
+        <th style="width:60px">Acc.</th>
       </tr></thead>
       <tbody id="cot-tbody">
-        <tr><td colspan="20" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
+        <tr><td colspan="21" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
       </tbody>
     </table></div>
   </div>
@@ -607,17 +608,17 @@ table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
 <!-- COSTO MATERIAL -->
 <div class="mod" id="mod-material">
   <div class="kg">
-    <div class="kpi"><div class="kl">Líneas de material</div><div class="kv" style="color:var(--blue)">377+</div><div class="ks">OCs en base de datos</div></div>
-    <div class="kpi"><div class="kl">Material stock activas</div><div class="kv">$1,411</div><div class="ks">USD · rev. 13-Mar-2026</div></div>
-    <div class="kpi"><div class="kl">Material solicitado</div><div class="kv" style="color:var(--amber)">$19,875</div><div class="ks">USD · total activas</div></div>
-    <div class="kpi"><div class="kl">Costo gral. real</div><div class="kv" style="color:var(--green)">$44,491</div><div class="ks">MXN · OT-1936</div></div>
+    <div class="kpi"><div class="kl">Líneas de material</div><div class="kv" id="mat-kpi-lineas" style="color:var(--blue)">—</div><div class="ks">Registros en base de datos</div></div>
+    <div class="kpi"><div class="kl">Material stock activas</div><div class="kv" id="mat-kpi-stock">—</div><div class="ks">USD · total activas</div></div>
+    <div class="kpi"><div class="kl">Material solicitado</div><div class="kv" id="mat-kpi-solicitado" style="color:var(--amber)">—</div><div class="ks">USD · total activas</div></div>
+    <div class="kpi"><div class="kl">Costo gral. real</div><div class="kv" id="mat-kpi-real" style="color:var(--green)">—</div><div class="ks">MXN · total</div></div>
   </div>
   <div class="card">
-    <div class="ch"><div><div class="ct">Requisición de Material Comercial por OT</div><div class="cs">Base de Datos OC · ERP Open Source · 2026</div></div><button class="btn p sm" id="mat-new-btn" data-perm-required="material.create">+ Registrar material</button></div>
+    <div class="ch"><div><div class="ct">Requisición de Material Comercial por OT</div><div class="cs">Listado de requisiciones registradas</div></div><button class="btn p sm" id="mat-new-btn" data-perm-required="material.create">+ Registrar material</button></div>
     <div class="tw"><table>
-      <thead><tr><th>Proveedor</th><th>Moneda</th><th>Descripción</th><th>OT</th><th>Pzas</th><th>Precio Unit.</th><th>Subtotal</th><th>IVA</th><th>Retención</th><th>Total</th><th>Estado</th></tr></thead>
+      <thead><tr><th>Proveedor</th><th>Moneda</th><th>Descripción</th><th>OT</th><th>Pzas</th><th>Precio Unit.</th><th>Subtotal</th><th>IVA</th><th>Retención</th><th>Total</th><th>Estado</th><th style="width:60px">Acc.</th></tr></thead>
       <tbody id="mat-tbody">
-        <tr><td colspan="11" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
+        <tr><td colspan="12" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
       </tbody>
     </table></div>
   </div>
@@ -648,9 +649,9 @@ table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
         <label>Hasta:</label><input type="date" id="prov-hasta" oninput="checkDl('prov')">
       </div>
       <div class="tw"><table>
-        <thead><tr><th>Nombre</th><th>Categorías</th><th>Contacto</th><th>OTs asociadas</th><th>Saldo pendiente</th><th>Estado</th></tr></thead>
+        <thead><tr><th>Nombre</th><th>Categorías</th><th>Contacto</th><th>OTs asociadas</th><th>Saldo pendiente</th><th>Estado</th><th style="width:60px">Acc.</th></tr></thead>
         <tbody id="prov-tbody">
-          <tr><td colspan="6" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
+          <tr><td colspan="7" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
         </tbody>
       </table></div>
     </div>
@@ -671,9 +672,9 @@ table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
         <label>Hasta:</label><input type="date" id="ocp-hasta" oninput="checkDl('ocp')">
       </div>
       <div class="tw"><table>
-        <thead><tr><th>No. OC Alenstec</th><th>Proveedor</th><th>OT</th><th>Descripción</th><th>Moneda</th><th>Monto</th><th>F. Emisión</th><th>F. Entrega Prom.</th><th>Estado</th></tr></thead>
+        <thead><tr><th>No. OC Alenstec</th><th>Proveedor</th><th>OT</th><th>Descripción</th><th>Moneda</th><th>Monto</th><th>F. Emisión</th><th>F. Entrega Prom.</th><th>Estado</th><th style="width:60px">Acc.</th></tr></thead>
         <tbody id="ocp-tbody">
-          <tr><td colspan="9" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
+          <tr><td colspan="10" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
         </tbody>
       </table></div>
     </div>
@@ -694,9 +695,9 @@ table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
         <label>Hasta:</label><input type="date" id="inv-hasta" oninput="checkDl('inv')">
       </div>
       <div class="tw"><table>
-        <thead><tr><th>Clave</th><th>Descripción</th><th>Proveedor</th><th>Moneda</th><th>Existencia</th><th>Unidad</th><th>Costo Unit.</th><th>Valor Total</th><th>OT Asignada</th><th>Estado</th></tr></thead>
+        <thead><tr><th>Clave</th><th>Descripción</th><th>Proveedor</th><th>Moneda</th><th>Existencia</th><th>Unidad</th><th>Costo Unit.</th><th>Valor Total</th><th>OT Asignada</th><th>Estado</th><th style="width:60px">Acc.</th></tr></thead>
         <tbody id="inv-tbody">
-          <tr><td colspan="10" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
+          <tr><td colspan="11" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
         </tbody>
       </table></div>
     </div>
@@ -719,9 +720,9 @@ table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
         <label>Hasta:</label><input type="date" id="fact-hasta" oninput="checkDl('fact')">
       </div>
       <div class="tw"><table>
-        <thead><tr><th>RFC Emisor</th><th>RFC Receptor</th><th>UUID / Folio</th><th>Serie</th><th>Folio</th><th>F. Emisión</th><th>F. Certificación</th><th>Régimen Fiscal</th><th>Concepto</th><th>Cantidad</th><th>P. Unit.</th><th>Subtotal</th><th>IVA</th><th>Ret. ISR</th><th>Ret. IVA</th><th>Total</th><th>Moneda</th><th>T/C</th><th>Método de Pago (PUE/PPD)</th><th>Validación SAT</th></tr></thead>
+        <thead><tr><th>RFC Emisor</th><th>RFC Receptor</th><th>UUID / Folio</th><th>Serie</th><th>Folio</th><th>F. Emisión</th><th>F. Certificación</th><th>Régimen Fiscal</th><th>Concepto</th><th>Cantidad</th><th>P. Unit.</th><th>Subtotal</th><th>IVA</th><th>Ret. ISR</th><th>Ret. IVA</th><th>Total</th><th>Moneda</th><th>T/C</th><th>Método de Pago (PUE/PPD)</th><th>Validación SAT</th><th style="width:60px">Acc.</th></tr></thead>
         <tbody id="fact-tbody">
-          <tr><td colspan="20" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
+          <tr><td colspan="21" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
         </tbody>
       </table></div>
     </div>
@@ -749,18 +750,18 @@ table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
         <label>Hasta:</label><input type="date" id="entr-hasta" oninput="checkDl('entr')">
       </div>
       <div class="tw"><table>
-        <thead><tr><th>No. Prov.</th><th>Proveedor</th><th>Producto</th><th>OT</th><th>Pzas</th><th>Precio Unit.</th><th>Entregado por</th><th>F. Recibido</th><th>F. Autorizado</th><th>Incidencia</th><th>Estado</th></tr></thead>
+        <thead><tr><th>No. Prov.</th><th>Proveedor</th><th>Producto</th><th>OT</th><th>Pzas</th><th>Precio Unit.</th><th>Entregado por</th><th>F. Recibido</th><th>F. Autorizado</th><th>Incidencia</th><th>Estado</th><th style="width:60px">Acc.</th></tr></thead>
         <tbody id="entregas-tbody">
-          <tr><td colspan="11" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
+          <tr><td colspan="12" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
         </tbody>
       </table></div>
     </div>
     <div class="card">
       <div class="ch"><div class="ct">Últimas Incidencias</div><button class="btn sm" onclick="showNewIncidentModal()" data-perm-required="incident.create">+ Ingresar incidencia</button></div>
       <div class="tw"><table>
-        <thead><tr><th>Folio</th><th>OT</th><th>Proveedor</th><th>Descripción</th><th>Registrado por</th><th>Fecha</th><th>Estado</th></tr></thead>
+        <thead><tr><th>Folio</th><th>OT</th><th>Proveedor</th><th>Descripción</th><th>Registrado por</th><th>Fecha</th><th>Estado</th><th style="width:60px">Acc.</th></tr></thead>
         <tbody id="incidents-tbody">
-          <tr><td colspan="7" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
+          <tr><td colspan="8" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
         </tbody>
       </table></div>
     </div>
@@ -783,9 +784,9 @@ table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
     <div class="card">
       <div class="ch"><div><div class="ct">Horas por Empleado, OT y Actividad</div><div class="cs">Registros de horas desde el ERP</div></div><button class="btn p sm" id="hrs-new-btn">+ Capturar horas</button></div>
       <div class="tw"><table>
-        <thead><tr><th>OT</th><th>Empleado</th><th>Rol</th><th>Horas</th><th>Tarifa</th><th>Total</th><th>Moneda</th><th>Fecha</th></tr></thead>
+        <thead><tr><th>OT</th><th>Empleado</th><th>Rol</th><th>Horas</th><th>Tarifa</th><th>Total</th><th>Moneda</th><th>Fecha</th><th style="width:60px">Acc.</th></tr></thead>
         <tbody id="hrs-tbody">
-          <tr><td colspan="8" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
+          <tr><td colspan="9" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
         </tbody>
       </table></div>
     </div>
@@ -794,9 +795,9 @@ table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
     <div class="card">
       <div class="ch"><div><div class="ct">Control de Empleados</div><div class="cs">Lista real de empleados con información de nómina</div></div><button class="btn p sm" id="emp-new-btn" onclick="showNewEmpleadoModal()" data-perm-required="employee.create">+ Nuevo empleado</button></div>
       <div class="tw" style="overflow-x:auto;"><table style="min-width:1600px;">
-        <thead><tr><th>No. listado de nómina</th><th>Nombre Rep Proc</th><th>Nombre</th><th>RFC</th><th>CURP</th><th>No. IMSS</th><th>Nivel de Estudios</th><th>Puesto</th><th>Departamento</th><th>Area</th><th>Fecha de ingreso</th><th>S.D</th><th>S.D.I 2</th></tr></thead>
+        <thead><tr><th>No. listado de nómina</th><th>Nombre Rep Proc</th><th>Nombre</th><th>RFC</th><th>CURP</th><th>No. IMSS</th><th>Nivel de Estudios</th><th>Puesto</th><th>Departamento</th><th>Area</th><th>Fecha de ingreso</th><th>S.D</th><th>S.D.I 2</th><th style="width:60px">Acc.</th></tr></thead>
         <tbody id="emp-tbody">
-          <tr><td colspan="13" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
+          <tr><td colspan="14" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
         </tbody>
       </table></div>
     </div>
@@ -1151,6 +1152,7 @@ table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
 <div class="mod" id="mod-admin">
   <div class="subnav">
     <div class="sntab active" onclick="goSub('admin','bitacora',this)">Bitácora</div>
+    <div class="sntab" onclick="goSub('admin','papelera',this)">Papelera</div>
     <div class="sntab" onclick="goSub('admin','apariencia',this)">Apariencia</div>
     <div class="sntab" onclick="goSub('admin','permisos',this)">Permisos</div>
   </div>
@@ -1185,6 +1187,33 @@ table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
         </tr></thead>
         <tbody id="admin-audit-tbody">
           <tr><td colspan="9" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- ===== PAPELERA ===== -->
+  <div class="submod" id="sub-admin-papelera">
+    <div class="card">
+      <div class="ch">
+        <div><div class="ct">Papelera (registros eliminados)</div><div class="cs">Restaura items borrados de cualquier módulo. Solo rol admin.</div></div>
+        <button class="btn sm" onclick="loadRecycleBin()">↻ Actualizar</button>
+      </div>
+      <div class="cb" style="padding:12px 16px 0">
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+          <label class="fl" style="margin:0">Entidad:</label>
+          <select class="fi" id="recycle-entity" style="max-width:280px" onchange="loadRecycleBin()">
+            <option value="">— Resumen (todas) —</option>
+          </select>
+          <span id="recycle-count" style="margin-left:auto;color:var(--text3);font-size:12px">—</span>
+        </div>
+      </div>
+      <div class="tw"><table>
+        <thead><tr>
+          <th>Tipo</th><th>Identificador</th><th>Borrado el</th><th>Detalle</th><th style="width:120px">Acciones</th>
+        </tr></thead>
+        <tbody id="recycle-tbody">
+          <tr><td colspan="5" style="padding:16px;color:var(--text3);text-align:center">Selecciona una entidad o usa "Resumen".</td></tr>
         </tbody>
       </table></div>
     </div>
@@ -1466,6 +1495,7 @@ function hideLogin() {
   document.getElementById('login-overlay').style.display = 'none';
   const app = document.querySelector('.app');
   if (app) app.style.visibility = 'visible';
+  goMod(getCurrentModule());
 }
 
 function renderUserChip() {
@@ -1489,20 +1519,31 @@ function renderUserChip() {
 // still the backend — this is a UX courtesy, not a security boundary.
 const PERMS = {
   'ot.create':         ['admin', 'ventas', 'jefe_area'],
-  'ot.delete':         ['admin'],
+  'ot.delete':         ['admin', 'jefe_area'],
   'quote.create':      ['admin', 'ventas'],
+  'quote.delete':      ['admin', 'jefe_area'],
   'supplier.create':   ['admin', 'compras'],
+  'supplier.delete':   ['admin', 'jefe_area'],
   'material.create':   ['admin', 'compras', 'jefe_area'],
+  'material.delete':   ['admin', 'jefe_area'],
   'labor.create':      ['admin', 'rh', 'jefe_area', 'supervisor'],
+  'labor.delete':      ['admin', 'jefe_area'],
   'employee.create':   ['admin', 'rh'],
-  'employee.delete':   ['admin'],
+  'employee.delete':   ['admin', 'rh'],
   'purchaseorder.create': ['admin', 'compras', 'jefe_area'],
+  'purchaseorder.delete': ['admin', 'jefe_area'],
   'inventory.create':  ['admin', 'compras', 'jefe_area'],
+  'inventory.delete':  ['admin', 'jefe_area'],
   'invoice.create':    ['admin', 'compras', 'jefe_area'],
+  'invoice.delete':    ['admin', 'jefe_area'],
   'delivery.create':   ['admin', 'compras', 'jefe_area'],
+  'delivery.delete':   ['admin', 'jefe_area'],
   'incident.create':   ['admin', 'compras', 'jefe_area', 'supervisor'],
+  'incident.delete':   ['admin', 'jefe_area'],
   'payroll.create':    ['admin', 'rh'],
+  'payroll.delete':    ['admin', 'rh'],
   'conciliacion.cerrar': ['rh', 'admin'],
+  'admin.restore':     ['admin'],
 };
 function canActAs(...roles) {
   const flat = roles.flat();
@@ -2484,6 +2525,194 @@ function closeModal() {
   if (fn) fn();
 }
 
+// ===== Confirm dialog + toast (helpers de soft-delete) =====
+// confirmDialog() reemplaza al confirm() nativo del navegador para flujos
+// destructivos. Devuelve Promise<boolean>.
+function confirmDialog({ title = 'Confirmar', message = '', danger = true, okLabel = 'Eliminar', cancelLabel = 'Cancelar' } = {}) {
+  return new Promise((resolve) => {
+    const okBtn = `confirm-ok-${Date.now()}`;
+    const cancelBtn = `confirm-cancel-${Date.now()}`;
+    const body = `
+      <div style="font-size:13px;line-height:1.5;color:var(--text2);margin-bottom:14px">${message}</div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button id="${cancelBtn}" class="btn">${esc(cancelLabel)}</button>
+        <button id="${okBtn}" class="btn" style="background:${danger ? 'var(--red, #dc2626)' : 'var(--accent)'};color:#fff">${esc(okLabel)}</button>
+      </div>`;
+    let settled = false;
+    const finish = (val) => { if (!settled) { settled = true; closeModal(); resolve(val); } };
+    openModal({ title, bodyHtml: body, onClose: () => finish(false) });
+    document.getElementById(okBtn).addEventListener('click', () => finish(true));
+    document.getElementById(cancelBtn).addEventListener('click', () => finish(false));
+  });
+}
+
+// toast() — caja flotante no-bloqueante para feedback post-acción.
+function toast(message, type = 'info') {
+  let host = document.getElementById('toast-host');
+  if (!host) {
+    host = document.createElement('div');
+    host.id = 'toast-host';
+    host.style.cssText = 'position:fixed;top:14px;right:14px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none';
+    document.body.appendChild(host);
+  }
+  const bg = type === 'success' ? '#16a34a' : type === 'error' ? '#dc2626' : '#334155';
+  const el = document.createElement('div');
+  el.style.cssText = `background:${bg};color:#fff;padding:10px 14px;border-radius:6px;font-size:13px;box-shadow:0 4px 12px rgba(0,0,0,0.15);max-width:360px;pointer-events:auto;opacity:0;transform:translateY(-6px);transition:opacity .2s,transform .2s`;
+  el.textContent = message;
+  host.appendChild(el);
+  requestAnimationFrame(() => { el.style.opacity = '1'; el.style.transform = 'translateY(0)'; });
+  setTimeout(() => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(-6px)';
+    setTimeout(() => el.remove(), 250);
+  }, 3000);
+}
+
+// Handlers de borrado por entidad — todos delegan a deleteEntity(). Se
+// invocan desde los botones 🗑 inline de cada tabla. El "onSuccess" recarga
+// el listado del módulo correspondiente.
+function deleteRow_workOrder(id, label) { return deleteEntity({ url: `${API_URL}/work-orders/${encodeURIComponent(id)}`, entityLabel: 'OT', itemLabel: label, onSuccess: () => { try { loadOTSelector?.(); } catch {} try { loadDashboardWorkOrders?.(); } catch {} try { loadWorkOrders?.(); } catch {} } }); }
+async function deleteSelectedOT() {
+  if (!_selectedOtId) { toast('Selecciona una OT primero', 'error'); return; }
+  const banner = document.querySelector('.ot-num');
+  const ok = await deleteRow_workOrder(_selectedOtId, banner?.textContent || _selectedOtId);
+  if (ok) {
+    _selectedOtId = null;
+    clearOTForm?.();
+  }
+}
+function deleteRow_quote(id, label)     { return deleteEntity({ url: `${API_URL}/quotes/${encodeURIComponent(id)}`,      entityLabel: 'Cotización', itemLabel: label, onSuccess: () => loadCotizaciones?.() }); }
+function deleteRow_material(id, label)  { return deleteEntity({ url: `${API_URL}/costs/material/${encodeURIComponent(id)}`, entityLabel: 'Material', itemLabel: label, onSuccess: () => loadMaterialCosts?.() }); }
+function deleteRow_labor(id, label)     { return deleteEntity({ url: `${API_URL}/costs/labor/${encodeURIComponent(id)}`,    entityLabel: 'Hora MO',  itemLabel: label, onSuccess: () => loadLaborCosts?.() }); }
+function deleteRow_supplier(id, label)  { return deleteEntity({ url: `${API_URL}/suppliers/${encodeURIComponent(id)}`,      entityLabel: 'Proveedor', itemLabel: label, onSuccess: () => loadProveedores?.() }); }
+function deleteRow_ocp(id, label)       { return deleteEntity({ url: `${API_URL}/purchase-orders/${encodeURIComponent(id)}`, entityLabel: 'OCP', itemLabel: label, onSuccess: () => loadOCP?.() }); }
+function deleteRow_inventory(id, label) { return deleteEntity({ url: `${API_URL}/inventory/${encodeURIComponent(id)}`,       entityLabel: 'Item inventario', itemLabel: label, onSuccess: () => loadInventory?.() }); }
+function deleteRow_invoice(id, label)   { return deleteEntity({ url: `${API_URL}/supplier-invoices/${encodeURIComponent(id)}`, entityLabel: 'Factura', itemLabel: label, onSuccess: () => loadInvoices?.() }); }
+function deleteRow_delivery(id, label)  { return deleteEntity({ url: `${API_URL}/deliveries/${encodeURIComponent(id)}`,        entityLabel: 'Entrega', itemLabel: label, onSuccess: () => loadDeliveries?.() }); }
+function deleteRow_incident(id, label)  { return deleteEntity({ url: `${API_URL}/deliveries/incidents/${encodeURIComponent(id)}`, entityLabel: 'Incidencia', itemLabel: label, onSuccess: () => loadIncidents?.() }); }
+function deleteRow_employee(id, label)  { return deleteEntity({ url: `${API_URL}/employees/${encodeURIComponent(id)}`,         entityLabel: 'Empleado', itemLabel: label, onSuccess: () => loadEmpleados?.() }); }
+function deleteRow_payrollLine(id, label) { return deleteEntity({ url: `${API_URL}/payroll/lines/${encodeURIComponent(id)}`,   entityLabel: 'Línea nómina', itemLabel: label, onSuccess: () => loadPayrollResumen?.() }); }
+function deleteRow_payrollWeek(id, label) { return deleteEntity({ url: `${API_URL}/payroll/weeks/${encodeURIComponent(id)}`,   entityLabel: 'Semana nómina', itemLabel: label, onSuccess: () => loadPayrollWeeks?.() }); }
+
+// ===== Papelera (Admin) =====
+// Lista registros con deleted_at IS NOT NULL agrupados por entidad, y
+// permite restaurarlos (admin only). Endpoint: GET /api/admin/recycle-bin
+// (sin params → resumen con conteos; con ?entity=... → filas detalladas).
+let _recycleSummaryCache = null;
+
+async function loadRecycleBin() {
+  const sel = document.getElementById('recycle-entity');
+  const tbody = document.getElementById('recycle-tbody');
+  const count = document.getElementById('recycle-count');
+  if (!tbody) return;
+  const entity = sel ? sel.value : '';
+  try {
+    if (!entity) {
+      // Resumen — populate selector + show summary table.
+      const res = await apiFetch(`${API_URL}/admin/recycle-bin`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      _recycleSummaryCache = data.summary;
+      if (sel && sel.options.length <= 1) {
+        sel.innerHTML = '<option value="">— Resumen (todas) —</option>'
+          + data.summary.map((e) => `<option value="${esc(e.entity)}">${esc(e.label)} (${e.count})</option>`).join('');
+      }
+      const totalDeleted = data.summary.reduce((acc, e) => acc + e.count, 0);
+      if (count) count.textContent = `${totalDeleted} registros eliminados en total`;
+      if (!totalDeleted) {
+        tbody.innerHTML = '<tr><td colspan="5" style="padding:16px;color:var(--text3);text-align:center">Papelera vacía 🎉</td></tr>';
+        return;
+      }
+      tbody.innerHTML = data.summary.filter((e) => e.count > 0).map((e) => `<tr>
+        <td>${esc(e.label)}</td>
+        <td class="mono">${esc(e.entity)}</td>
+        <td>—</td>
+        <td>${e.count} registro(s) borrado(s)</td>
+        <td><button class="btn sm" onclick="document.getElementById('recycle-entity').value='${esc(e.entity)}';loadRecycleBin()">Ver →</button></td>
+      </tr>`).join('');
+      return;
+    }
+    // Detail — list deleted rows for the selected entity.
+    const res = await apiFetch(`${API_URL}/admin/recycle-bin?entity=${encodeURIComponent(entity)}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (count) count.textContent = `${data.count} registro(s) borrado(s) · ${data.label}`;
+    if (!data.rows.length) {
+      tbody.innerHTML = `<tr><td colspan="5" style="padding:16px;color:var(--text3);text-align:center">Sin registros eliminados en ${esc(data.label)}.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = data.rows.map((r) => {
+      const ident = r.otNumber || r.ocNumber || r.uuidFiscal || r.quoteNumber || r.clave || r.folio || r.deliveryNumber
+        || r.numeroLista || r.supplierName || r.nombre || r.id;
+      const detail = r.client || r.description || r.materialDescription || r.employeeName || r.producto || r.descripcion || '';
+      const deletedAt = r.deletedAt ? new Date(r.deletedAt).toLocaleString('es-MX') : '—';
+      return `<tr>
+        <td>${esc(data.label)}</td>
+        <td class="mono">${esc(ident)}</td>
+        <td>${esc(deletedAt)}</td>
+        <td>${esc(detail).slice(0, 80)}</td>
+        <td><button class="btn sm" style="background:var(--accent);color:#fff;padding:2px 8px" onclick="restoreRecycle('${esc(data.restorePath)}','${esc(r.id)}','${esc(ident)}')">↺ Restaurar</button></td>
+      </tr>`;
+    }).join('');
+  } catch (err) {
+    console.warn('⚠ loadRecycleBin:', err);
+    tbody.innerHTML = `<tr><td colspan="5" style="padding:16px;color:var(--red);text-align:center">Error: ${esc(err.message)}</td></tr>`;
+  }
+}
+
+async function restoreRecycle(restorePath, id, label) {
+  const ok = await confirmDialog({
+    title: 'Restaurar',
+    message: `¿Restaurar <strong>${esc(label)}</strong> a la lista activa?`,
+    danger: false,
+    okLabel: 'Restaurar',
+  });
+  if (!ok) return;
+  try {
+    const res = await apiFetch(`${API_URL}/${restorePath}/${encodeURIComponent(id)}/restore`, { method: 'POST' });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
+    toast('Restaurado correctamente', 'success');
+    await loadRecycleBin();
+  } catch (err) {
+    toast(`Error al restaurar: ${err.message}`, 'error');
+  }
+}
+
+// Helper genérico de borrado para todas las tablas. Confirma, llama al
+// endpoint y refresca la lista por callback. Manejo de 409 (dependencias):
+// muestra un modal explicando por qué no se puede borrar.
+async function deleteEntity({ url, entityLabel, itemLabel, onSuccess }) {
+  const ok = await confirmDialog({
+    title: `Eliminar ${entityLabel}`,
+    message: `¿Seguro que deseas eliminar <strong>${esc(itemLabel)}</strong>?<br><br>Esta acción se puede revertir desde Admin → Papelera.`,
+    danger: true,
+    okLabel: 'Eliminar',
+  });
+  if (!ok) return false;
+  try {
+    const res = await apiFetch(url, { method: 'DELETE' });
+    const body = await res.json().catch(() => ({}));
+    if (res.status === 409) {
+      const deps = body.dependientes
+        ? `<ul style="margin:8px 0 0 18px;padding:0">${Object.entries(body.dependientes).filter(([, v]) => v > 0).map(([k, v]) => `<li>${esc(k)}: <strong>${v}</strong></li>`).join('')}</ul>`
+        : '';
+      openModal({
+        title: 'No se puede eliminar',
+        bodyHtml: `<div style="font-size:13px;line-height:1.5;color:var(--text2)">${esc(body.error || 'Conflicto')}${deps}${body.hint ? `<br><br><em style="color:var(--text3)">${esc(body.hint)}</em>` : ''}<div style="display:flex;justify-content:flex-end;margin-top:14px"><button class="btn" onclick="closeModal()">Entendido</button></div></div>`,
+      });
+      return false;
+    }
+    if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
+    toast(`${entityLabel} eliminado correctamente`, 'success');
+    if (typeof onSuccess === 'function') await onSuccess();
+    return true;
+  } catch (err) {
+    toast(`Error al eliminar: ${err.message}`, 'error');
+    return false;
+  }
+}
+
 // ===== OT module (P2.7 + P2.8) =====
 let _otCache = [];
 let _selectedOtId = null;
@@ -2613,7 +2842,7 @@ function showNewOTModal() {
     title: '+ Nueva OT',
     bodyHtml: `
       <form id="new-ot-form">
-        <div class="fg"><label>No. de OT *</label><input name="otNumber" required pattern="OT-AL-\d{4}" title="Formato esperado: OT-AL-#### (ej. OT-AL-0042). Solo se permiten 4 dígitos al final." placeholder="OT-AL-####"></div>
+        <div class="fg"><label>No. de OT *</label><input name="otNumber" required pattern="OT-AL-\\d{4}" title="Formato esperado: OT-AL-#### (ej. OT-AL-0042). Solo se permiten 4 dígitos al final." placeholder="OT-AL-####"></div>
         <div class="fg"><label>Cliente *</label><input name="client" required></div>
         <div class="fg"><label>Descripción *</label><textarea name="description" required></textarea></div>
         <div class="fg"><label>Tipo *</label>
@@ -2684,9 +2913,10 @@ async function loadProveedores() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const suppliers = await res.json();
     if (!suppliers.length) {
-      tbody.innerHTML = '<tr><td colspan="6" style="padding:16px;color:var(--text3);text-align:center">Sin proveedores registrados.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" style="padding:16px;color:var(--text3);text-align:center">Sin proveedores registrados.</td></tr>';
       return;
     }
+    const canDel = canPerm('supplier.delete');
     tbody.innerHTML = suppliers.map((s) => {
       const cats = Array.isArray(s.categories) ? s.categories.join(', ') : '';
       const ots = Array.isArray(s.workOrders) ? s.workOrders.map((w) => w.otNumber).join(', ') : '';
@@ -2699,6 +2929,7 @@ async function loadProveedores() {
         <td class="mono">${esc(ots) || '—'}</td>
         <td class="mono">${saldo}</td>
         <td>${supplierStatusBadge(s.status)}</td>
+        <td>${canDel ? `<button class="btn sm" title="Eliminar" onclick="deleteRow_supplier('${esc(s.id)}','${esc(s.supplierName || '')}')" style="padding:2px 6px">🗑</button>` : ''}</td>
       </tr>`;
     }).join('');
   } catch (err) {
@@ -2885,6 +3116,7 @@ async function loadPayrollResumen() {
     }
     const num = (v) => v == null ? '—' : Number(v).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const txt = (v) => v == null || v === '' ? '—' : esc(String(v));
+    const canDelLine = canPerm('payroll.delete');
     tbody.innerHTML = lines.map((l) => `<tr>
       <td class="mono">${txt(l.numeroLista)}</td>
       <td>${txt(l.nombre)}</td>
@@ -2905,7 +3137,7 @@ async function loadPayrollResumen() {
       <td class="mono" style="text-align:right">${num(l.totalDeducciones)}</td>
       <td class="mono" style="text-align:right;font-weight:600">${num(l.pagoNomina)}</td>
       <td>${txt(l.notas)}</td>
-      <td><button class="btn sm" disabled style="padding:2px 8px;font-size:11px">Ver</button></td>
+      <td>${canDelLine ? `<button class="btn sm" title="Eliminar" onclick="deleteRow_payrollLine('${esc(l.id)}','${esc(l.nombre || l.numeroLista || '')}')" style="padding:2px 6px">🗑</button>` : '<button class="btn sm" disabled style="padding:2px 8px;font-size:11px">—</button>'}</td>
     </tr>`).join('');
   } catch (err) {
     console.warn('⚠ loadPayrollResumen:', err);
@@ -2998,10 +3230,11 @@ async function loadOCP() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const rows = await res.json();
     if (!rows.length) {
-      tbody.innerHTML = '<tr><td colspan="9" style="padding:16px;color:var(--text3);text-align:center">Sin órdenes de compra.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="10" style="padding:16px;color:var(--text3);text-align:center">Sin órdenes de compra.</td></tr>';
       return;
     }
     const map = { Recibido: 'bg', Pendiente: 'ba', Parcial: 'ba', Cancelada: 'bn' };
+    const canDel = canPerm('purchaseorder.delete');
     tbody.innerHTML = rows.map((r) => `<tr>
       <td class="mono">${esc(r.ocNumber)}</td>
       <td>${esc(r.supplierName)}</td>
@@ -3012,10 +3245,11 @@ async function loadOCP() {
       <td>${r.issueDate ? fmtDateDMY(r.issueDate) : '—'}</td>
       <td>${r.expectedDeliveryDate ? fmtDateDMY(r.expectedDeliveryDate) : '—'}</td>
       <td>${statusBadge(r.status, map)}</td>
+      <td>${canDel ? `<button class="btn sm" title="Eliminar" onclick="deleteRow_ocp('${esc(r.id)}','${esc(r.ocNumber || '')}')" style="padding:2px 6px">🗑</button>` : ''}</td>
     </tr>`).join('');
   } catch (err) {
     console.warn('⚠ loadOCP:', err);
-    tbody.innerHTML = '<tr><td colspan="9" style="padding:16px;color:var(--red);text-align:center">No se pudieron cargar las OCPs.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" style="padding:16px;color:var(--red);text-align:center">No se pudieron cargar las OCPs.</td></tr>';
   }
 }
 
@@ -3092,10 +3326,11 @@ async function loadInventory() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const rows = await res.json();
     if (!rows.length) {
-      tbody.innerHTML = '<tr><td colspan="10" style="padding:16px;color:var(--text3);text-align:center">Sin existencias.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="11" style="padding:16px;color:var(--text3);text-align:center">Sin existencias.</td></tr>';
       return;
     }
     const map = { Asignado: 'bg', 'Sin asignar': 'ba', Agotado: 'bn' };
+    const canDel = canPerm('inventory.delete');
     tbody.innerHTML = rows.map((r) => {
       const unit = Number(r.unitCost) || 0;
       const ex = Number(r.existencia) || 0;
@@ -3111,11 +3346,12 @@ async function loadInventory() {
         <td class="mono">${fmtCurrency(unit * ex, cur)}</td>
         <td class="mono">${esc(r.assignedOtNumber) || '—'}</td>
         <td>${statusBadge(r.status, map)}</td>
+        <td>${canDel ? `<button class="btn sm" title="Eliminar" onclick="deleteRow_inventory('${esc(r.id)}','${esc(r.clave || '')}')" style="padding:2px 6px">🗑</button>` : ''}</td>
       </tr>`;
     }).join('');
   } catch (err) {
     console.warn('⚠ loadInventory:', err);
-    tbody.innerHTML = '<tr><td colspan="10" style="padding:16px;color:var(--red);text-align:center">No se pudo cargar el inventario.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="11" style="padding:16px;color:var(--red);text-align:center">No se pudo cargar el inventario.</td></tr>';
   }
 }
 
@@ -3188,11 +3424,12 @@ async function loadInvoices() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const rows = await res.json();
     if (!rows.length) {
-      tbody.innerHTML = '<tr><td colspan="20" style="padding:16px;color:var(--text3);text-align:center">Sin facturas registradas.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="21" style="padding:16px;color:var(--text3);text-align:center">Sin facturas registradas.</td></tr>';
       return;
     }
     const valMap = { 'válida': 'bg', 'pendiente': 'ba', 'revisar': 'br', 'no válida': 'br' };
     const fmtDT = (v) => v ? new Date(v).toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' }) : '—';
+    const canDel = canPerm('invoice.delete');
     tbody.innerHTML = rows.map((r) => {
       const cur = r.moneda || 'MXN';
       const num = (v) => v == null ? '—' : fmtCurrency(Number(v), cur);
@@ -3220,11 +3457,12 @@ async function loadInvoices() {
         <td class="mono">${r.tipoCambio == null ? '—' : Number(r.tipoCambio)}</td>
         <td>${mp}</td>
         <td>${valBadge}</td>
+        <td>${canDel ? `<button class="btn sm" title="Eliminar" onclick="deleteRow_invoice('${esc(r.id)}','${esc(r.uuidFiscal || '')}')" style="padding:2px 6px">🗑</button>` : ''}</td>
       </tr>`;
     }).join('');
   } catch (err) {
     console.warn('⚠ loadInvoices:', err);
-    tbody.innerHTML = '<tr><td colspan="20" style="padding:16px;color:var(--red);text-align:center">No se pudieron cargar las facturas.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="21" style="padding:16px;color:var(--red);text-align:center">No se pudieron cargar las facturas.</td></tr>';
   }
 }
 
@@ -3323,10 +3561,11 @@ async function loadDeliveries() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const rows = await res.json();
     if (!rows.length) {
-      tbody.innerHTML = '<tr><td colspan="11" style="padding:16px;color:var(--text3);text-align:center">Sin entregas registradas.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="12" style="padding:16px;color:var(--text3);text-align:center">Sin entregas registradas.</td></tr>';
       return;
     }
     const map = { Entregado: 'bg', Pendiente: 'ba', 'Con incidencia': 'br' };
+    const canDel = canPerm('delivery.delete');
     tbody.innerHTML = rows.map((r) => {
       const cur = r.currency || 'MXN';
       return `<tr>
@@ -3341,11 +3580,12 @@ async function loadDeliveries() {
         <td>${r.fechaAutorizado ? fmtDateDMY(r.fechaAutorizado) : '—'}</td>
         <td>${esc(r.incidencia) || '—'}</td>
         <td>${statusBadge(r.status, map)}</td>
+        <td>${canDel ? `<button class="btn sm" title="Eliminar" onclick="deleteRow_delivery('${esc(r.id)}','${esc(r.deliveryNumber || r.producto || '')}')" style="padding:2px 6px">🗑</button>` : ''}</td>
       </tr>`;
     }).join('');
   } catch (err) {
     console.warn('⚠ loadDeliveries:', err);
-    tbody.innerHTML = '<tr><td colspan="11" style="padding:16px;color:var(--red);text-align:center">No se pudieron cargar las entregas.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="12" style="padding:16px;color:var(--red);text-align:center">No se pudieron cargar las entregas.</td></tr>';
   }
 }
 
@@ -3357,10 +3597,11 @@ async function loadIncidents() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const rows = await res.json();
     if (!rows.length) {
-      tbody.innerHTML = '<tr><td colspan="7" style="padding:16px;color:var(--text3);text-align:center">Sin incidencias.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" style="padding:16px;color:var(--text3);text-align:center">Sin incidencias.</td></tr>';
       return;
     }
     const map = { Abierta: 'ba', 'En revisión': 'ba', Cerrada: 'bg' };
+    const canDel = canPerm('incident.delete');
     tbody.innerHTML = rows.map((r) => `<tr>
       <td class="mono">${esc(r.folio)}</td>
       <td class="mono">${esc(r.otNumber) || '—'}</td>
@@ -3369,10 +3610,11 @@ async function loadIncidents() {
       <td>${esc(r.registradoPor) || '—'}</td>
       <td>${fmtDateDMY(r.fecha)}</td>
       <td>${statusBadge(r.status, map)}</td>
+      <td>${canDel ? `<button class="btn sm" title="Eliminar" onclick="deleteRow_incident('${esc(r.id)}','${esc(r.folio || '')}')" style="padding:2px 6px">🗑</button>` : ''}</td>
     </tr>`).join('');
   } catch (err) {
     console.warn('⚠ loadIncidents:', err);
-    tbody.innerHTML = '<tr><td colspan="7" style="padding:16px;color:var(--red);text-align:center">No se pudieron cargar las incidencias.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="padding:16px;color:var(--red);text-align:center">No se pudieron cargar las incidencias.</td></tr>';
   }
 }
 
@@ -3561,10 +3803,11 @@ async function loadEmpleados() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const rows = await res.json();
     if (!rows.length) {
-      tbody.innerHTML = '<tr><td colspan="13" style="padding:16px;color:var(--text3);text-align:center">Sin empleados registrados.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="14" style="padding:16px;color:var(--text3);text-align:center">Sin empleados registrados.</td></tr>';
       return;
     }
     const fmtNum = (v) => (v == null ? '—' : Number(v).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+    const canDel = canPerm('employee.delete');
     tbody.innerHTML = rows.map((e) => `<tr>
       <td class="mono">${esc(e.numeroLista) || '—'}</td>
       <td>${esc(e.nombreRepProc) || ''}</td>
@@ -3579,10 +3822,11 @@ async function loadEmpleados() {
       <td>${e.fechaIngreso ? fmtDateDMY(e.fechaIngreso) : '—'}</td>
       <td class="mono">${fmtNum(e.salarioDiario)}</td>
       <td class="mono">${fmtNum(e.salarioDiarioIntegrado)}</td>
+      <td>${canDel ? `<button class="btn sm" title="Eliminar" onclick="deleteRow_employee('${esc(e.id)}','${esc(e.nombre || e.numeroLista || '')}')" style="padding:2px 6px">🗑</button>` : ''}</td>
     </tr>`).join('');
   } catch (err) {
     console.warn('⚠ loadEmpleados:', err);
-    tbody.innerHTML = '<tr><td colspan="13" style="padding:16px;color:var(--red);text-align:center">No se pudieron cargar los empleados.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="14" style="padding:16px;color:var(--red);text-align:center">No se pudieron cargar los empleados.</td></tr>';
   }
 }
 
@@ -3672,9 +3916,10 @@ async function loadLaborCosts() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const rows = await res.json();
     if (!rows.length) {
-      tbody.innerHTML = '<tr><td colspan="8" style="padding:16px;color:var(--text3);text-align:center">Sin horas registradas.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="9" style="padding:16px;color:var(--text3);text-align:center">Sin horas registradas.</td></tr>';
       return;
     }
+    const canDel = canPerm('labor.delete');
     tbody.innerHTML = rows.map((r) => {
       const hrs = Number(r.hoursWorked) || 0;
       const rate = Number(r.hourlyRate) || 0;
@@ -3689,11 +3934,12 @@ async function loadLaborCosts() {
         <td class="mono" style="font-weight:600">${fmtCurrency(total, cur)}</td>
         <td>${moneyBadge(cur)}</td>
         <td>${fmtDateDMY(r.date)}</td>
+        <td>${canDel ? `<button class="btn sm" title="Eliminar" onclick="deleteRow_labor('${esc(r.id)}','${esc(r.employeeName || '')}')" style="padding:2px 6px">🗑</button>` : ''}</td>
       </tr>`;
     }).join('');
   } catch (err) {
     console.warn('⚠ loadLaborCosts:', err);
-    tbody.innerHTML = '<tr><td colspan="8" style="padding:16px;color:var(--red);text-align:center">No se pudieron cargar las horas.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" style="padding:16px;color:var(--red);text-align:center">No se pudieron cargar las horas.</td></tr>';
   }
 }
 
@@ -3704,6 +3950,21 @@ async function showNewHorasModal() {
       const res = await apiFetch(`${API_URL}/work-orders`);
       if (res.ok) { orders = await res.json(); _otCache = orders; }
     } catch { /* continue */ }
+  }
+  if (!orders.length) {
+    openModal({
+      title: '+ Capturar horas',
+      bodyHtml: `
+        <div style="padding:12px 0;color:var(--text2);font-size:13px;line-height:1.5">
+          No hay órdenes de trabajo registradas. Crea primero una OT desde el módulo <strong>Órdenes de Trabajo</strong> antes de capturar horas.
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn p sm" onclick="closeModal(); goMod('ot');">Ir a Órdenes de Trabajo</button>
+          <button type="button" class="btn sm" onclick="closeModal()">Cerrar</button>
+        </div>
+      `,
+    });
+    return;
   }
   const otOptions = orders.map((o) => `<option value="${esc(o.otNumber)}">${esc(o.otNumber)} · ${esc(o.client)}</option>`).join('');
 
@@ -3801,9 +4062,10 @@ async function loadMaterialCosts() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const rows = await res.json();
     if (!rows.length) {
-      tbody.innerHTML = '<tr><td colspan="11" style="padding:16px;color:var(--text3);text-align:center">Sin material registrado.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="12" style="padding:16px;color:var(--text3);text-align:center">Sin material registrado.</td></tr>';
       return;
     }
+    const canDel = canPerm('material.delete');
     tbody.innerHTML = rows.map((r) => {
       const qty = Number(r.quantity) || 0;
       const unit = Number(r.unitCost) || 0;
@@ -3824,11 +4086,12 @@ async function loadMaterialCosts() {
         <td class="mono">${fmtCurrency(ret, cur)}</td>
         <td class="mono" style="font-weight:600">${fmtCurrency(total, cur)}</td>
         <td>${materialStatusBadge(r.status)}</td>
+        <td>${canDel ? `<button class="btn sm" title="Eliminar" onclick="deleteRow_material('${esc(r.id)}','${esc(r.materialDescription || '')}')" style="padding:2px 6px">🗑</button>` : ''}</td>
       </tr>`;
     }).join('');
   } catch (err) {
     console.warn('⚠ loadMaterialCosts:', err);
-    tbody.innerHTML = '<tr><td colspan="11" style="padding:16px;color:var(--red);text-align:center">No se pudo cargar la requisición.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="12" style="padding:16px;color:var(--red);text-align:center">No se pudo cargar la requisición.</td></tr>';
   }
 }
 
@@ -3936,36 +4199,40 @@ async function loadCotizaciones() {
     const quotes = await res.json();
 
     // Table (P2.5) — 20 columnas alineadas 1:1 con el XLSX master
+    // "Control Ventas 2026" (mismo orden que el export/import para que
+    // el operador vea en pantalla exactamente lo que sube/baja).
     if (tbody) {
       if (!quotes.length) {
-        tbody.innerHTML = '<tr><td colspan="20" style="padding:16px;color:var(--text3);text-align:center">Sin cotizaciones registradas.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="21" style="padding:16px;color:var(--text3);text-align:center">Sin cotizaciones registradas.</td></tr>';
       } else {
+        const canDel = canPerm('quote.delete');
         tbody.innerHTML = quotes.map((q, i) => {
           const amount = Number(q.amount) || 0;
-          const costoCotUsd = Number(q.costoCotUsd) || 0;
-          const costoOcUsd = Number(q.costoOcUsd) || 0;
-          const tipoCambio = q.tipoCambio != null ? `${Number(q.tipoCambio).toFixed(2)}` : '—';
+          const costoOC = q.costoOC != null ? fmtCurrency(Number(q.costoOC), 'USD') : '—';
+          const fx = q.exchangeRate != null ? `$${Number(q.exchangeRate).toFixed(2)}` : '—';
+          const fechaCot = q.fechaCotizacion ? fmtDateDMY(q.fechaCotizacion) : fmtDateDMY(q.createdAt);
           return `<tr>
             <td class="mono">${i + 1}</td>
-            <td>${esc(q.cliente) || esc(q.client) || '—'}</td>
+            <td>${esc(q.client) || '—'}</td>
             <td>${esc(q.proyecto) || '—'}</td>
             <td class="mono">${esc(q.celda) || '—'}</td>
             <td class="mono">${esc(q.rfq) || '—'}</td>
             <td class="mono">${esc(q.mecr) || '—'}</td>
-            <td class="mono">${esc(q.cotRefAlenstec) || esc(q.cotRef) || '—'}</td>
+            <td class="mono">${esc(q.cotRef) || '—'}</td>
             <td class="mono">${esc(q.quoteNumber) || '—'}</td>
-            <td>${fmtDateDMY(q.fechaCot || q.createdAt)}</td>
-            <td class="mono" style="font-weight:600">${fmtCurrency(costoCotUsd || amount, 'USD')}</td>
+            <td>${fechaCot}</td>
+            <td class="mono" style="font-weight:600">${fmtCurrency(amount, q.currency || 'USD')}</td>
             <td class="mono">${esc(q.ocCliente) || '—'}</td>
             <td>${esc(q.tipoContrato) || '—'}</td>
-            <td>${fmtDateDMY(q.fechaOc)}</td>
-            <td class="mono">${fmtCurrency(costoOcUsd, 'USD')}</td>
-            <td>${fmtDateDMY(q.fechaCompromiso)}</td>
-            <td class="mono">${tipoCambio}</td>
+            <td>${q.fechaOC ? fmtDateDMY(q.fechaOC) : '—'}</td>
+            <td class="mono">${costoOC}</td>
+            <td>${q.fechaCompromiso ? fmtDateDMY(q.fechaCompromiso) : '—'}</td>
+            <td class="mono">${fx}</td>
             <td class="mono">${esc(q.otNumber) || '—'}</td>
-            <td>${esc(q.descripcionProyecto) || esc(q.description) || '—'}</td>
+            <td>${esc(q.description) || '—'}</td>
             <td>${quoteTipoBadge(q.tipo)}</td>
             <td>${quoteStatusBadge(q.status)}</td>
+            <td>${canDel ? `<button class="btn sm" title="Eliminar" onclick="deleteRow_quote('${esc(q.id)}','${esc(q.quoteNumber || '')}')" style="padding:2px 6px">🗑</button>` : ''}</td>
           </tr>`;
         }).join('');
       }
@@ -3977,20 +4244,20 @@ async function loadCotizaciones() {
     // Sum only USD quotes — mixing currencies would require an FX pass.
     const usdTotal = quotes
       .filter((q) => (q.currency || 'USD') === 'USD')
-      .reduce((sum, q) => sum + (Number(q.costoCotUsd || q.amount) || 0), 0);
+      .reduce((sum, q) => sum + (Number(q.amount) || 0), 0);
     setKpi('kpi-cot-amount', fmtCurrencyCompact(usdTotal, 'USD'));
 
-    // Most recent quote with a tipoCambio (by fechaCot DESC).
+    // Most recent quote with an exchangeRate (by createdAt DESC).
     const withFx = quotes
-      .filter((q) => q.tipoCambio != null)
-      .sort((a, b) => new Date(b.fechaCot || b.createdAt) - new Date(a.fechaCot || a.createdAt));
-    setKpi('kpi-cot-fx', withFx.length ? `$${Number(withFx[0].tipoCambio).toFixed(2)}` : '—');
+      .filter((q) => q.exchangeRate != null)
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    setKpi('kpi-cot-fx', withFx.length ? `$${Number(withFx[0].exchangeRate).toFixed(2)}` : '—');
 
-    const clients = new Set(quotes.map((q) => (q.cliente || q.client)).filter(Boolean));
+    const clients = new Set(quotes.map((q) => q.client).filter(Boolean));
     setKpi('kpi-cot-clients', String(clients.size));
   } catch (err) {
     console.warn('⚠ loadCotizaciones:', err);
-    if (tbody) tbody.innerHTML = '<tr><td colspan="19" style="padding:16px;color:var(--red);text-align:center">No se pudieron cargar las cotizaciones.</td></tr>';
+    if (tbody) tbody.innerHTML = '<tr><td colspan="11" style="padding:16px;color:var(--red);text-align:center">No se pudieron cargar las cotizaciones.</td></tr>';
   }
 }
 
@@ -4166,7 +4433,7 @@ async function loadSuppliers() {
 // PDF Generation Function
 function generateOTPDF() {
   const { jsPDF } = window.jspdf;
-  const otNum = document.querySelector('.ot-num')?.textContent || 'OT-AL-1948';
+  const otNum = document.querySelector('.ot-num')?.textContent || '—';
   
   // Collect data from form fields
   const formData = {};
@@ -4396,6 +4663,7 @@ function goMod(id) {
   tabs.style.display   = (id === 'dashboard') ? 'flex' : 'none';
   document.querySelector('.topbar').style.display = (id === 'admin') ? 'none' : 'flex';
   newBtn.textContent   = c.newLabel || '+ Nueva OT';
+  newBtn.style.display = (id === 'ot' || id === 'conciliacion') ? '' : 'none';
 }
 
 document.querySelectorAll('.ni').forEach(el => {
@@ -4429,6 +4697,7 @@ function goSub(mod, sub, el) {
   }
   if (mod === 'admin') {
     if (sub === 'bitacora')   loadAdminAudit();
+    if (sub === 'papelera')   loadRecycleBin();
     if (sub === 'apariencia') hydrateAparienciaUi();
     if (sub === 'permisos')   loadAdminPermisos();
   }
@@ -5239,140 +5508,6 @@ function handleXMLUpload(event) {
   dates.style.display = 'none';
   otSel.style.display = 'none';
 })();
-
-// ===== Cotizaciones — Modal Nueva Cotización (Estructura Completa) =====
-function showNewCotizacionModal() {
-  let orders = _otCache;
-  if (!orders.length) {
-    try {
-      const res = apiFetch(`${API_URL}/work-orders`);
-      res.then(r => {
-        if (r.ok) r.json().then(orders => { _otCache = orders; });
-      }).catch(() => { /* continue */ });
-    } catch { /* continue */ }
-  }
-  const otOptions = orders.map((o) => `<option value="${esc(o.id)}" data-number="${esc(o.otNumber)}">${esc(o.otNumber)} · ${esc(o.client)}</option>`).join('');
-
-  const actividadesOptions = [
-    'Actividad no especificada',
-    'Desarrollo y preventa',
-    'Compras',
-    'Planeacion y Ctrl prod (procesos)',
-    'Seguridad Industrial',
-    'Gestion de calidad (ISO)',
-    'Almacen',
-    'Control de Costo',
-    'Supervicion',
-    'Mantenimiento',
-    'Actividades administrativas/contables/RH',
-    'Juntas',
-    'Curso/capacitacion',
-  ].map((a) => `<option value="${esc(a)}">${esc(a)}</option>`).join('');
-
-  const bodyHtml = `
-    <form id="new-cot-form" style="max-height:70vh;overflow-y:auto;padding-right:12px">
-
-      <!-- SECCIÓN 1: DATOS BÁSICOS -->
-      <fieldset>
-        <legend>📋 Datos Básicos</legend>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div class="fg"><label>Cliente *</label><input name="cliente" required></div>
-          <div class="fg"><label>Proyecto / Programa</label><input name="proyecto"></div>
-        </div>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-          <div class="fg"><label>Celda</label><input name="celda"></div>
-          <div class="fg"><label>RFQ</label><input name="rfq"></div>
-          <div class="fg"><label>MECR</label><input name="mecr"></div>
-        </div>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div class="fg"><label>COT REF. ALENSTEC (COT-AL) *</label><input name="cotRefAlenstec" placeholder="CZ-2026-###" required></div>
-          <div class="fg"><label>Fecha COT (dd/mm/yyyy) *</label><input name="fechaCot" type="date" required></div>
-        </div>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div class="fg"><label>COSTO COT-AL (USD) (Sin IVA) *</label><input name="costoCotUsd" type="number" step="0.01" min="0" required></div>
-          <div class="fg"><label>Orden de Compra (Cliente)</label><input name="ocCliente"></div>
-        </div>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div class="fg"><label>Tipo de Contrato</label>
-            <select name="tipoContrato">
-              <option value="">—</option>
-              <option value="Abierta">Abierta</option>
-              <option value="Cerrada">Cerrada</option>
-              <option value="Administración">Administración</option>
-              <option value="Marco">Marco</option>
-            </select>
-          </div>
-          <div class="fg"><label>Fecha O.C. (dd/mm/yyyy)</label><input name="fechaOc" type="date"></div>
-        </div>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div class="fg"><label>COSTO O.C. (USD) (Sin IVA)</label><input name="costoOcUsd" type="number" step="0.01" min="0"></div>
-          <div class="fg"><label>Fecha Compromiso Entrega (dd/mm/yyyy)</label><input name="fechaCompromiso" type="date"></div>
-        </div>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div class="fg"><label>Tipo de Cambio (USD) [MXN-USD]</label><input name="tipoCambio" type="number" step="0.01" min="0" placeholder="17.50"></div>
-          <div class="fg"><label>OT. ALENSTEC (OT-AL)</label>
-            <select name="otId">
-              <option value="">—</option>
-              ${otOptions}
-            </select>
-          </div>
-        </div>
-
-        <div class="fg"><label>Descripción de Proyecto</label><textarea name="descripcionProyecto" placeholder="Detalle del proyecto…" style="min-height:80px"></textarea></div>
-      </fieldset>
-
-      <div class="modal-error" id="new-cot-error"></div>
-      <div class="modal-actions">
-        <button type="button" class="btn sm" onclick="closeModal()">Cancelar</button>
-        <button type="submit" class="btn p sm" id="new-cot-submit">Crear Cotización</button>
-      </div>
-    </form>
-  `;
-
-  openModal({
-    title: '+ Nueva Cotización',
-    bodyHtml: bodyHtml,
-  });
-
-  const form = document.getElementById('new-cot-form');
-  const err  = document.getElementById('new-cot-error');
-  const submitBtn = document.getElementById('new-cot-submit');
-
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    err.textContent = '';
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Creando…';
-
-    try {
-      const data = Object.fromEntries(new FormData(form).entries());
-      ['costoCotUsd', 'costoOcUsd', 'tipoCambio'].forEach((k) => { if (data[k] !== '' && data[k] != null) data[k] = Number(data[k]); });
-
-      const res = await apiFetch(`${API_URL}/quotes`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-
-      const body = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(body.error || body.mensaje || `HTTP ${res.status}`);
-
-      closeModal();
-      await loadCotizaciones();
-    } catch (e2) {
-      err.textContent = e2.message;
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Crear Cotización';
-    }
-  });
-}
 
 </script>
 </body>

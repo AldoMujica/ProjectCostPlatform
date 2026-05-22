@@ -45,6 +45,8 @@ const PayrollLine = sequelize.define('PayrollLine', {
   tableName: 'payroll_lines',
   timestamps: true,
   underscored: true,
+  paranoid: true,
+  deletedAt: 'deleted_at',
 });
 
 module.exports = PayrollLine;

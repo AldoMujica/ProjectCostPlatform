@@ -34,6 +34,8 @@ const SupplierInvoice = sequelize.define('SupplierInvoice', {
   tableName: 'supplier_invoices',
   timestamps: true,
   underscored: true,
+  paranoid: true,
+  deletedAt: 'deleted_at',
 });
 
 module.exports = SupplierInvoice;

@@ -4,6 +4,7 @@ const ExcelJS = require('exceljs');
 const { Quote } = require('../models');
 const { verificarRol } = require('../middleware/auth');
 const { sendTableXlsx } = require('../utils/xlsxTable');
+const { normalizeBreakdown } = require('../utils/laborActivities');
 
 const router = express.Router();
 
@@ -296,6 +297,28 @@ router.put('/:id', verificarRol('admin', 'ventas'), async (req, res) => {
     res.json(q);
   } catch (error) {
     res.status(400).json({ error: error.message });
+  }
+});
+
+router.delete('/:id', verificarRol('admin', 'jefe_area'), async (req, res) => {
+  try {
+    const q = await Quote.findByPk(req.params.id);
+    if (!q) return res.status(404).json({ error: 'Cotización no encontrada' });
+    await q.destroy();
+    res.json({ message: 'Cotización eliminada' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/:id/restore', verificarRol('admin'), async (req, res) => {
+  try {
+    const q = await Quote.findByPk(req.params.id, { paranoid: false });
+    if (!q) return res.status(404).json({ error: 'Cotización no encontrada' });
+    await q.restore();
+    res.json({ message: 'Cotización restaurada' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 

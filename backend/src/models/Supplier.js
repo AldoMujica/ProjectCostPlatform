@@ -42,6 +42,8 @@ const Supplier = sequelize.define('Supplier', {
   tableName: 'suppliers',
   timestamps: true,
   underscored: true,
+  paranoid: true,
+  deletedAt: 'deleted_at',
 });
 
 module.exports = Supplier;

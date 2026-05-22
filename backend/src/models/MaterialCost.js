@@ -56,6 +56,8 @@ const MaterialCost = sequelize.define('MaterialCost', {
   tableName: 'material_costs',
   timestamps: true,
   underscored: true,
+  paranoid: true,
+  deletedAt: 'deleted_at',
 });
 
 module.exports = MaterialCost;

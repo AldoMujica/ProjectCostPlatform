@@ -14,6 +14,8 @@ const WorkOrderApproval = sequelize.define('WorkOrderApproval', {
   tableName: 'work_order_approvals',
   timestamps: true,
   underscored: true,
+  paranoid: true,
+  deletedAt: 'deleted_at',
 });
 
 module.exports = WorkOrderApproval;

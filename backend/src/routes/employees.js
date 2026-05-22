@@ -100,14 +100,26 @@ router.put('/:id', verificarRol('admin', 'rh'), async (req, res) => {
   }
 });
 
-router.delete('/:id', verificarRol('admin'), async (req, res) => {
+// Soft-delete vía paranoid (deleted_at). `activo` se reserva para "inactivo
+// pero existente" (pausa temporal); destroy() lo marca como borrado y lo
+// excluye de todos los listados.
+router.delete('/:id', verificarRol('admin', 'rh'), async (req, res) => {
   try {
     const e = await Employee.findByPk(req.params.id);
     if (!e) return res.status(404).json({ error: 'Empleado no encontrado' });
-    // Soft delete: flip activo=false. Conciliación rows reference empleados
-    // via FK, so a hard delete would cascade into checador/horas rows.
-    await e.update({ activo: false });
-    res.json({ message: 'Empleado desactivado' });
+    await e.destroy();
+    res.json({ message: 'Empleado eliminado' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/:id/restore', verificarRol('admin'), async (req, res) => {
+  try {
+    const e = await Employee.findByPk(req.params.id, { paranoid: false });
+    if (!e) return res.status(404).json({ error: 'Empleado no encontrado' });
+    await e.restore();
+    res.json({ message: 'Empleado restaurado' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

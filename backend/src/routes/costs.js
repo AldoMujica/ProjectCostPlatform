@@ -134,4 +134,48 @@ router.get('/kpi/material-transit', async (req, res) => {
   }
 });
 
+router.delete('/material/:id', verificarRol('admin', 'jefe_area'), async (req, res) => {
+  try {
+    const row = await MaterialCost.findByPk(req.params.id);
+    if (!row) return res.status(404).json({ error: 'Costo de material no encontrado' });
+    await row.destroy();
+    res.json({ message: 'Costo de material eliminado' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/material/:id/restore', verificarRol('admin'), async (req, res) => {
+  try {
+    const row = await MaterialCost.findByPk(req.params.id, { paranoid: false });
+    if (!row) return res.status(404).json({ error: 'Costo de material no encontrado' });
+    await row.restore();
+    res.json({ message: 'Costo de material restaurado' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.delete('/labor/:id', verificarRol('admin', 'jefe_area'), async (req, res) => {
+  try {
+    const row = await LaborCost.findByPk(req.params.id);
+    if (!row) return res.status(404).json({ error: 'Hora MO no encontrada' });
+    await row.destroy();
+    res.json({ message: 'Hora MO eliminada' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/labor/:id/restore', verificarRol('admin'), async (req, res) => {
+  try {
+    const row = await LaborCost.findByPk(req.params.id, { paranoid: false });
+    if (!row) return res.status(404).json({ error: 'Hora MO no encontrada' });
+    await row.restore();
+    res.json({ message: 'Hora MO restaurada' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;

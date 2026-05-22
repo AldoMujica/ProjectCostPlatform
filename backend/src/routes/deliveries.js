@@ -159,4 +159,48 @@ router.post('/incidents', verificarRol('admin', 'compras', 'jefe_area', 'supervi
   }
 });
 
+router.delete('/incidents/:id', verificarRol('admin', 'jefe_area'), async (req, res) => {
+  try {
+    const inc = await Incident.findByPk(req.params.id);
+    if (!inc) return res.status(404).json({ error: 'Incidencia no encontrada' });
+    await inc.destroy();
+    res.json({ message: 'Incidencia eliminada' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/incidents/:id/restore', verificarRol('admin'), async (req, res) => {
+  try {
+    const inc = await Incident.findByPk(req.params.id, { paranoid: false });
+    if (!inc) return res.status(404).json({ error: 'Incidencia no encontrada' });
+    await inc.restore();
+    res.json({ message: 'Incidencia restaurada' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.delete('/:id', verificarRol('admin', 'jefe_area'), async (req, res) => {
+  try {
+    const d = await Delivery.findByPk(req.params.id);
+    if (!d) return res.status(404).json({ error: 'Entrega no encontrada' });
+    await d.destroy();
+    res.json({ message: 'Entrega eliminada' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/:id/restore', verificarRol('admin'), async (req, res) => {
+  try {
+    const d = await Delivery.findByPk(req.params.id, { paranoid: false });
+    if (!d) return res.status(404).json({ error: 'Entrega no encontrada' });
+    await d.restore();
+    res.json({ message: 'Entrega restaurada' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;

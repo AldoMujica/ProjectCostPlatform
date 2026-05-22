@@ -17,6 +17,8 @@ const Incident = sequelize.define('Incident', {
   tableName: 'incidents',
   timestamps: true,
   underscored: true,
+  paranoid: true,
+  deletedAt: 'deleted_at',
 });
 
 module.exports = Incident;

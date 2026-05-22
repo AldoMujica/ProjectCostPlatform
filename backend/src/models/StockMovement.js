@@ -14,6 +14,8 @@ const StockMovement = sequelize.define('StockMovement', {
   tableName: 'stock_movements',
   timestamps: true,
   underscored: true,
+  paranoid: true,
+  deletedAt: 'deleted_at',
 });
 
 module.exports = StockMovement;

@@ -132,4 +132,40 @@ router.post('/:id/movements', verificarRol('admin', 'compras', 'jefe_area'), asy
   }
 });
 
+router.delete('/:id', verificarRol('admin', 'jefe_area'), async (req, res) => {
+  const t = await sequelize.transaction();
+  try {
+    const item = await InventoryItem.findByPk(req.params.id, { transaction: t });
+    if (!item) { await t.rollback(); return res.status(404).json({ error: 'Existencia no encontrada' }); }
+    if (Number(item.existencia) > 0) {
+      await t.rollback();
+      return res.status(409).json({ error: `No se puede eliminar: existencia actual = ${item.existencia}. Ajuste a 0 primero.` });
+    }
+    // Cascade-soft-delete los movimientos históricos para que no aparezcan
+    // en futuros reportes del item ya borrado.
+    await StockMovement.destroy({ where: { inventoryItemId: item.id }, transaction: t });
+    await item.destroy({ transaction: t });
+    await t.commit();
+    res.json({ message: 'Item de inventario eliminado' });
+  } catch (error) {
+    await t.rollback();
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/:id/restore', verificarRol('admin'), async (req, res) => {
+  const t = await sequelize.transaction();
+  try {
+    const item = await InventoryItem.findByPk(req.params.id, { paranoid: false, transaction: t });
+    if (!item) { await t.rollback(); return res.status(404).json({ error: 'Existencia no encontrada' }); }
+    await item.restore({ transaction: t });
+    await StockMovement.restore({ where: { inventoryItemId: item.id }, transaction: t });
+    await t.commit();
+    res.json({ message: 'Item de inventario restaurado' });
+  } catch (error) {
+    await t.rollback();
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;

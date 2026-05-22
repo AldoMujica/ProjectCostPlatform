@@ -152,6 +152,30 @@
 
 ---
 
+## ADR-008 · Soft-delete transversal vía Sequelize `paranoid`
+
+**Context.** Hasta el 2026-05-22 ninguna entidad operativa soportaba borrado en la UI (solo el backend exponía DELETE en 7 endpoints, y el SPA no hacía una sola llamada DELETE). Operadores no podían retirar OTs canceladas, proveedores duplicados, OCPs ingresadas por error, etc. — terminaban escondidos en filtros o en SQL directo. El requerimiento del cliente fue: borrar items en cualquier módulo, conservando integridad referencial y con posibilidad de revertir.
+
+**Opciones.**
+- **(A) Soft-delete vía `paranoid: true` en Sequelize.** Columna `deleted_at TIMESTAMP NULL` por tabla; Sequelize filtra automáticamente en todos los GET; `instance.destroy()` queda como soft-delete; `instance.restore()` revierte. Endpoints existentes (employees, payroll, work-orders) heredan el comportamiento sin cambios.
+- (B) Hard-delete con cascada (`ON DELETE CASCADE` en FKs). Borra de verdad; pierde historial.
+- (C) Hard-delete con bloqueo + lista de dependencias. Fuerza al operador a limpiar manualmente antes de borrar.
+- (D) Soft-delete custom (columna `activo` por tabla, manejado a mano). Es el patrón existente en Employee (`activo`) y Supplier (`status`).
+
+**Chosen: (A).**
+
+**Rationale.** Paranoid mode es transparente para GETs (cero cambios en queries existentes), revertible (cumple el requisito de papelera), y consistente entre las 16 tablas operativas. Hard-delete con cascada (B) destruye historial — incompatible con la bitácora de auditoría que ya está poblada. Bloqueo con dependencias (C) es operacionalmente frágil (operador tiene que borrar manualmente N items para liberar 1). Soft-delete custom (D) era el patrón existente pero usaba semánticas mezcladas: `Employee.activo=false` significa "pausado, no eliminado" (sigue apareciendo en históricos de nómina); con paranoid podemos conservar ambos campos con significado claro.
+
+**Consequences.**
+- Todas las tablas operativas (16) ganan columna `deleted_at` vía migración `20260522-0007-soft-delete.js`. Excluidas por diseño: `usuarios`, `system_config`, `bitacora` (registros inmutables de identidad/auditoría).
+- Borrado de OTs y proveedores hace cascade-soft-delete manual en una transacción (FKs RESTRICT en `material_costs`/`labor_costs` impiden CASCADE en BD). Borrar una OT también borra sus costos, OCPs, inventario asignado, facturas, entregas, incidencias y aprobaciones. OT en estado `Liberada` requiere `?force=true` (admin only). Proveedor con dependientes vivos requiere `?cascade=true` (admin only) o devuelve 409 con la lista.
+- Restauración: endpoint `POST /api/<recurso>/:id/restore` por entidad (admin only) + pantalla "Papelera" en módulo Admin que lista por entidad y permite restaurar.
+- Roles para borrar: por defecto `admin` + `jefe_area`. Excepciones funcionales: `employee.delete` y `payroll.delete` permiten también `rh`. Restore: solo `admin`.
+- `Employee.activo` y `Supplier.status` conservan su significado de negocio ("pausado" / "inactivo") — distinto de `deleted_at` ("eliminado").
+- Costo: ~16 columnas + índices parciales adicionales en BD. Despreciable a escala SME.
+
+---
+
 ## Non-decisions (explicitly deferred to v2+)
 
 The following were considered but deliberately not decided now, because they don't affect v0.1–v1.0 design:

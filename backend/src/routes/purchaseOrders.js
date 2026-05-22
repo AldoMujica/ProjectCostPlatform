@@ -100,4 +100,29 @@ router.put('/:id', verificarRol('admin', 'compras', 'jefe_area'), async (req, re
   }
 });
 
+router.delete('/:id', verificarRol('admin', 'jefe_area'), async (req, res) => {
+  try {
+    const p = await PurchaseOrder.findByPk(req.params.id);
+    if (!p) return res.status(404).json({ error: 'OCP no encontrada' });
+    if (p.status === 'Recibido') {
+      return res.status(409).json({ error: 'No se puede eliminar una OCP ya recibida. Cambie el estado primero.' });
+    }
+    await p.destroy();
+    res.json({ message: 'OCP eliminada' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/:id/restore', verificarRol('admin'), async (req, res) => {
+  try {
+    const p = await PurchaseOrder.findByPk(req.params.id, { paranoid: false });
+    if (!p) return res.status(404).json({ error: 'OCP no encontrada' });
+    await p.restore();
+    res.json({ message: 'OCP restaurada' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;

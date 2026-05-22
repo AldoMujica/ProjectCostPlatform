@@ -18,6 +18,8 @@ const PayrollWeek = sequelize.define('PayrollWeek', {
   tableName: 'payroll_weeks',
   timestamps: true,
   underscored: true,
+  paranoid: true,
+  deletedAt: 'deleted_at',
 });
 
 module.exports = PayrollWeek;

@@ -42,10 +42,21 @@ const LaborCost = sequelize.define('LaborCost', {
   },
   currency: { type: DataTypes.STRING(3), defaultValue: 'MXN' },
   date: { type: DataTypes.DATE, allowNull: false },
+
+  // Módulo 10 (Costo MO) — letra A–M de la taxonomía de labor directa
+  // (ver backend/src/utils/laborActivities.js). Nullable: registros viejos
+  // anteriores a esta columna no se desglosan por actividad.
+  activityCode: {
+    type: DataTypes.CHAR(1),
+    allowNull: true,
+    field: 'activity_code',
+  },
 }, {
   tableName: 'labor_costs',
   timestamps: true,
   underscored: true,
+  paranoid: true,
+  deletedAt: 'deleted_at',
 });
 
 module.exports = LaborCost;

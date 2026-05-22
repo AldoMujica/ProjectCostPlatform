@@ -63,6 +63,8 @@ const WorkOrder = sequelize.define('WorkOrder', {
   tableName: 'work_orders',
   timestamps: true,
   underscored: true,
+  paranoid: true,
+  deletedAt: 'deleted_at',
 });
 
 module.exports = WorkOrder;

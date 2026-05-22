@@ -1,6 +1,12 @@
 const express = require('express');
 const { Op } = require('sequelize');
-const { SystemConfig, AuditEvent, User } = require('../models');
+const {
+  SystemConfig, AuditEvent, User,
+  WorkOrder, Quote, MaterialCost, LaborCost,
+  Supplier, SupplierInvoice, PurchaseOrder,
+  InventoryItem, StockMovement, Delivery, Incident,
+  Employee, WorkOrderApproval, PayrollWeek, PayrollLine,
+} = require('../models');
 const { verificarRol } = require('../middleware/auth');
 const { logAudit } = require('../services/auditService');
 const configService = require('../services/configService');
@@ -171,6 +177,62 @@ router.get('/audit/export', async (req, res) => {
       ],
       rows,
     });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ─────────────── /api/admin/recycle-bin ───────────────────────────────
+// Lista los registros soft-deleted (deleted_at IS NOT NULL) por entidad.
+// El restore vive en cada router por entidad (POST /api/<recurso>/:id/restore).
+
+const RECYCLE_ENTITIES = {
+  'work-orders':       { model: WorkOrder,         label: 'Órdenes de Trabajo', restorePath: 'work-orders' },
+  quotes:              { model: Quote,             label: 'Cotizaciones',       restorePath: 'quotes' },
+  'material-costs':    { model: MaterialCost,      label: 'Costos de Material', restorePath: 'costs/material' },
+  'labor-costs':       { model: LaborCost,         label: 'Horas MO',           restorePath: 'costs/labor' },
+  suppliers:           { model: Supplier,          label: 'Proveedores',        restorePath: 'suppliers' },
+  'purchase-orders':   { model: PurchaseOrder,     label: 'OCP',                restorePath: 'purchase-orders' },
+  'supplier-invoices': { model: SupplierInvoice,   label: 'Facturas',           restorePath: 'supplier-invoices' },
+  deliveries:          { model: Delivery,          label: 'Entregas',           restorePath: 'deliveries' },
+  incidents:           { model: Incident,          label: 'Incidencias',        restorePath: 'deliveries/incidents' },
+  inventory:           { model: InventoryItem,     label: 'Inventario',         restorePath: 'inventory' },
+  employees:           { model: Employee,          label: 'Empleados',          restorePath: 'employees' },
+  'payroll-weeks':     { model: PayrollWeek,       label: 'Semanas de Nómina',  restorePath: 'payroll/weeks' },
+  'payroll-lines':     { model: PayrollLine,       label: 'Líneas de Nómina',   restorePath: 'payroll/lines' },
+};
+
+router.get('/recycle-bin', async (req, res) => {
+  try {
+    const { entity, limit, offset } = req.query;
+    const lim = Math.min(parseInt(limit, 10) || 100, 500);
+    const off = parseInt(offset, 10) || 0;
+
+    if (!entity) {
+      // Resumen: cuántos borrados hay por entidad.
+      const summary = await Promise.all(
+        Object.entries(RECYCLE_ENTITIES).map(async ([key, { model, label, restorePath }]) => {
+          const count = await model.count({
+            paranoid: false,
+            where: { deletedAt: { [Op.ne]: null } },
+          });
+          return { entity: key, label, restorePath, count };
+        }),
+      );
+      return res.json({ summary });
+    }
+
+    const cfg = RECYCLE_ENTITIES[entity];
+    if (!cfg) return res.status(400).json({ error: `Entidad desconocida: ${entity}` });
+
+    const { rows, count } = await cfg.model.findAndCountAll({
+      paranoid: false,
+      where: { deletedAt: { [Op.ne]: null } },
+      order: [['deletedAt', 'DESC']],
+      limit: lim,
+      offset: off,
+    });
+    res.json({ entity, label: cfg.label, restorePath: cfg.restorePath, rows, count, limit: lim, offset: off });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

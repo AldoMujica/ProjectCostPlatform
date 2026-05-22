@@ -77,14 +77,34 @@ router.put('/weeks/:id', verificarRol('admin', 'rh'), async (req, res) => {
   }
 });
 
-router.delete('/weeks/:id', verificarRol('admin'), async (req, res) => {
+router.delete('/weeks/:id', verificarRol('admin', 'rh'), async (req, res) => {
+  const t = await sequelize.transaction();
   try {
-    const week = await PayrollWeek.findByPk(req.params.id);
-    if (!week) return res.status(404).json({ error: 'Semana no encontrada' });
-    if (week.cerrada) return res.status(400).json({ error: 'No se puede eliminar una semana cerrada' });
-    await week.destroy();
+    const week = await PayrollWeek.findByPk(req.params.id, { transaction: t });
+    if (!week) { await t.rollback(); return res.status(404).json({ error: 'Semana no encontrada' }); }
+    if (week.cerrada) { await t.rollback(); return res.status(400).json({ error: 'No se puede eliminar una semana cerrada' }); }
+    // Cascade-soft-delete las líneas asociadas para que tampoco aparezcan.
+    await PayrollLine.destroy({ where: { payrollWeekId: week.id }, transaction: t });
+    await week.destroy({ transaction: t });
+    await t.commit();
     res.json({ message: 'Semana eliminada (incluye todas sus líneas)' });
   } catch (error) {
+    await t.rollback();
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/weeks/:id/restore', verificarRol('admin'), async (req, res) => {
+  const t = await sequelize.transaction();
+  try {
+    const week = await PayrollWeek.findByPk(req.params.id, { paranoid: false, transaction: t });
+    if (!week) { await t.rollback(); return res.status(404).json({ error: 'Semana no encontrada' }); }
+    await week.restore({ transaction: t });
+    await PayrollLine.restore({ where: { payrollWeekId: week.id }, transaction: t });
+    await t.commit();
+    res.json({ message: 'Semana restaurada' });
+  } catch (error) {
+    await t.rollback();
     res.status(500).json({ error: error.message });
   }
 });
@@ -173,6 +193,17 @@ router.delete('/lines/:id', verificarRol('admin', 'rh'), async (req, res) => {
     if (line.week?.cerrada) return res.status(400).json({ error: 'La semana está cerrada' });
     await line.destroy();
     res.json({ message: 'Línea eliminada' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/lines/:id/restore', verificarRol('admin'), async (req, res) => {
+  try {
+    const line = await PayrollLine.findByPk(req.params.id, { paranoid: false });
+    if (!line) return res.status(404).json({ error: 'Línea no encontrada' });
+    await line.restore();
+    res.json({ message: 'Línea restaurada' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

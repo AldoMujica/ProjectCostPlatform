@@ -1,5 +1,5 @@
 const express = require('express');
-const { Supplier, WorkOrder } = require('../models');
+const { Supplier, WorkOrder, PurchaseOrder, SupplierInvoice, Delivery, Incident, sequelize } = require('../models');
 const { verificarRol } = require('../middleware/auth');
 const { sendTableXlsx } = require('../utils/xlsxTable');
 
@@ -93,6 +93,72 @@ router.put('/:id', verificarRol('admin', 'compras'), async (req, res) => {
     res.json(s);
   } catch (error) {
     res.status(400).json({ error: error.message });
+  }
+});
+
+// `?cascade=true` (admin only) borra también OCPs/facturas/entregas/incidencias
+// activas del proveedor. Sin `cascade`, devuelve 409 con la lista de dependientes
+// para que el operador decida qué hacer.
+router.delete('/:id', verificarRol('admin', 'jefe_area'), async (req, res) => {
+  const cascade = req.query.cascade === 'true';
+  const t = await sequelize.transaction();
+  try {
+    const s = await Supplier.findByPk(req.params.id, { transaction: t });
+    if (!s) { await t.rollback(); return res.status(404).json({ error: 'Proveedor no encontrado' }); }
+
+    const [ocpCount, invoiceCount, deliveryCount, incidentCount] = await Promise.all([
+      PurchaseOrder.count({ where: { supplierId: s.id }, transaction: t }),
+      SupplierInvoice.count({ where: { supplierId: s.id }, transaction: t }),
+      Delivery.count({ where: { supplierId: s.id }, transaction: t }),
+      Incident.count({ where: { supplierId: s.id }, transaction: t }),
+    ]);
+    const total = ocpCount + invoiceCount + deliveryCount + incidentCount;
+
+    if (total > 0 && !cascade) {
+      await t.rollback();
+      return res.status(409).json({
+        error: 'El proveedor tiene dependencias activas',
+        dependientes: { ocp: ocpCount, facturas: invoiceCount, entregas: deliveryCount, incidencias: incidentCount },
+        hint: 'Agregue ?cascade=true (requiere admin) para borrar todo lo asociado',
+      });
+    }
+    if (cascade) {
+      if (req.user?.rol !== 'admin') {
+        await t.rollback();
+        return res.status(403).json({ error: 'cascade=true requiere rol admin' });
+      }
+      await PurchaseOrder.destroy({ where: { supplierId: s.id }, transaction: t });
+      await SupplierInvoice.destroy({ where: { supplierId: s.id }, transaction: t });
+      await Delivery.destroy({ where: { supplierId: s.id }, transaction: t });
+      await Incident.destroy({ where: { supplierId: s.id }, transaction: t });
+    }
+    await s.destroy({ transaction: t });
+    await t.commit();
+    res.json({ message: 'Proveedor eliminado', cascade, dependientesBorrados: cascade ? total : 0 });
+  } catch (error) {
+    await t.rollback();
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/:id/restore', verificarRol('admin'), async (req, res) => {
+  const cascade = req.query.cascade === 'true';
+  const t = await sequelize.transaction();
+  try {
+    const s = await Supplier.findByPk(req.params.id, { paranoid: false, transaction: t });
+    if (!s) { await t.rollback(); return res.status(404).json({ error: 'Proveedor no encontrado' }); }
+    await s.restore({ transaction: t });
+    if (cascade) {
+      await PurchaseOrder.restore({ where: { supplierId: s.id }, transaction: t });
+      await SupplierInvoice.restore({ where: { supplierId: s.id }, transaction: t });
+      await Delivery.restore({ where: { supplierId: s.id }, transaction: t });
+      await Incident.restore({ where: { supplierId: s.id }, transaction: t });
+    }
+    await t.commit();
+    res.json({ message: 'Proveedor restaurado', cascade });
+  } catch (error) {
+    await t.rollback();
+    res.status(500).json({ error: error.message });
   }
 });
 

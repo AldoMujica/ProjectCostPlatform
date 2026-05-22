@@ -1,6 +1,17 @@
 const express = require('express');
 const { Op } = require('sequelize');
-const { WorkOrder } = require('../models');
+const {
+  WorkOrder,
+  MaterialCost,
+  LaborCost,
+  PurchaseOrder,
+  InventoryItem,
+  SupplierInvoice,
+  Delivery,
+  Incident,
+  WorkOrderApproval,
+  sequelize,
+} = require('../models');
 const { verificarRol, filtrarPorSupervisor } = require('../middleware/auth');
 const { sendTableXlsx } = require('../utils/xlsxTable');
 const configService = require('../services/configService');
@@ -118,13 +129,67 @@ router.put('/:id', verificarRol('admin', 'ventas', 'jefe_area'), async (req, res
   }
 });
 
-router.delete('/:id', verificarRol('admin'), async (req, res) => {
+// Cascade-soft-delete de la OT y todos sus registros dependientes (costos,
+// OCPs, inventario asignado, facturas, entregas, incidencias, aprobaciones).
+// Una OT Liberada se considera cerrada y solo se borra con ?force=true (admin).
+router.delete('/:id', verificarRol('admin', 'jefe_area'), async (req, res) => {
+  const force = req.query.force === 'true';
+  const t = await sequelize.transaction();
   try {
-    const wo = await WorkOrder.findByPk(req.params.id);
-    if (!wo) return res.status(404).json({ error: 'Work order not found' });
-    await wo.destroy();
-    res.json({ message: 'Work order deleted' });
+    const wo = await WorkOrder.findByPk(req.params.id, { transaction: t });
+    if (!wo) { await t.rollback(); return res.status(404).json({ error: 'Work order not found' }); }
+    if (wo.status === 'Liberada' && !force) {
+      await t.rollback();
+      return res.status(409).json({
+        error: 'No se puede eliminar una OT Liberada. Use ?force=true (admin) para forzar.',
+      });
+    }
+    if (force && req.user?.rol !== 'admin') {
+      await t.rollback();
+      return res.status(403).json({ error: 'force=true requiere rol admin' });
+    }
+    await Promise.all([
+      MaterialCost.destroy({ where: { workOrderId: wo.id }, transaction: t }),
+      LaborCost.destroy({ where: { workOrderId: wo.id }, transaction: t }),
+      PurchaseOrder.destroy({ where: { workOrderId: wo.id }, transaction: t }),
+      InventoryItem.destroy({ where: { assignedWorkOrderId: wo.id }, transaction: t }),
+      SupplierInvoice.destroy({ where: { workOrderId: wo.id }, transaction: t }),
+      Delivery.destroy({ where: { workOrderId: wo.id }, transaction: t }),
+      Incident.destroy({ where: { workOrderId: wo.id }, transaction: t }),
+      WorkOrderApproval.destroy({ where: { workOrderId: wo.id }, transaction: t }),
+    ]);
+    await wo.destroy({ transaction: t });
+    await t.commit();
+    res.json({ message: 'Work order deleted (cascade)' });
   } catch (error) {
+    await t.rollback();
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/:id/restore', verificarRol('admin'), async (req, res) => {
+  const cascade = req.query.cascade !== 'false';
+  const t = await sequelize.transaction();
+  try {
+    const wo = await WorkOrder.findByPk(req.params.id, { paranoid: false, transaction: t });
+    if (!wo) { await t.rollback(); return res.status(404).json({ error: 'Work order not found' }); }
+    await wo.restore({ transaction: t });
+    if (cascade) {
+      await Promise.all([
+        MaterialCost.restore({ where: { workOrderId: wo.id }, transaction: t }),
+        LaborCost.restore({ where: { workOrderId: wo.id }, transaction: t }),
+        PurchaseOrder.restore({ where: { workOrderId: wo.id }, transaction: t }),
+        InventoryItem.restore({ where: { assignedWorkOrderId: wo.id }, transaction: t }),
+        SupplierInvoice.restore({ where: { workOrderId: wo.id }, transaction: t }),
+        Delivery.restore({ where: { workOrderId: wo.id }, transaction: t }),
+        Incident.restore({ where: { workOrderId: wo.id }, transaction: t }),
+        WorkOrderApproval.restore({ where: { workOrderId: wo.id }, transaction: t }),
+      ]);
+    }
+    await t.commit();
+    res.json({ message: 'Work order restaurada', cascade });
+  } catch (error) {
+    await t.rollback();
     res.status(500).json({ error: error.message });
   }
 });

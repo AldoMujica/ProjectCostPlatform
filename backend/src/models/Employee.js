@@ -27,6 +27,8 @@ const Employee = sequelize.define('Employee', {
   tableName: 'empleados',
   timestamps: true,
   underscored: true,
+  paranoid: true,
+  deletedAt: 'deleted_at',
 });
 
 module.exports = Employee;

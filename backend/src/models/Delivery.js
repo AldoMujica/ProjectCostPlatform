@@ -23,6 +23,8 @@ const Delivery = sequelize.define('Delivery', {
   tableName: 'deliveries',
   timestamps: true,
   underscored: true,
+  paranoid: true,
+  deletedAt: 'deleted_at',
 });
 
 module.exports = Delivery;

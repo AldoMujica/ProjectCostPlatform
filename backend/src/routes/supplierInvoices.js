@@ -119,4 +119,26 @@ router.put('/:id', verificarRol('admin', 'compras', 'jefe_area'), async (req, re
   }
 });
 
+router.delete('/:id', verificarRol('admin', 'jefe_area'), async (req, res) => {
+  try {
+    const inv = await SupplierInvoice.findByPk(req.params.id);
+    if (!inv) return res.status(404).json({ error: 'Factura no encontrada' });
+    await inv.destroy();
+    res.json({ message: 'Factura eliminada' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/:id/restore', verificarRol('admin'), async (req, res) => {
+  try {
+    const inv = await SupplierInvoice.findByPk(req.params.id, { paranoid: false });
+    if (!inv) return res.status(404).json({ error: 'Factura no encontrada' });
+    await inv.restore();
+    res.json({ message: 'Factura restaurada' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
