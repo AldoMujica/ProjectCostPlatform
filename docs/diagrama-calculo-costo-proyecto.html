@@ -1,0 +1,508 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flujo de Cálculo de Costo — Alenstec</title>
+<style>
+:root {
+  --bg: #f8fafc;
+  --white: #ffffff;
+  --border: #e2e8f0;
+  --text: #0f172a;
+  --text2: #475569;
+  --text3: #94a3b8;
+
+  --blue-light: #dbeafe;  --blue: #2563eb;  --blue-dark: #1e3a8a;
+  --green-light: #dcfce7; --green: #16a34a; --green-dark: #14532d;
+  --amber-light: #fef3c7; --amber: #d97706; --amber-dark: #78350f;
+  --purple-light: #ede9fe;--purple:#7c3aed; --purple-dark: #4c1d95;
+  --red-light: #fee2e2;   --red: #dc2626;   --red-dark: #7f1d1d;
+  --teal-light: #ccfbf1;  --teal: #0d9488;  --teal-dark: #134e4a;
+  --slate-light: #f1f5f9; --slate: #64748b; --slate-dark: #1e293b;
+
+  --shadow: 0 2px 8px rgba(0,0,0,.08), 0 0 0 1px rgba(0,0,0,.04);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,.12);
+  --r: 12px;
+  --arrow: #94a3b8;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: var(--text);
+  padding: 40px 32px 60px;
+}
+
+/* ── Header ─────────────────────────────────────────── */
+header { text-align: center; margin-bottom: 48px; }
+header h1 { font-size: 1.7rem; font-weight: 800; color: var(--slate-dark); margin-bottom: 6px; }
+header p  { color: var(--text2); font-size: .88rem; }
+
+/* ── Layout ─────────────────────────────────────────── */
+.flow {
+  display: grid;
+  grid-template-columns: 1fr 52px 1fr 52px 1fr 52px 1fr;
+  grid-template-rows: auto;
+  gap: 0;
+  align-items: start;
+  max-width: 1300px;
+  margin: 0 auto;
+}
+
+/* ── Arrows ─────────────────────────────────────────── */
+.arr {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 36px;
+  font-size: 1.6rem;
+  color: var(--arrow);
+  line-height: 1;
+}
+
+/* ── Column headers ──────────────────────────────────── */
+.col-head {
+  text-align: center;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: 6px 0 18px;
+  color: var(--text3);
+}
+
+/* ── Cards ───────────────────────────────────────────── */
+.card {
+  border-radius: var(--r);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  margin-bottom: 12px;
+}
+
+/* ─ Cotización ─ */
+.card-cot     { background: var(--blue-light);   border: 1.5px solid #93c5fd; }
+.card-cot h3  { color: var(--blue-dark); }
+.card-cot .tag{ background: var(--blue);   color: #fff; }
+
+/* ─ Material ─ */
+.card-mat     { background: var(--green-light);  border: 1.5px solid #86efac; }
+.card-mat h3  { color: var(--green-dark); }
+.card-mat .tag{ background: var(--green);  color: #fff; }
+
+/* ─ Mano de obra ─ */
+.card-mo      { background: var(--amber-light);  border: 1.5px solid #fcd34d; }
+.card-mo h3   { color: var(--amber-dark); }
+.card-mo .tag { background: var(--amber);  color: #fff; }
+
+/* ─ Hoja de trabajo ─ */
+.card-ht      { background: var(--purple-light); border: 2px solid #c4b5fd; box-shadow: var(--shadow-lg); }
+.card-ht h3   { color: var(--purple-dark); }
+.card-ht .tag { background: var(--purple); color: #fff; }
+
+/* ─ PDF ─ */
+.card-pdf     { background: var(--red-light);    border: 1.5px solid #fca5a5; }
+.card-pdf h3  { color: var(--red-dark); }
+.card-pdf .tag{ background: var(--red);    color: #fff; }
+
+/* ── Card internals ──────────────────────────────────── */
+.card h3 {
+  font-size: .92rem;
+  font-weight: 700;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tag {
+  font-size: .62rem;
+  font-weight: 700;
+  letter-spacing: .05em;
+  padding: 2px 7px;
+  border-radius: 99px;
+  text-transform: uppercase;
+}
+.field-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.field-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: .8rem;
+  color: var(--text2);
+  line-height: 1.35;
+}
+.field-list li .ico { font-size: .9rem; flex-shrink: 0; margin-top: 1px; }
+.field-list li strong { color: var(--text); font-weight: 600; font-size: .78rem; }
+
+/* ── Activity table ──────────────────────────────────── */
+.act-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+  font-size: .73rem;
+}
+.act-table th {
+  background: rgba(0,0,0,.07);
+  text-align: left;
+  padding: 4px 6px;
+  font-weight: 700;
+  color: var(--amber-dark);
+  border-radius: 4px 4px 0 0;
+}
+.act-table td {
+  padding: 3px 6px;
+  border-bottom: 1px solid rgba(0,0,0,.06);
+  color: var(--text2);
+}
+.act-table tr:last-child td { border-bottom: none; }
+.code-badge {
+  background: var(--amber);
+  color: #fff;
+  border-radius: 4px;
+  padding: 0 5px;
+  font-weight: 700;
+  font-size: .7rem;
+}
+
+/* ── Totals inside hoja de trabajo ───────────────────── */
+.total-block {
+  background: rgba(0,0,0,.04);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-top: 12px;
+}
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  font-size: .8rem;
+  border-bottom: 1px solid rgba(0,0,0,.06);
+}
+.total-row:last-child { border-bottom: none; }
+.total-row span { color: var(--text2); }
+.total-row .val { font-weight: 600; color: var(--text); font-size: .82rem; }
+.total-final {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0 0;
+  margin-top: 10px;
+  border-top: 2px solid var(--purple);
+}
+.total-final span { font-weight: 800; font-size: .95rem; color: var(--purple-dark); }
+.total-final .val { font-weight: 900; font-size: 1.1rem; color: var(--purple-dark); }
+
+/* ── Subtotal pill ───────────────────────────────────── */
+.subtotal {
+  margin-top: 14px;
+  padding: 7px 12px;
+  border-radius: 8px;
+  font-size: .78rem;
+  font-weight: 700;
+  text-align: right;
+}
+.subtotal-mat  { background: var(--green);  color: #fff; }
+.subtotal-mo   { background: var(--amber);  color: #fff; }
+.subtotal-cot  { background: var(--blue);   color: #fff; }
+
+/* ── Divider ─────────────────────────────────────────── */
+.divider {
+  border: none;
+  border-top: 1px dashed var(--border);
+  margin: 10px 0;
+}
+
+/* ── PDF section ─────────────────────────────────────── */
+.pdf-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.pdf-sec {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: .77rem;
+  color: var(--text2);
+}
+.pdf-sec .ico { font-size: 1rem; }
+
+/* ── Roles badge ─────────────────────────────────────── */
+.role-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 10px;
+}
+.role {
+  background: rgba(0,0,0,.07);
+  border-radius: 99px;
+  padding: 2px 8px;
+  font-size: .68rem;
+  font-weight: 600;
+  color: var(--text2);
+}
+
+/* ── Footer note ─────────────────────────────────────── */
+.note {
+  max-width: 1300px;
+  margin: 36px auto 0;
+  background: var(--slate-light);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 16px 20px;
+  font-size: .78rem;
+  color: var(--text2);
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.note .ico { font-size: 1.1rem; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📋 Flujo de Cálculo de Costo de Proyecto</h1>
+  <p>Alenstec Cost Platform · Módulos: Cotización · Material · Mano de Obra → Hoja de Trabajo → PDF</p>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="flow">
+
+  <!-- ── COL 1: COTIZACIÓN ───────────────────────────────────────── -->
+  <div>
+    <div class="col-head">1 · Cotización</div>
+
+    <div class="card card-cot">
+      <h3>📄 Datos del Proyecto <span class="tag">ventas</span></h3>
+      <ul class="field-list">
+        <li><span class="ico">🏷️</span> <div><strong>Cliente</strong><br>Nombre de la empresa cliente</div></li>
+        <li><span class="ico">📐</span> <div><strong>Proyecto / Celda</strong><br>Programa y celda de manufactura</div></li>
+        <li><span class="ico">📋</span> <div><strong>RFQ / MECR</strong><br>Referencia de solicitud</div></li>
+        <li><span class="ico">🔢</span> <div><strong>COT Alenstec</strong><br>Número de cotización interno</div></li>
+        <li><span class="ico">📅</span> <div><strong>Fecha cotización</strong><br>Fecha de emisión</div></li>
+        <li><span class="ico">🔄</span> <div><strong>Tipo de contrato</strong><br>Nuevo · Refurbish · Servicio</div></li>
+        <li><span class="ico">🛒</span> <div><strong>OC del cliente</strong><br>Número de orden de compra cliente</div></li>
+        <li><span class="ico">📅</span> <div><strong>Fecha OC / Fecha compromiso</strong></div></li>
+        <li><span class="ico">💱</span> <div><strong>Tipo de cambio (🔵 USD/🟢 MXN)</strong></div></li>
+        <li><span class="ico">🔗</span> <div><strong>OT Alenstec vinculada</strong><br>Liga la cotización a la orden de trabajo</div></li>
+      </ul>
+      <div class="subtotal subtotal-cot">Costo cotizado (🔵 USD) → <code>amount</code></div>
+    </div>
+
+    <div class="card card-cot" style="margin-top:12px">
+      <h3>🔩 Desglose MO Cotizado <span class="tag">módulo 10</span></h3>
+      <ul class="field-list">
+        <li><span class="ico">📊</span><div>13 actividades A–M capturadas<br>al momento de cotizar</div></li>
+        <li><span class="ico">⏱️</span><div><strong>Horas estimadas × Tarifa/hr</strong><br>por cada actividad</div></li>
+      </ul>
+      <div class="subtotal subtotal-cot" style="margin-top:10px">MO cotizada → <code>labor_breakdown</code></div>
+    </div>
+  </div>
+
+  <!-- ── ARROW 1 ─────────────────────────────────────────────────── -->
+  <div class="arr">→</div>
+
+  <!-- ── COL 2: MATERIAL ───────────────────────────────────────────── -->
+  <div>
+    <div class="col-head">2 · Costos de Material</div>
+
+    <div class="card card-mat">
+      <h3>🧱 Partidas de Material <span class="tag">compras</span></h3>
+      <ul class="field-list">
+        <li><span class="ico">🏭</span> <div><strong>Proveedor</strong><br>Nombre del proveedor</div></li>
+        <li><span class="ico">📦</span> <div><strong>Descripción del material</strong></div></li>
+        <li><span class="ico">🔢</span> <div><strong>Cantidad</strong></div></li>
+        <li><span class="ico">💵</span> <div><strong>Precio unitario (🔵 USD)</strong></div></li>
+        <li><span class="ico">📊</span> <div><strong>IVA</strong><br>16 % aplicable</div></li>
+        <li><span class="ico">📉</span> <div><strong>Retención</strong><br>si aplica</div></li>
+        <li><span class="ico">🚚</span> <div><strong>Fecha de entrega</strong></div></li>
+        <li><span class="ico">🔄</span> <div><strong>Estado</strong><br>En tránsito · Recibido · Pagado</div></li>
+      </ul>
+
+      <hr class="divider">
+      <div style="font-size:.75rem;color:var(--text2);margin-bottom:6px">Cálculo por partida:</div>
+      <div style="font-size:.78rem;color:var(--green-dark);font-weight:600;background:rgba(0,0,0,.05);padding:8px;border-radius:6px">
+        Subtotal = Cantidad × Precio unit.<br>
+        Total partida = Subtotal + IVA − Retención
+      </div>
+
+      <div class="subtotal subtotal-mat">Σ Total Materiales (🔵 USD)</div>
+    </div>
+
+    <div class="card card-mat" style="opacity:.85">
+      <h3>📦 Viáticos y Logística <span class="tag">extras</span></h3>
+      <ul class="field-list">
+        <li><span class="ico">✈️</span><div><strong>Viáticos</strong><br>Traslados, hotel, alimentación</div></li>
+        <li><span class="ico">🚛</span><div><strong>Logística</strong><br>Flete, envío, maniobras</div></li>
+      </ul>
+      <div class="subtotal subtotal-mat">Σ Viáticos + Logística (🔵 USD)</div>
+    </div>
+  </div>
+
+  <!-- ── ARROW 2 ─────────────────────────────────────────────────── -->
+  <div class="arr">→</div>
+
+  <!-- ── COL 3: MANO DE OBRA ──────────────────────────────────────── -->
+  <div>
+    <div class="col-head">3 · Mano de Obra</div>
+
+    <div class="card card-mo">
+      <h3>👷 Labor Directa <span class="tag">operaciones</span></h3>
+      <p style="font-size:.73rem;color:var(--amber-dark);margin-bottom:8px">13 actividades estándar por OT</p>
+      <table class="act-table">
+        <thead>
+          <tr>
+            <th>Cód.</th>
+            <th>Actividad</th>
+            <th>Hrs × Tarifa</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="code-badge">A</span></td><td>Levantamiento, Ing. y Diseño</td><td>hrs × $/hr</td></tr>
+          <tr><td><span class="code-badge">B</span></td><td>Corte</td><td>hrs × $/hr</td></tr>
+          <tr><td><span class="code-badge">C</span></td><td>Fabricación (Soldadura)</td><td>hrs × $/hr</td></tr>
+          <tr><td><span class="code-badge">D</span></td><td>Pavonado, Pintura, Temple</td><td>hrs × $/hr</td></tr>
+          <tr><td><span class="code-badge">E</span></td><td>Maquinado</td><td>hrs × $/hr</td></tr>
+          <tr><td><span class="code-badge">F</span></td><td>Hiloerosión</td><td>hrs × $/hr</td></tr>
+          <tr><td><span class="code-badge">G</span></td><td>Ensamble</td><td>hrs × $/hr</td></tr>
+          <tr><td><span class="code-badge">H</span></td><td>Labor Eléctrica</td><td>hrs × $/hr</td></tr>
+          <tr><td><span class="code-badge">I</span></td><td>Automatización</td><td>hrs × $/hr</td></tr>
+          <tr><td><span class="code-badge">J</span></td><td>Shopper / Picer</td><td>hrs × $/hr</td></tr>
+          <tr><td><span class="code-badge">K</span></td><td>Certificación Dimensional</td><td>hrs × $/hr</td></tr>
+          <tr><td><span class="code-badge">L</span></td><td>Empaque y Embalaje</td><td>hrs × $/hr</td></tr>
+          <tr><td><span class="code-badge">M</span></td><td>Instalación en Campo</td><td>hrs × $/hr</td></tr>
+        </tbody>
+      </table>
+      <div class="subtotal subtotal-mo">Σ MO Directa (🔵 USD)</div>
+    </div>
+
+    <div class="card card-mo" style="opacity:.85">
+      <h3>🏢 Labor Indirecta <span class="tag">nómina</span></h3>
+      <ul class="field-list">
+        <li><span class="ico">📐</span><div><strong>Ingeniería</strong><br>horas × tarifa</div></li>
+        <li><span class="ico">🔧</span><div><strong>Manufactura</strong><br>horas × tarifa</div></li>
+        <li><span class="ico">🤖</span><div><strong>Automatización</strong><br>horas × tarifa</div></li>
+        <li><span class="ico">📋</span><div><strong>Administración / Overhead</strong></div></li>
+      </ul>
+      <div class="subtotal subtotal-mo">Σ MO Indirecta (🔵 USD)</div>
+    </div>
+  </div>
+
+  <!-- ── ARROW 3 ─────────────────────────────────────────────────── -->
+  <div class="arr">→</div>
+
+  <!-- ── COL 4: HOJA DE TRABAJO ─────────────────────────────────── -->
+  <div>
+    <div class="col-head">4 · Hoja de Trabajo · Cálculo Total</div>
+
+    <div class="card card-ht">
+      <h3>📊 Resumen de Costos <span class="tag">sistema</span></h3>
+
+      <div class="total-block">
+        <div class="total-row">
+          <span>🧱 Total Materiales</span>
+          <span class="val">$ ——— 🔵 USD</span>
+        </div>
+        <div class="total-row">
+          <span>✈️ Viáticos + Logística</span>
+          <span class="val">$ ——— 🔵 USD</span>
+        </div>
+        <div class="total-row">
+          <span>👷 MO Directa (A–M)</span>
+          <span class="val">$ ——— 🔵 USD</span>
+        </div>
+        <div class="total-row">
+          <span>🏢 MO Indirecta</span>
+          <span class="val">$ ——— 🔵 USD</span>
+        </div>
+        <hr class="divider" style="margin:8px 0">
+        <div class="total-row">
+          <span>📊 Subtotal de costos</span>
+          <span class="val">$ ——— 🔵 USD</span>
+        </div>
+        <div class="total-row">
+          <span>📈 Utilidad (%)</span>
+          <span class="val">$ ——— 🔵 USD</span>
+        </div>
+        <div class="total-row">
+          <span>🧾 IVA empresa</span>
+          <span class="val">$ ——— 🔵 USD</span>
+        </div>
+        <div class="total-final">
+          <span>💰 TOTAL PROYECTO</span>
+          <span class="val">$ ——— 🔵 USD</span>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <p style="font-size:.73rem;color:var(--purple-dark);font-weight:600;margin-bottom:8px">📐 Comparativo Cotizado vs Real</p>
+      <ul class="field-list">
+        <li><span class="ico">📋</span><div>Costo <strong>cotizado</strong> (labor_breakdown × tarifas)</div></li>
+        <li><span class="ico">⚙️</span><div>Costo <strong>real</strong> (horas registradas en LaborCost)</div></li>
+        <li><span class="ico">📉</span><div>Desviación por actividad A–M</div></li>
+      </ul>
+
+      <div class="role-list">
+        <span class="role">admin</span>
+        <span class="role">jefe_area</span>
+        <span class="role">ventas</span>
+        <span class="role">compras</span>
+        <span class="role">supervisor</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ARROW 4 ─────────────────────────────────────────────────── -->
+  <div class="arr">→</div>
+
+  <!-- ── COL 5: PDF ─────────────────────────────────────────────── -->
+  <div>
+    <div class="col-head">5 · Salida · PDF Imprimible</div>
+
+    <div class="card card-pdf">
+      <h3>📄 PDF Hoja de Trabajo <span class="tag">jsPDF</span></h3>
+      <p style="font-size:.73rem;color:var(--red-dark);margin-bottom:12px">Generado en el navegador (cliente)</p>
+
+      <div class="pdf-sections">
+        <div class="pdf-sec"><span class="ico">🏷️</span> Encabezado del proyecto<br><small>Cliente · OT · Fecha · No. cotización</small></div>
+        <div class="pdf-sec"><span class="ico">🧱</span> Tabla de materiales<br><small>Partidas, cantidades, precios, subtotales</small></div>
+        <div class="pdf-sec"><span class="ico">👷</span> Desglose MO por actividad A–M<br><small>Horas cotizadas vs reales · desviación</small></div>
+        <div class="pdf-sec"><span class="ico">✈️</span> Viáticos y logística</div>
+        <div class="pdf-sec"><span class="ico">💰</span> Resumen financiero<br><small>Subtotal · Utilidad · IVA · <strong>Total 🔵 USD</strong></small></div>
+        <div class="pdf-sec"><span class="ico">✍️</span> Sección de firmas<br><small>Aprobación / liberación</small></div>
+      </div>
+
+      <hr class="divider">
+      <div style="font-size:.72rem;color:var(--text3);text-align:center">
+        🖨️ Impresión directa desde navegador<br>
+        o descarga como archivo <strong>.pdf</strong>
+      </div>
+    </div>
+  </div>
+
+</div>
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<div class="note">
+  <span class="ico">💡</span>
+  <div>
+    <strong>Nota técnica:</strong> Las 13 actividades A–M son la taxonomía estándar de Alenstec definida en
+    <code>backend/src/utils/laborActivities.js</code>. El campo <code>labor_breakdown</code> en la cotización
+    captura las horas <em>estimadas</em>; las horas <em>reales</em> se registran en <code>LaborCost</code>
+    vinculadas por <code>otNumber</code>. La diferencia entre ambos es el <strong>comparativo cotizado vs real</strong>
+    que alimenta el Módulo 10 (Costo MO) y el Pronóstico.
+  </div>
+</div>
+
+</body>
+</html>

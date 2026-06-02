@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diagrama de Flujo de Información — Alenstec</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1117;
+    --card: #1a1d27;
+    --border: #2e3148;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --blue: #3b82f6;
+    --green: #22c55e;
+    --orange: #f97316;
+    --purple: #a855f7;
+    --red: #ef4444;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    padding: 32px;
+    min-height: 100vh;
+  }
+  header {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+  header h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  header p {
+    color: var(--text2);
+    font-size: 0.9rem;
+  }
+  .diagram-wrap {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 32px;
+    overflow-x: auto;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+    margin-top: 28px;
+  }
+  .leg-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 0.82rem;
+    color: var(--text2);
+  }
+  .leg-dot {
+    width: 12px; height: 12px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+  footer {
+    text-align: center;
+    margin-top: 32px;
+    font-size: 0.78rem;
+    color: var(--text2);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Diagrama de Flujo de Información</h1>
+  <p>Plataforma Alenstec · Express :3000 · PostgreSQL 15 · 2026-05-22</p>
+</header>
+
+<div class="diagram-wrap">
+<div class="mermaid">
+%%{init: {'theme': 'base', 'themeVariables': {
+  'primaryColor': '#e0f2fe',
+  'primaryTextColor': '#0c4a6e',
+  'primaryBorderColor': '#0284c7',
+  'lineColor': '#64748b',
+  'secondaryColor': '#f0fdf4',
+  'tertiaryColor': '#fefce8',
+  'fontSize': '13px'
+}}}%%
+
+flowchart LR
+
+  %% ═══════════════════════════════════════════════════════
+  %% ENTRADAS
+  %% ═══════════════════════════════════════════════════════
+  subgraph IN ["📥  ENTRADAS"]
+    direction TB
+    LOGIN["🔐 Login\nusuario + contraseña"]
+    FORMS["📝 Formularios\nde usuario (SPA)"]
+    CSV["📄 CSV Checador\nreloj biométrico"]
+    XLSX_IN["📊 XLSX\nControl Ventas 2026"]
+    CFDI_XML["🧾 XML CFDI\n(SAT / Proveedor)"]
+  end
+
+  %% ═══════════════════════════════════════════════════════
+  %% CAPA DE SEGURIDAD
+  %% ═══════════════════════════════════════════════════════
+  subgraph SEC ["🔒  SEGURIDAD"]
+    direction TB
+    AUTH["Auth\nJWT · 6 roles\nadmin · jefe_area · rh\nsupervisor · ventas · compras"]
+    ACL["Control de Acceso\nverificarJWT\nverificarRol\nfiltrarPorSupervisor"]
+  end
+
+  %% ═══════════════════════════════════════════════════════
+  %% MÓDULOS DEL SISTEMA
+  %% ═══════════════════════════════════════════════════════
+  subgraph SYS ["⚙️  MÓDULOS  (API REST · Express :3000)"]
+    direction TB
+
+    subgraph VENTAS_GRP ["Ventas"]
+      COT["Cotizaciones\n/api/quotes\nControl Ventas 2026"]
+    end
+
+    subgraph OPS_GRP ["Operaciones"]
+      OT["Órdenes de Trabajo\n/api/work-orders\nsupervisor ACL"]
+      LIB["Flujo de Liberación\n/api/approvals\n5 pasos secuenciales"]
+      ENT["Entregas + Incidentes\n/api/deliveries"]
+    end
+
+    subgraph COSTO_GRP ["Costos"]
+      COST["Costos\n/api/costs\nlabor + material"]
+      PRON["Pronóstico\n/api/forecasting\nKPIs analíticos"]
+    end
+
+    subgraph COMPRAS_GRP ["Compras"]
+      OCP["Órdenes de Compra\n/api/purchase-orders"]
+      PROV["Proveedores\n/api/suppliers"]
+      FACT["Facturas CFDI\n/api/invoices\nupsert por uuid_fiscal"]
+      INV["Inventario\n/api/inventory\nítems + movimientos"]
+    end
+
+    subgraph NOMINA_GRP ["Nómina"]
+      NOM["Nómina\n/api/payroll\nsemanas + líneas"]
+      CONC["Conciliación\n/api/conciliacion\nchecador ↔ nómina"]
+      EMP["Empleados\n/api/employees\nRFC · CURP · IMSS · SD"]
+    end
+
+    subgraph ADMIN_GRP ["Administración"]
+      ADM["Admin / Config\n/api/admin\naudit_events · system_config"]
+    end
+  end
+
+  %% ═══════════════════════════════════════════════════════
+  %% BASE DE DATOS
+  %% ═══════════════════════════════════════════════════════
+  DB[("🗄️  PostgreSQL 15\nalenstec DB\numzug migrations")]
+
+  %% ═══════════════════════════════════════════════════════
+  %% SALIDAS
+  %% ═══════════════════════════════════════════════════════
+  subgraph OUT ["📤  SALIDAS"]
+    direction TB
+    XLSX_OUT["📊 XLSX Exports\n· Cotizaciones\n· Órdenes de Trabajo\n· Órdenes de Compra\n· Inventario\n· Facturas\n· Entregas\n· Empleados\n· Nómina\n· Conciliación"]
+    PDF_OUT["📄 PDF Orden\nde Trabajo\n(jsPDF · cliente)"]
+    ALERTAS["🔔 Alertas\nConciliación\nausencias · diferencias\nhoras extra"]
+    JSON_OUT["🔄 JSON API\nrespuestas SPA\nKPIs · tablas · detalles"]
+  end
+
+  %% ═══════════════════════════════════════════════════════
+  %% CONEXIONES — ENTRADAS → SEGURIDAD
+  %% ═══════════════════════════════════════════════════════
+  LOGIN --> AUTH
+  AUTH --> ACL
+  FORMS --> ACL
+  ACL --> SYS
+
+  %% ═══════════════════════════════════════════════════════
+  %% CONEXIONES — ENTRADAS ESPECIALES
+  %% ═══════════════════════════════════════════════════════
+  CSV    --> CONC
+  XLSX_IN --> COT
+  CFDI_XML --> FACT
+
+  %% ═══════════════════════════════════════════════════════
+  %% CONEXIONES — MÓDULOS → BD
+  %% ═══════════════════════════════════════════════════════
+  SYS <--> DB
+
+  %% ═══════════════════════════════════════════════════════
+  %% FLUJOS INTERNOS CLAVE
+  %% ═══════════════════════════════════════════════════════
+  COT  -->|"OT vinculada"| OT
+  OT   -->|"solicita aprobación"| LIB
+  LIB  -->|"liberada → entrega"| ENT
+  OT   -->|"genera costos"| COST
+  COST -->|"alimenta pronóstico"| PRON
+  OCP  -->|"recepción"| INV
+  FACT -->|"valida vs OCP"| OCP
+  NOM  -->|"carga semana"| CONC
+  EMP  -->|"datos nómina"| NOM
+
+  %% ═══════════════════════════════════════════════════════
+  %% CONEXIONES — MÓDULOS → SALIDAS
+  %% ═══════════════════════════════════════════════════════
+  COT  --> XLSX_OUT
+  OT   --> XLSX_OUT
+  OT   --> PDF_OUT
+  OCP  --> XLSX_OUT
+  INV  --> XLSX_OUT
+  FACT --> XLSX_OUT
+  ENT  --> XLSX_OUT
+  EMP  --> XLSX_OUT
+  NOM  --> XLSX_OUT
+  CONC --> XLSX_OUT
+  CONC --> ALERTAS
+  SYS  --> JSON_OUT
+
+  %% ═══════════════════════════════════════════════════════
+  %% ESTILOS
+  %% ═══════════════════════════════════════════════════════
+  classDef input     fill:#dbeafe,stroke:#2563eb,color:#1e3a8a,font-weight:600
+  classDef security  fill:#fce7f3,stroke:#db2777,color:#831843,font-weight:600
+  classDef module    fill:#f0fdf4,stroke:#16a34a,color:#14532d
+  classDef db        fill:#fef9c3,stroke:#ca8a04,color:#713f12,font-weight:700,font-size:14px
+  classDef output    fill:#ede9fe,stroke:#7c3aed,color:#4c1d95,font-weight:600
+
+  class LOGIN,FORMS,CSV,XLSX_IN,CFDI_XML input
+  class AUTH,ACL security
+  class COT,OT,LIB,ENT,COST,PRON,OCP,PROV,FACT,INV,NOM,CONC,EMP,ADM module
+  class DB db
+  class XLSX_OUT,PDF_OUT,ALERTAS,JSON_OUT output
+</div>
+</div>
+
+<div class="legend">
+  <div class="leg-item"><div class="leg-dot" style="background:#2563eb"></div> Entradas externas</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#db2777"></div> Seguridad / JWT</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#16a34a"></div> Módulos del sistema</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#ca8a04"></div> PostgreSQL (BD)</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#7c3aed"></div> Salidas / Exports</div>
+</div>
+
+<footer>
+  Generado automáticamente · Alenstec Cost Platform · Fase 3 completa · Fase 4 (Nómina) en progreso
+</footer>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'base',
+    flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis' },
+    themeVariables: {
+      fontSize: '13px',
+      fontFamily: 'Segoe UI, system-ui, sans-serif'
+    }
+  });
+</script>
+</body>
+</html>

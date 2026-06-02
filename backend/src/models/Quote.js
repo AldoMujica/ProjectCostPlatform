@@ -52,6 +52,31 @@ const Quote = sequelize.define('Quote', {
   // Si es null, la OT aún no tiene desglose y el reporte mostrará "—" en
   // las columnas cotizadas.
   laborBreakdown: { type: DataTypes.JSONB, allowNull: true, field: 'labor_breakdown' },
+
+  // ── Columnas expandidas "Control de Ventas 2026" (migración 20260424-0001) ──
+  // Labor Indirecta: array de actividades [{ actividad, cotHrs, realHrs, costPerHr, totalCost }]
+  laborIndirecta:           { type: DataTypes.JSON, allowNull: true, field: 'labor_indirecta' },
+  // Labor Directa Ingeniería: { cotHrs, realHrs, costPerHr, totalCost }
+  laborDirectaIngenieria:   { type: DataTypes.JSON, allowNull: true, field: 'labor_directa_ingenieria' },
+  // Labor Directa Manufactura: { cotProcesses:{corte,fabricacion,maquinado,hiloErosion,ensamble,
+  //   laborElectrica,otrosProc,shopper,certDimensional,empaque}, cotInstall:{supervisor,tecnicoMecanico,
+  //   electrico,programador,total}, realProcesses:{...sin empaque}, realInstall:{diseno,tecnico,
+  //   electrico,programador,total}, costPerHr, totalCost }
+  laborDirectaManufactura:  { type: DataTypes.JSON, allowNull: true, field: 'labor_directa_manufactura' },
+  // Labor Directa Automatización: { cotHrs, realHrs, costPerHr, totalCost }
+  laborDirectaAutomatizacion: { type: DataTypes.JSON, allowNull: true, field: 'labor_directa_automatizacion' },
+  // Materiales: { aceros, plasticos, recubrimientos, tratamientos, componentes, certificados,
+  //   subtotal, profitPct, profitUsd, total }
+  materiales:               { type: DataTypes.JSON, allowNull: true },
+  // Viáticos: { comida, estancia, peaje, gasolina, total }
+  viaticos:                 { type: DataTypes.JSON, allowNull: true },
+  // Logística: { envio, embalaje, total }
+  logistica:                { type: DataTypes.JSON, allowNull: true },
+  // Totales finales escalares
+  utilidadFinal:            { type: DataTypes.DECIMAL(12, 2), allowNull: true, field: 'utilidad_final' },
+  ivaEmpresa:               { type: DataTypes.DECIMAL(12, 2), allowNull: true, field: 'iva_empresa' },
+  totalFinal:               { type: DataTypes.DECIMAL(12, 2), allowNull: true, field: 'total_final' },
+  notas:                    { type: DataTypes.TEXT, allowNull: true },
 }, {
   tableName: 'quotes',
   timestamps: true,

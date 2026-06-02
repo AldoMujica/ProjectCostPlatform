@@ -1,4 +1,4 @@
-// ===== Cotizaciones — Modal Nueva Cotización (Estructura Completa) =====
+﻿// ===== Cotizaciones — Modal Nueva Cotización (Estructura Completa) =====
 // Ref: cotizaciones-estructura.md
 
 function showNewCotizacionModal() {
@@ -52,7 +52,7 @@ function showNewCotizacionModal() {
         </div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div class="fg"><label>COSTO COT-AL (USD) (Sin IVA) *</label><input name="costoCotUsd" type="number" step="0.01" min="0" required></div>
+          <div class="fg"><label>COSTO COT-AL (🔵 USD) (Sin IVA) *</label><input name="costoCotUsd" type="number" step="0.01" min="0" required></div>
           <div class="fg"><label>Orden de Compra (Cliente)</label><input name="ocCliente"></div>
         </div>
 
@@ -70,12 +70,12 @@ function showNewCotizacionModal() {
         </div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div class="fg"><label>COSTO O.C. (USD) (Sin IVA)</label><input name="costoOcUsd" type="number" step="0.01" min="0"></div>
+          <div class="fg"><label>COSTO O.C. (🔵 USD) (Sin IVA)</label><input name="costoOcUsd" type="number" step="0.01" min="0"></div>
           <div class="fg"><label>Fecha Compromiso Entrega (dd/mm/yyyy)</label><input name="fechaCompromiso" type="date"></div>
         </div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div class="fg"><label>Tipo de Cambio (USD) [MXN-USD]</label><input name="tipoCambio" type="number" step="0.01" min="0" placeholder="17.50"></div>
+          <div class="fg"><label>Tipo de Cambio (🔵 USD) [🟢 MXN-🔵 USD]</label><input name="tipoCambio" type="number" step="0.01" min="0" placeholder="17.50"></div>
           <div class="fg"><label>OT. ALENSTEC (OT-AL)</label>
             <select name="otId">
               <option value="">—</option>
@@ -101,8 +101,8 @@ function showNewCotizacionModal() {
             </div>
             <div class="fg"><label>Cot. (HRS)</label><input name="cotHrs_1" type="number" step="0.01" min="0" class="labor-input"></div>
             <div class="fg"><label>Real (HRS)</label><input name="realHrs_1" type="number" step="0.01" min="0" class="labor-input"></div>
-            <div class="fg"><label>$/HR (USD)</label><input name="costPerHr_1" type="number" step="0.01" min="0" class="labor-input"></div>
-            <div class="fg"><label>Costo (USD)</label><input name="totalCost_1" type="number" step="0.01" min="0" readonly class="labor-calc"></div>
+            <div class="fg"><label>$/HR (🔵 USD)</label><input name="costPerHr_1" type="number" step="0.01" min="0" class="labor-input"></div>
+            <div class="fg"><label>Costo (🔵 USD)</label><input name="totalCost_1" type="number" step="0.01" min="0" readonly class="labor-calc"></div>
           </div>
         </div>
         <button type="button" class="btn sm" onclick="addLaborIndirectRow()" style="margin-top:8px">+ Añadir actividad</button>
@@ -114,8 +114,8 @@ function showNewCotizacionModal() {
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px">
           <div class="fg"><label>Ing. [COTIZADO] (HRS) [A]</label><input name="ingCotHrs" type="number" step="0.01" min="0"></div>
           <div class="fg"><label>Ing. [REAL] (HRS) [A]</label><input name="ingRealHrs" type="number" step="0.01" min="0"></div>
-          <div class="fg"><label>Costo/HR (USD)</label><input name="ingCostPerHr" type="number" step="0.01" min="0" class="ing-input"></div>
-          <div class="fg"><label>Costo Ing. (USD)</label><input name="ingTotal" type="number" step="0.01" min="0" readonly class="ing-calc"></div>
+          <div class="fg"><label>Costo/HR (🔵 USD)</label><input name="ingCostPerHr" type="number" step="0.01" min="0" class="ing-input"></div>
+          <div class="fg"><label>Costo Ing. (🔵 USD)</label><input name="ingTotal" type="number" step="0.01" min="0" readonly class="ing-calc"></div>
         </div>
       </fieldset>
 
@@ -175,8 +175,8 @@ function showNewCotizacionModal() {
         <div class="fg"><label>Total Instalación [REAL] (HRS)</label><input name="instTotalReal" type="number" step="0.01" min="0" readonly></div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px">
-          <div class="fg"><label>Costo/HR [COTIZADO] (USD)</label><input name="mnfCostPerHr" type="number" step="0.01" min="0" class="mnf-calc-input"></div>
-          <div class="fg"><label>Costo Mnf. [COTIZADO] (USD)</label><input name="mnfTotal" type="number" step="0.01" min="0" readonly class="mnf-total"></div>
+          <div class="fg"><label>Costo/HR [COTIZADO] (🔵 USD)</label><input name="mnfCostPerHr" type="number" step="0.01" min="0" class="mnf-calc-input"></div>
+          <div class="fg"><label>Costo Mnf. [COTIZADO] (🔵 USD)</label><input name="mnfTotal" type="number" step="0.01" min="0" readonly class="mnf-total"></div>
         </div>
       </fieldset>
 
@@ -186,14 +186,14 @@ function showNewCotizacionModal() {
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px">
           <div class="fg"><label>Auto. [COTIZADO] (HRS) [I]</label><input name="autoCotHrs" type="number" step="0.01" min="0"></div>
           <div class="fg"><label>Auto. [REAL] (HRS) [I]</label><input name="autoRealHrs" type="number" step="0.01" min="0"></div>
-          <div class="fg"><label>Costo/HR (USD)</label><input name="autoCostPerHr" type="number" step="0.01" min="0" class="auto-input"></div>
-          <div class="fg"><label>Costo Auto. (USD)</label><input name="autoTotal" type="number" step="0.01" min="0" readonly class="auto-calc"></div>
+          <div class="fg"><label>Costo/HR (🔵 USD)</label><input name="autoCostPerHr" type="number" step="0.01" min="0" class="auto-input"></div>
+          <div class="fg"><label>Costo Auto. (🔵 USD)</label><input name="autoTotal" type="number" step="0.01" min="0" readonly class="auto-calc"></div>
         </div>
       </fieldset>
 
       <!-- SECCIÓN 6: MATERIALES -->
       <fieldset>
-        <legend>📦 Materiales [COTIZADO] (USD)</legend>
+        <legend>📦 Materiales [COTIZADO] (🔵 USD)</legend>
         <div style="display:grid;grid-template-columns:1fr;gap:8px">
           <div class="fg"><label>Aceros (Aluminio, Hierro, Bronce, C.R., Amutit, Inox)</label><input name="matAceros" type="number" step="0.01" min="0" class="mat-input"></div>
           <div class="fg"><label>Plásticos (Nylamid, Acetal, PVC, Ultem, Renshape, Policarbonato, Acrílico)</label><input name="matPlasticos" type="number" step="0.01" min="0" class="mat-input"></div>
@@ -204,46 +204,46 @@ function showNewCotizacionModal() {
         </div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px">
-          <div class="fg"><label>SUB-TOTAL MATERIALES (USD)</label><input name="matSubtotal" type="number" step="0.01" min="0" readonly class="mat-subtotal"></div>
+          <div class="fg"><label>SUB-TOTAL MATERIALES (🔵 USD)</label><input name="matSubtotal" type="number" step="0.01" min="0" readonly class="mat-subtotal"></div>
           <div class="fg"><label>% Utilidad {PROFIT}</label><input name="matProfitPct" type="number" step="0.01" min="0" placeholder="10" class="mat-profit"></div>
         </div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div class="fg"><label>Utilidad {PROFIT} (USD)</label><input name="matProfitUsd" type="number" step="0.01" min="0" readonly class="mat-profit-usd"></div>
-          <div class="fg"><label>TOTAL MAT. COMERCIALES (USD)</label><input name="matTotal" type="number" step="0.01" min="0" readonly class="mat-total-final"></div>
+          <div class="fg"><label>Utilidad {PROFIT} (🔵 USD)</label><input name="matProfitUsd" type="number" step="0.01" min="0" readonly class="mat-profit-usd"></div>
+          <div class="fg"><label>TOTAL MAT. COMERCIALES (🔵 USD)</label><input name="matTotal" type="number" step="0.01" min="0" readonly class="mat-total-final"></div>
         </div>
       </fieldset>
 
       <!-- SECCIÓN 7: VIATICOS -->
       <fieldset>
-        <legend>✈️ Viáticos [COTIZADO] (USD)</legend>
+        <legend>✈️ Viáticos [COTIZADO] (🔵 USD)</legend>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
-          <div class="fg"><label>Comida (USD)</label><input name="viatComida" type="number" step="0.01" min="0" class="viat-input"></div>
-          <div class="fg"><label>Estancia (USD)</label><input name="viatEstancia" type="number" step="0.01" min="0" class="viat-input"></div>
-          <div class="fg"><label>Peaje (USD)</label><input name="viatPeaje" type="number" step="0.01" min="0" class="viat-input"></div>
-          <div class="fg"><label>Gasolina (USD)</label><input name="viatGasolina" type="number" step="0.01" min="0" class="viat-input"></div>
+          <div class="fg"><label>Comida (🔵 USD)</label><input name="viatComida" type="number" step="0.01" min="0" class="viat-input"></div>
+          <div class="fg"><label>Estancia (🔵 USD)</label><input name="viatEstancia" type="number" step="0.01" min="0" class="viat-input"></div>
+          <div class="fg"><label>Peaje (🔵 USD)</label><input name="viatPeaje" type="number" step="0.01" min="0" class="viat-input"></div>
+          <div class="fg"><label>Gasolina (🔵 USD)</label><input name="viatGasolina" type="number" step="0.01" min="0" class="viat-input"></div>
         </div>
-        <div class="fg"><label>TOTAL Viáticos (USD)</label><input name="viatTotal" type="number" step="0.01" min="0" readonly class="viat-total"></div>
+        <div class="fg"><label>TOTAL Viáticos (🔵 USD)</label><input name="viatTotal" type="number" step="0.01" min="0" readonly class="viat-total"></div>
       </fieldset>
 
       <!-- SECCIÓN 8: LOGISTICA -->
       <fieldset>
-        <legend>📮 Logística [COTIZADO] (USD)</legend>
+        <legend>📮 Logística [COTIZADO] (🔵 USD)</legend>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div class="fg"><label>Envío (USD)</label><input name="logisticaEnvio" type="number" step="0.01" min="0" class="log-input"></div>
-          <div class="fg"><label>Embalaje (USD)</label><input name="logisticaEmbalaje" type="number" step="0.01" min="0" class="log-input"></div>
+          <div class="fg"><label>Envío (🔵 USD)</label><input name="logisticaEnvio" type="number" step="0.01" min="0" class="log-input"></div>
+          <div class="fg"><label>Embalaje (🔵 USD)</label><input name="logisticaEmbalaje" type="number" step="0.01" min="0" class="log-input"></div>
         </div>
-        <div class="fg"><label>TOTAL Logística (USD)</label><input name="logisticaTotal" type="number" step="0.01" min="0" readonly class="log-total"></div>
+        <div class="fg"><label>TOTAL Logística (🔵 USD)</label><input name="logisticaTotal" type="number" step="0.01" min="0" readonly class="log-total"></div>
       </fieldset>
 
       <!-- SECCIÓN 9: FINALES -->
       <fieldset>
         <legend>💰 Totales Finales</legend>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div class="fg"><label>UTILIDAD / PROFIT (USD)</label><input name="utilidadFinal" type="number" step="0.01" min="0" class="final-input"></div>
-          <div class="fg"><label>PARTIDA DE IVA P/ EMPRESA US (USD)</label><input name="ivaEmpresa" type="number" step="0.01" min="0" class="final-input"></div>
+          <div class="fg"><label>UTILIDAD / PROFIT (🔵 USD)</label><input name="utilidadFinal" type="number" step="0.01" min="0" class="final-input"></div>
+          <div class="fg"><label>PARTIDA DE IVA P/ EMPRESA US (🔵 USD)</label><input name="ivaEmpresa" type="number" step="0.01" min="0" class="final-input"></div>
         </div>
-        <div class="fg"><label style="font-weight:600">TOTAL [COTIZADO] (USD) ★</label><input name="totalFinal" type="number" step="0.01" min="0" readonly style="font-weight:600;font-size:14px;color:var(--green)" class="final-total"></div>
+        <div class="fg"><label style="font-weight:600">TOTAL [COTIZADO] (🔵 USD) ★</label><input name="totalFinal" type="number" step="0.01" min="0" readonly style="font-weight:600;font-size:14px;color:var(--green)" class="final-total"></div>
 
         <div class="fg"><label>Notas</label><textarea name="notas" placeholder="Observaciones, aclaraciones…" style="min-height:100px"></textarea></div>
       </fieldset>
@@ -425,8 +425,8 @@ function addLaborIndirectRow() {
       </div>
       <div class="fg"><label>Cot. (HRS)</label><input name="cotHrs_${rowCount}" type="number" step="0.01" min="0" class="labor-input"></div>
       <div class="fg"><label>Real (HRS)</label><input name="realHrs_${rowCount}" type="number" step="0.01" min="0" class="labor-input"></div>
-      <div class="fg"><label>$/HR (USD)</label><input name="costPerHr_${rowCount}" type="number" step="0.01" min="0" class="labor-input"></div>
-      <div class="fg"><label>Costo (USD)</label><input name="totalCost_${rowCount}" type="number" step="0.01" min="0" readonly class="labor-calc"></div>
+      <div class="fg"><label>$/HR (🔵 USD)</label><input name="costPerHr_${rowCount}" type="number" step="0.01" min="0" class="labor-input"></div>
+      <div class="fg"><label>Costo (🔵 USD)</label><input name="totalCost_${rowCount}" type="number" step="0.01" min="0" readonly class="labor-calc"></div>
     </div>
   `;
   container.insertAdjacentHTML('beforeend', html);

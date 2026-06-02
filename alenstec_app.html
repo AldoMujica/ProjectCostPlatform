@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -59,7 +59,7 @@ html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;backgroun
 .btn.sm{padding:4px 10px;font-size:11.5px}
 
 /* CONTENT */
-.content{flex:1;overflow-y:auto;padding:20px;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.content{flex:1;overflow-y:auto;overflow-x:clip;padding:20px;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
 .content::-webkit-scrollbar{width:5px}
 .content::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 .mod{display:none}
@@ -149,14 +149,23 @@ select.fi{cursor:pointer}
 /* ACT TAG */
 .atag{display:inline-block;padding:1px 7px;border-radius:4px;font-size:10.5px;font-weight:600}
 
-/* SUBNAV */
-.subnav{display:flex;gap:3px;margin-bottom:18px;border-bottom:1px solid var(--border);padding-bottom:0;overflow-x:auto;scrollbar-width:auto;position:sticky;top:0;left:0;background:var(--bg);z-index:5;justify-content:flex-start}
+/* SUBNAV — margin negativo cancela exactamente el padding:20px de .content
+   overflow-x:clip en .content permite que funcione sin generar scrollbar */
+.subnav{display:flex;gap:3px;margin-bottom:18px;margin-left:-20px;margin-right:-20px;padding-left:20px;padding-right:20px;border-bottom:1px solid var(--border);padding-bottom:0;overflow-x:auto;scrollbar-width:auto;position:sticky;top:0;left:0;background:var(--bg);z-index:5;justify-content:flex-start}
 .subnav::-webkit-scrollbar{height:8px}
 .subnav::-webkit-scrollbar-thumb{background:var(--border);border-radius:999px}
 .sntab{padding:8px 14px;font-size:12.5px;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .12s,border-color .12s;white-space:nowrap}
 .sntab:hover{color:var(--text)}
 .sntab.active{color:var(--green);font-weight:500;border-bottom-color:var(--green)}
 .submod{display:none}.submod.active{display:block;animation:fi .15s ease}
+
+/* GRID EDIT — Cotizaciones (edición inline tipo MS Lists) */
+#cot-tbody tr:not(.cot-totals) td:not(.cot-no-edit):hover{background:var(--surface2);outline:1px solid var(--border)}
+#cot-tbody td.cot-mod{background:#fff8e140;border-bottom:2px solid #f59e0b!important}
+#cot-tbody td.cot-ing{padding:0!important;outline:2px solid var(--green)!important;background:var(--bg)}
+#cot-tbody td.cot-ing input{width:100%;height:100%;min-height:30px;padding:4px 8px;border:none;background:transparent;color:var(--text);font-size:12px;font-family:'DM Sans',sans-serif;outline:none;box-sizing:border-box}
+.cot-pending{position:sticky;bottom:0;background:var(--surface);border-top:2px solid var(--green);padding:10px 20px;display:none;align-items:center;gap:10px;z-index:20;font-size:12.5px;box-shadow:0 -4px 16px rgba(0,0,0,.12);margin:18px -20px -20px}
+.cot-pending.vis{display:flex}
 
 .tw{overflow-x:auto;scrollbar-width:thin;scrollbar-color:var(--green) var(--surface2)}
 .tw::-webkit-scrollbar{height:12px}
@@ -283,6 +292,13 @@ table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
 .adm-savebar.dirty{border-color:var(--blue)}
 .adm-dirty-count{font-size:11.5px;color:var(--text2)}
 .adm-dirty-count strong{color:var(--blue)}
+/* barra de scroll horizontal fija sincronizada con la matriz de permisos */
+.adm-mtx-hscroll{overflow-x:scroll;overflow-y:hidden;border-bottom:1px solid var(--border)}
+.adm-mtx-hscroll::-webkit-scrollbar{height:9px}
+.adm-mtx-hscroll::-webkit-scrollbar-track{background:var(--surface2)}
+.adm-mtx-hscroll::-webkit-scrollbar-thumb{background:var(--blue);border-radius:4px;opacity:.75}
+.adm-mtx-hscroll::-webkit-scrollbar-thumb:hover{background:var(--blue-lt)}
+.adm-mtx-hscroll-inner{height:1px;pointer-events:none}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <!-- html2canvas removed 2026-04-23 — unused dependency (no code referenced it) -->
@@ -334,7 +350,7 @@ table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
     </div>
     <div class="ni" data-mod="ot">
       <svg viewBox="0 0 20 20" fill="currentColor"><path d="M4 3h12a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V4a1 1 0 011-1zm1 3v2h10V6H5zm0 4v2h10v-2H5zm0 4v1h6v-1H5z"/></svg>
-      <span>Orden de Trabajo</span><span class="ni-badge">18</span>
+      <span>Orden de Trabajo</span><span class="ni-badge" id="sidebar-ot-badge" style="display:none"></span>
     </div>
     <div class="s-sec">Comercial</div>
     <div class="ni" data-mod="cotizaciones">
@@ -420,8 +436,8 @@ table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
 <div class="mod active" id="mod-dashboard">
   <div class="kg">
     <div class="kpi"><div class="kl">OTs Activas</div><div class="kv" id="kpi-ots-active" style="color:var(--green)">—</div><div class="ks">En proceso · 2026</div><div class="kb bg">En ejecución</div></div>
-    <div class="kpi"><div class="kl">Costo Total Cotizado</div><div class="kv" id="kpi-cost-total">—</div><div class="ks">USD · acumulado</div><div class="kb bb">Suma sobre OTs</div></div>
-    <div class="kpi"><div class="kl">Material en Tránsito</div><div class="kv" id="kpi-material-transit" style="color:var(--amber)">—</div><div class="ks" id="kpi-material-transit-sub">MXN · OCs pendientes</div><div class="kb ba">En tránsito</div></div>
+    <div class="kpi"><div class="kl">Costo Total Cotizado</div><div class="kv" id="kpi-cost-total">—</div><div class="ks">🔵 USD · acumulado</div><div class="kb bb">Suma sobre OTs</div></div>
+    <div class="kpi"><div class="kl">Material en Tránsito</div><div class="kv" id="kpi-material-transit" style="color:var(--amber)">—</div><div class="ks" id="kpi-material-transit-sub">🟢 MXN · OCs pendientes</div><div class="kb ba">En tránsito</div></div>
     <div class="kpi"><div class="kl">Cotizaciones Abiertas</div><div class="kv" id="kpi-quotes-open" style="color:var(--blue)">—</div><div class="ks">Pendientes</div><div class="kb bb">Estado pendiente</div></div>
   </div>
   <div class="g2">
@@ -435,7 +451,7 @@ table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
       </table></div>
     </div>
     <div class="card">
-      <div class="ch"><div class="ct">Costo Cotizado por OT</div><div class="cs">USD · 2026</div></div>
+      <div class="ch"><div class="ct">Costo Cotizado por OT</div><div class="cs">🔵 USD · 2026</div></div>
       <div class="cb" id="cost-bars-list">
         <div style="padding:16px;color:var(--text3);text-align:center">Cargando…</div>
       </div>
@@ -508,8 +524,8 @@ table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
       <div class="card">
         <div class="ch"><div class="ct">Presupuestos</div></div>
         <div class="cb">
-          <div class="g3f" style="margin-bottom:10px"><div class="fgg"><label class="fl">Tipo de Cambio</label><input class="fi" data-ot-field="exchangeRate" type="number" step="0.0001" placeholder="—"></div><div class="fgg"><label class="fl">Costo cotizado</label><input class="fi" data-ot-field="quotedCost" type="number" step="0.01" placeholder="—"></div><div class="fgg"><label class="fl">Moneda</label><select class="fi" data-ot-field="currency"><option value="USD">USD</option><option value="MXN">MXN</option></select></div></div>
-          <div class="fg" style="margin-bottom:0"><div class="fgg"><label class="fl">Ppto. Material (MXN)</label><input class="fi" data-ot-field="pptoMaterialMxn" type="number" step="0.01" placeholder="—"></div><div class="fgg"><label class="fl">Ppto. Material (USD)</label><input class="fi" data-ot-field="pptoMaterialUsd" type="number" step="0.01" placeholder="—"></div></div>
+          <div class="g3f" style="margin-bottom:10px"><div class="fgg"><label class="fl">Tipo de Cambio</label><input class="fi" data-ot-field="exchangeRate" type="number" step="0.0001" placeholder="—"></div><div class="fgg"><label class="fl">Costo cotizado</label><input class="fi" data-ot-field="quotedCost" type="number" step="0.01" placeholder="—"></div><div class="fgg"><label class="fl">Moneda</label><select class="fi" data-ot-field="currency"><option value="USD">🔵 USD</option><option value="MXN">🟢 MXN</option></select></div></div>
+          <div class="fg" style="margin-bottom:0"><div class="fgg"><label class="fl">Ppto. Material (🟢 MXN)</label><input class="fi" data-ot-field="pptoMaterialMxn" type="number" step="0.01" placeholder="—"></div><div class="fgg"><label class="fl">Ppto. Material (🔵 USD)</label><input class="fi" data-ot-field="pptoMaterialUsd" type="number" step="0.01" placeholder="—"></div></div>
         </div>
       </div>
     </div>
@@ -538,8 +554,8 @@ table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
 <div class="mod" id="mod-cotizaciones">
   <div class="kg">
     <div class="kpi"><div class="kl">Cotizaciones 2026</div><div class="kv" id="kpi-cot-count" style="color:var(--blue)">—</div><div class="ks">Registradas en control ventas</div></div>
-    <div class="kpi"><div class="kl">Monto cotizado</div><div class="kv" id="kpi-cot-amount">—</div><div class="ks">USD · sin IVA · acumulado</div></div>
-    <div class="kpi"><div class="kl">Tipo de cambio ref.</div><div class="kv" id="kpi-cot-fx" style="color:var(--green)">—</div><div class="ks">USD · última cotización</div></div>
+    <div class="kpi"><div class="kl">Monto cotizado</div><div class="kv" id="kpi-cot-amount">—</div><div class="ks">🔵 USD · sin IVA · acumulado</div></div>
+    <div class="kpi"><div class="kl">Tipo de cambio ref.</div><div class="kv" id="kpi-cot-fx" style="color:var(--green)">—</div><div class="ks">🔵 USD · última cotización</div></div>
     <div class="kpi"><div class="kl">Clientes activos</div><div class="kv" id="kpi-cot-clients">—</div><div class="ks">Distintos en control ventas</div></div>
   </div>
   <div class="card">
@@ -552,42 +568,348 @@ table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
         <button class="btn p sm" onclick="showNewCotizacionModal()" data-perm-required="quote.create">+ Nueva cotización</button>
       </div>
     </div>
-    <div class="tw" style="overflow-x:auto"><table style="min-width:2600px">
-      <thead><tr>
-        <th>Item</th>
-        <th>Cliente</th>
-        <th>Proyecto / Programa</th>
-        <th>Celda</th>
-        <th>RFQ</th>
-        <th>MECR</th>
-        <th>COT Ref. Alenstec</th>
-        <th>COT Alenstec</th>
-        <th>Fecha COT</th>
-        <th>Costo COT-AL (USD)</th>
-        <th>OC Cliente</th>
-        <th>Tipo de Contrato</th>
-        <th>Fecha O.C.</th>
-        <th>Costo O.C. (USD)</th>
-        <th>Fecha Compromiso</th>
-        <th>T/C</th>
-        <th>OT Alenstec</th>
-        <th>Descripción de Proyecto</th>
-        <th>Tipo</th>
-        <th>Estado</th>
-        <th style="width:60px">Acc.</th>
-      </tr></thead>
+    <div class="tw" style="overflow-x:auto"><table style="min-width:8500px">
+      <thead>
+        <tr>
+          <!-- ── SECCIÓN 1: Datos básicos (rowspan=3) ── -->
+          <th rowspan="3" style="min-width:40px">Item</th>
+          <th rowspan="3" style="min-width:120px">Cliente</th>
+          <th rowspan="3" style="min-width:120px">Proyecto / Programa</th>
+          <th rowspan="3" style="min-width:70px">Celda</th>
+          <th rowspan="3" style="min-width:80px">RFQ</th>
+          <th rowspan="3" style="min-width:80px">MECR</th>
+          <th rowspan="3" style="min-width:130px">COT Ref. Alenstec</th>
+          <th rowspan="3" style="min-width:130px">COT Alenstec</th>
+          <th rowspan="3" style="min-width:90px">Fecha COT</th>
+          <th rowspan="3" style="min-width:100px">Costo COT-AL (🔵 USD)</th>
+          <th rowspan="3" style="min-width:110px">OC Cliente</th>
+          <th rowspan="3" style="min-width:110px">Tipo Contrato</th>
+          <th rowspan="3" style="min-width:90px">Fecha O.C.</th>
+          <th rowspan="3" style="min-width:100px">Costo O.C. (🔵 USD)</th>
+          <th rowspan="3" style="min-width:105px">Fecha Compromiso</th>
+          <th rowspan="3" style="min-width:65px">T/C</th>
+          <th rowspan="3" style="min-width:100px">OT Alenstec</th>
+          <th rowspan="3" style="min-width:160px">Descripción</th>
+          <th rowspan="3" style="min-width:80px">Tipo</th>
+          <th rowspan="3" style="min-width:80px">Estado</th>
+          <!-- ── SECCIÓN 2: Labor Indirecta ── -->
+          <th colspan="3" style="text-align:center;background:#1d4e89;color:#fff;font-size:11px">LABOR INDIRECTA</th>
+          <!-- ── SECCIÓN 3: Labor Directa Ingeniería ── -->
+          <th colspan="4" style="text-align:center;background:#1a6e3c;color:#fff;font-size:11px">LABOR DIRECTA — INGENIERÍA</th>
+          <!-- ── SECCIÓN 4: Labor Directa Manufactura ── -->
+          <th colspan="31" style="text-align:center;background:#4b2991;color:#fff;font-size:11px">LABOR DIRECTA — MANUFACTURA</th>
+          <!-- ── SECCIÓN 5: Labor Directa Automatización ── -->
+          <th colspan="4" style="text-align:center;background:#7d2e0e;color:#fff;font-size:11px">LABOR DIRECTA — AUTOMATIZACIÓN</th>
+          <!-- ── SECCIÓN 6: Materiales ── -->
+          <th colspan="10" style="text-align:center;background:#1b5e20;color:#fff;font-size:11px">MATERIALES COTIZADO (🔵 USD)</th>
+          <!-- ── SECCIÓN 7: Viáticos ── -->
+          <th colspan="5" style="text-align:center;background:#4a2800;color:#fff;font-size:11px">VIÁTICOS COTIZADO (🔵 USD)</th>
+          <!-- ── SECCIÓN 8: Logística ── -->
+          <th colspan="3" style="text-align:center;background:#1a3a5c;color:#fff;font-size:11px">LOGÍSTICA COTIZADO (🔵 USD)</th>
+          <!-- ── SECCIÓN 9: Totales finales ── -->
+          <th colspan="3" style="text-align:center;background:#5c3a00;color:#fff;font-size:11px">TOTALES FINALES</th>
+          <th rowspan="3" style="min-width:130px">Notas</th>
+          <th rowspan="3" style="width:60px">Acc.</th>
+        </tr>
+        <tr>
+          <!-- Labor Indirecta (hojas, rowspan=2) -->
+          <th rowspan="2" style="min-width:70px;font-size:11px">HRS COT</th>
+          <th rowspan="2" style="min-width:70px;font-size:11px">HRS REAL</th>
+          <th rowspan="2" style="min-width:80px;font-size:11px">Costo (🔵 USD)</th>
+          <!-- Labor Directa Ingeniería (hojas, rowspan=2) -->
+          <th rowspan="2" style="min-width:70px;font-size:11px">HRS COT</th>
+          <th rowspan="2" style="min-width:70px;font-size:11px">HRS REAL</th>
+          <th rowspan="2" style="min-width:70px;font-size:11px">$/HR (🔵 USD)</th>
+          <th rowspan="2" style="min-width:90px;font-size:11px">Costo Ing. (🔵 USD)</th>
+          <!-- Labor Directa Manufactura (sub-grupos) -->
+          <th colspan="10" style="text-align:center;font-size:10px;background:#ede7f6">PROCESOS COTIZADO (HRS)</th>
+          <th colspan="5"  style="text-align:center;font-size:10px;background:#e8eaf6">INSTALACIÓN COT [M]</th>
+          <th colspan="9"  style="text-align:center;font-size:10px;background:#fce4ec">PROCESOS REAL (HRS)</th>
+          <th colspan="5"  style="text-align:center;font-size:10px;background:#fbe9e7">INSTALACIÓN REAL [L]</th>
+          <th rowspan="2" style="min-width:70px;font-size:11px">$/HR (🔵 USD)</th>
+          <th rowspan="2" style="min-width:90px;font-size:11px">Costo Mnf. (🔵 USD)</th>
+          <!-- Labor Directa Automatización (hojas, rowspan=2) -->
+          <th rowspan="2" style="min-width:70px;font-size:11px">HRS COT</th>
+          <th rowspan="2" style="min-width:70px;font-size:11px">HRS REAL</th>
+          <th rowspan="2" style="min-width:70px;font-size:11px">$/HR (🔵 USD)</th>
+          <th rowspan="2" style="min-width:90px;font-size:11px">Costo Auto. (🔵 USD)</th>
+          <!-- Materiales (hojas, rowspan=2) -->
+          <th rowspan="2" style="min-width:80px;font-size:11px">Aceros</th>
+          <th rowspan="2" style="min-width:80px;font-size:11px">Plásticos</th>
+          <th rowspan="2" style="min-width:90px;font-size:11px">Recubrimientos</th>
+          <th rowspan="2" style="min-width:90px;font-size:11px">Tratamientos</th>
+          <th rowspan="2" style="min-width:90px;font-size:11px">Componentes</th>
+          <th rowspan="2" style="min-width:90px;font-size:11px">Certificados</th>
+          <th rowspan="2" style="min-width:80px;font-size:11px">Sub-total</th>
+          <th rowspan="2" style="min-width:65px;font-size:11px">% Util.</th>
+          <th rowspan="2" style="min-width:80px;font-size:11px">Utilidad</th>
+          <th rowspan="2" style="min-width:80px;font-size:11px">Total Mat.</th>
+          <!-- Viáticos (hojas, rowspan=2) -->
+          <th rowspan="2" style="min-width:70px;font-size:11px">Comida</th>
+          <th rowspan="2" style="min-width:70px;font-size:11px">Estancia</th>
+          <th rowspan="2" style="min-width:70px;font-size:11px">Peaje</th>
+          <th rowspan="2" style="min-width:70px;font-size:11px">Gasolina</th>
+          <th rowspan="2" style="min-width:70px;font-size:11px">Total</th>
+          <!-- Logística (hojas, rowspan=2) -->
+          <th rowspan="2" style="min-width:70px;font-size:11px">Envío</th>
+          <th rowspan="2" style="min-width:70px;font-size:11px">Embalaje</th>
+          <th rowspan="2" style="min-width:70px;font-size:11px">Total</th>
+          <!-- Totales (hojas, rowspan=2) -->
+          <th rowspan="2" style="min-width:90px;font-size:11px">Utilidad / Profit</th>
+          <th rowspan="2" style="min-width:90px;font-size:11px">IVA Empresa</th>
+          <th rowspan="2" style="min-width:90px;font-size:11px">Total Final</th>
+        </tr>
+        <tr>
+          <!-- Labor Directa Manufactura — PROC COT hojas -->
+          <th style="font-size:10px">[B] Corte</th><th style="font-size:10px">[C] Fab.</th><th style="font-size:10px">[E] Maq.</th>
+          <th style="font-size:10px">[F] Hilo</th><th style="font-size:10px">[G] Ens.</th><th style="font-size:10px">[H] Elec.</th>
+          <th style="font-size:10px">[D] Otros</th><th style="font-size:10px">[J] Shop.</th><th style="font-size:10px">[K] Cert.</th>
+          <th style="font-size:10px">[L] Emp.</th>
+          <!-- INST COT hojas -->
+          <th style="font-size:10px">Sup.</th><th style="font-size:10px">Téc.Mec.</th><th style="font-size:10px">Eléc.</th>
+          <th style="font-size:10px">Prog.</th><th style="font-size:10px">Total</th>
+          <!-- PROC REAL hojas -->
+          <th style="font-size:10px">[B] Corte</th><th style="font-size:10px">[C] Fab.</th><th style="font-size:10px">[E] Maq.</th>
+          <th style="font-size:10px">[F] Hilo</th><th style="font-size:10px">[G] Ens.</th><th style="font-size:10px">[H] Elec.</th>
+          <th style="font-size:10px">[D] Otros</th><th style="font-size:10px">[J] Shop.</th><th style="font-size:10px">[K] Cert.</th>
+          <!-- INST REAL hojas -->
+          <th style="font-size:10px">Diseño</th><th style="font-size:10px">Técnico</th><th style="font-size:10px">Eléc.</th>
+          <th style="font-size:10px">Prog.</th><th style="font-size:10px">Total</th>
+        </tr>
+      </thead>
       <tbody id="cot-tbody">
-        <tr><td colspan="21" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
+        <!-- MOCKUP — Ventas Totales Q1-2026 · fuente: Control Ventas 2026-03-17 -->
+        <tr>
+          <td>1</td><td>F3</td><td>—</td><td>—</td><td>—</td><td>—</td>
+          <td>007F3-26</td><td>007F3-26</td><td>06/01/2026</td><td style="text-align:right">$3,215.31</td>
+          <td>OC#20</td><td>—</td><td>07/01/2026</td><td style="text-align:right">$3,215.31</td>
+          <td>23/01/2026</td><td style="text-align:right">17.96</td><td>OT-1935</td>
+          <td style="font-size:11px">MANUFACTURA DE 3 MOLDES DE ALUMINIO, 18 PIEZAS POKAYOKE Y 18 GUÍAS DE NYLAMID</td>
+          <td>—</td><td><span class="atag" style="background:#e8f5e920;color:#2e7d32">Cerrada</span></td>
+          <td style="text-align:right">0</td><td>—</td><td>—</td>
+          <td style="text-align:right">0</td><td>—</td><td style="text-align:right">$18.00</td><td>—</td>
+          <td style="text-align:right">0</td><td style="text-align:right">9.5</td><td style="text-align:right">166</td><td style="text-align:right">0</td><td style="text-align:right">3</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td>
+          <td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td>
+          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
+          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
+          <td style="text-align:right">$18.00</td><td style="text-align:right">$3,213.00</td>
+          <td style="text-align:right">0</td><td>—</td><td style="text-align:right">$25.00</td><td>—</td>
+          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td style="text-align:right">26%</td><td>—</td><td>—</td>
+          <td>—</td><td>—</td><td>—</td><td>—</td><td style="text-align:right">$2.31</td>
+          <td>—</td><td>—</td><td>—</td>
+          <td>—</td><td>—</td><td style="text-align:right;font-weight:600">$3,215.31</td>
+          <td style="font-size:10px;color:var(--text3)">SE DESCUENTAN $6,728 DE MATERIAL DE ALUMINIO (21 HRS)</td>
+          <td><button class="btn sm">⋯</button></td>
+        </tr>
+        <tr>
+          <td>2</td><td>AVANZAR</td><td>—</td><td>—</td><td>—</td><td>—</td>
+          <td>058ADA-25C</td><td>004ADA-26</td><td>03/02/2026</td><td style="text-align:right">$15,782.00</td>
+          <td>2310481395</td><td style="font-size:11px">Term. y Cond. 14/08/2023</td><td>08/01/2026</td><td style="text-align:right">$15,782.00</td>
+          <td>18/03/2026</td><td style="text-align:right">17.95</td><td>OT-1936</td>
+          <td style="font-size:11px">MANUFACTURA E INTEGRACIÓN DE 2 BRAZOS NEUMÁTICOS — PROCESO ALTERNO REAR RH</td>
+          <td>—</td><td><span class="atag" style="background:#e8f5e920;color:#2e7d32">Cerrada</span></td>
+          <td style="text-align:right">0</td><td>—</td><td>—</td>
+          <td style="text-align:right">24</td><td>—</td><td style="text-align:right">$23.00</td><td style="text-align:right">$552.00</td>
+          <td style="text-align:right">35</td><td style="text-align:right">25</td><td style="text-align:right">202</td><td style="text-align:right">0</td><td style="text-align:right">100</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td>
+          <td style="text-align:right">13</td><td style="text-align:right">26</td><td style="text-align:right">12</td><td style="text-align:right">0</td><td style="text-align:right">51</td>
+          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
+          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
+          <td style="text-align:right">$20.63</td><td style="text-align:right">$8,518.98</td>
+          <td style="text-align:right">0</td><td>—</td><td style="text-align:right">$25.00</td><td>—</td>
+          <td style="text-align:right">$420.00</td><td style="text-align:right">$160.00</td><td style="text-align:right">$170.00</td><td>—</td><td style="text-align:right">$4,201.59</td><td>—</td><td style="text-align:right">$4,951.59</td><td style="text-align:right">26%</td><td style="text-align:right">$1,287.41</td><td style="text-align:right">$6,239.00</td>
+          <td style="text-align:right">$190.00</td><td>—</td><td style="text-align:right">$137.00</td><td style="text-align:right">$133.00</td><td style="text-align:right">$460.00</td>
+          <td style="text-align:right">$12.02</td><td>—</td><td style="text-align:right">$12.02</td>
+          <td>—</td><td>—</td><td style="text-align:right;font-weight:600">$15,782.00</td>
+          <td>—</td><td><button class="btn sm">⋯</button></td>
+        </tr>
+        <tr>
+          <td>3</td><td>AVANZAR</td><td>—</td><td>—</td><td>—</td><td>—</td>
+          <td>058ADA-25C</td><td>004ADA-26</td><td>03/02/2026</td><td style="text-align:right">$15,782.00</td>
+          <td>2310481395</td><td style="font-size:11px">Term. y Cond. 14/08/2023</td><td>08/01/2026</td><td style="text-align:right">$15,782.00</td>
+          <td>18/03/2026</td><td style="text-align:right">17.95</td><td>OT-1937</td>
+          <td style="font-size:11px">MANUFACTURA E INTEGRACIÓN DE 2 BRAZOS NEUMÁTICOS — PROCESO ALTERNO BACK LH</td>
+          <td>—</td><td><span class="atag" style="background:#e8f5e920;color:#2e7d32">Cerrada</span></td>
+          <td style="text-align:right">0</td><td>—</td><td>—</td>
+          <td style="text-align:right">24</td><td>—</td><td style="text-align:right">$23.00</td><td style="text-align:right">$552.00</td>
+          <td style="text-align:right">35</td><td style="text-align:right">25</td><td style="text-align:right">202</td><td style="text-align:right">0</td><td style="text-align:right">100</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td>
+          <td style="text-align:right">13</td><td style="text-align:right">26</td><td style="text-align:right">12</td><td style="text-align:right">0</td><td style="text-align:right">51</td>
+          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
+          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
+          <td style="text-align:right">$20.63</td><td style="text-align:right">$8,518.98</td>
+          <td style="text-align:right">0</td><td>—</td><td style="text-align:right">$25.00</td><td>—</td>
+          <td style="text-align:right">$420.00</td><td style="text-align:right">$160.00</td><td style="text-align:right">$170.00</td><td>—</td><td style="text-align:right">$4,201.59</td><td>—</td><td style="text-align:right">$4,951.59</td><td style="text-align:right">26%</td><td style="text-align:right">$1,287.41</td><td style="text-align:right">$6,239.00</td>
+          <td style="text-align:right">$190.00</td><td>—</td><td style="text-align:right">$137.00</td><td style="text-align:right">$133.00</td><td style="text-align:right">$460.00</td>
+          <td style="text-align:right">$12.02</td><td>—</td><td style="text-align:right">$12.02</td>
+          <td>—</td><td>—</td><td style="text-align:right;font-weight:600">$15,782.00</td>
+          <td>—</td><td><button class="btn sm">⋯</button></td>
+        </tr>
+        <tr>
+          <td>4</td><td>AVANZAR</td><td>—</td><td>—</td><td>—</td><td>—</td>
+          <td>058ADA-25C</td><td>004ADA-26</td><td>03/02/2026</td><td style="text-align:right">$15,782.00</td>
+          <td>2310481395</td><td style="font-size:11px">Term. y Cond. 14/08/2023</td><td>08/01/2026</td><td style="text-align:right">$15,782.00</td>
+          <td>18/03/2026</td><td style="text-align:right">17.95</td><td>OT-1938</td>
+          <td style="font-size:11px">MANUFACTURA E INTEGRACIÓN DE 2 BRAZOS NEUMÁTICOS — PROCESO ALTERNO BACK RH</td>
+          <td>—</td><td><span class="atag" style="background:#e8f5e920;color:#2e7d32">Cerrada</span></td>
+          <td style="text-align:right">0</td><td>—</td><td>—</td>
+          <td style="text-align:right">24</td><td>—</td><td style="text-align:right">$23.00</td><td style="text-align:right">$552.00</td>
+          <td style="text-align:right">35</td><td style="text-align:right">25</td><td style="text-align:right">202</td><td style="text-align:right">0</td><td style="text-align:right">100</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td>
+          <td style="text-align:right">13</td><td style="text-align:right">26</td><td style="text-align:right">12</td><td style="text-align:right">0</td><td style="text-align:right">51</td>
+          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
+          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
+          <td style="text-align:right">$20.63</td><td style="text-align:right">$8,518.98</td>
+          <td style="text-align:right">0</td><td>—</td><td style="text-align:right">$25.00</td><td>—</td>
+          <td style="text-align:right">$420.00</td><td style="text-align:right">$160.00</td><td style="text-align:right">$170.00</td><td>—</td><td style="text-align:right">$4,201.59</td><td>—</td><td style="text-align:right">$4,951.59</td><td style="text-align:right">26%</td><td style="text-align:right">$1,287.41</td><td style="text-align:right">$6,239.00</td>
+          <td style="text-align:right">$190.00</td><td>—</td><td style="text-align:right">$137.00</td><td style="text-align:right">$133.00</td><td style="text-align:right">$460.00</td>
+          <td style="text-align:right">$12.02</td><td>—</td><td style="text-align:right">$12.02</td>
+          <td>—</td><td>—</td><td style="text-align:right;font-weight:600">$15,782.00</td>
+          <td>—</td><td><button class="btn sm">⋯</button></td>
+        </tr>
+        <tr>
+          <td>5</td><td>AUTOLIV AMX</td><td>—</td><td>—</td><td>—</td><td>—</td>
+          <td>057AMX-24</td><td>057AMX-24</td><td>26/06/2024</td><td style="text-align:right">$1,537.00</td>
+          <td>7569965</td><td>OM GIPU 0817</td><td>14/01/2026</td><td style="text-align:right">$1,537.00</td>
+          <td>11/02/2026</td><td style="text-align:right">18.13</td><td>OT-1939</td>
+          <td style="font-size:11px">FABRICACIÓN DE PIEZAS PARA REFACCIONAMIENTO DE REMACHADO DE PT-COVER (T2363486)</td>
+          <td>—</td><td><span class="atag" style="background:#e8f5e920;color:#2e7d32">Cerrada</span></td>
+          <td style="text-align:right">0</td><td>—</td><td>—</td>
+          <td style="text-align:right">0</td><td>—</td><td style="text-align:right">$23.00</td><td>—</td>
+          <td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">55</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td>
+          <td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td>
+          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
+          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
+          <td style="text-align:right">$23.00</td><td style="text-align:right">$1,265.00</td>
+          <td style="text-align:right">0</td><td>—</td><td style="text-align:right">$25.00</td><td>—</td>
+          <td style="text-align:right">$146.00</td><td>—</td><td>—</td><td>—</td><td style="text-align:right">$69.87</td><td>—</td><td style="text-align:right">$215.87</td><td style="text-align:right">26%</td><td style="text-align:right">$56.13</td><td style="text-align:right">$272.00</td>
+          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
+          <td>—</td><td>—</td><td>—</td>
+          <td>—</td><td>—</td><td style="text-align:right;font-weight:600">$1,537.00</td>
+          <td>—</td><td><button class="btn sm">⋯</button></td>
+        </tr>
+        <tr>
+          <td>6</td><td>AUTOLIV AMX</td><td>—</td><td>—</td><td>—</td><td>—</td>
+          <td>057AMX-24</td><td>057AMX-24</td><td>26/06/2024</td><td style="text-align:right">$1,537.00</td>
+          <td>7569966</td><td>OM GIPU 0817</td><td>14/01/2026</td><td style="text-align:right">$1,537.00</td>
+          <td>11/02/2026</td><td style="text-align:right">18.13</td><td>OT-1940</td>
+          <td style="font-size:11px">FABRICACIÓN DE PIEZAS PARA REFACCIONAMIENTO DE REMACHADO DE PT-COVER (T2363486)</td>
+          <td>—</td><td><span class="atag" style="background:#e8f5e920;color:#2e7d32">Cerrada</span></td>
+          <td style="text-align:right">0</td><td>—</td><td>—</td>
+          <td style="text-align:right">0</td><td>—</td><td style="text-align:right">$23.00</td><td>—</td>
+          <td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">55</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td>
+          <td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td>
+          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
+          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
+          <td style="text-align:right">$23.00</td><td style="text-align:right">$1,265.00</td>
+          <td style="text-align:right">0</td><td>—</td><td style="text-align:right">$25.00</td><td>—</td>
+          <td style="text-align:right">$146.00</td><td>—</td><td>—</td><td>—</td><td style="text-align:right">$69.87</td><td>—</td><td style="text-align:right">$215.87</td><td style="text-align:right">26%</td><td style="text-align:right">$56.13</td><td style="text-align:right">$272.00</td>
+          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
+          <td>—</td><td>—</td><td>—</td>
+          <td>—</td><td>—</td><td style="text-align:right;font-weight:600">$1,537.00</td>
+          <td>—</td><td><button class="btn sm">⋯</button></td>
+        </tr>
+        <tr>
+          <td>7</td><td>AUTOLIV AMX</td><td>—</td><td>—</td><td>—</td><td>—</td>
+          <td>128AMX-24</td><td>128AMX-24</td><td>09/12/2024</td><td style="text-align:right">$1,027.00</td>
+          <td>7569967</td><td>OM GIPU 0817</td><td>14/01/2026</td><td style="text-align:right">$1,027.00</td>
+          <td>11/02/2026</td><td style="text-align:right">20.22</td><td>OT-1941</td>
+          <td style="font-size:11px">FABRICACIÓN DE 1 DADO INF. FERRULE PARA CELDA P02, P07 (C-001279)</td>
+          <td>—</td><td><span class="atag" style="background:#e8f5e920;color:#2e7d32">Cerrada</span></td>
+          <td style="text-align:right">0</td><td>—</td><td>—</td>
+          <td style="text-align:right">0</td><td>—</td><td style="text-align:right">$23.00</td><td>—</td>
+          <td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">40</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td>
+          <td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td>
+          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
+          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
+          <td style="text-align:right">$20.60</td><td style="text-align:right">$824.00</td>
+          <td style="text-align:right">0</td><td>—</td><td style="text-align:right">$25.00</td><td>—</td>
+          <td style="text-align:right">$52.77</td><td>—</td><td style="text-align:right">$65.00</td><td>—</td><td style="text-align:right">$43.34</td><td>—</td><td style="text-align:right">$161.11</td><td style="text-align:right">26%</td><td style="text-align:right">$41.89</td><td style="text-align:right">$203.00</td>
+          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
+          <td>—</td><td>—</td><td>—</td>
+          <td>—</td><td>—</td><td style="text-align:right;font-weight:600">$1,027.00</td>
+          <td>—</td><td><button class="btn sm">⋯</button></td>
+        </tr>
+        <tr>
+          <td>8</td><td>AUTOLIV AMX</td><td>—</td><td>—</td><td>—</td><td>—</td>
+          <td>131AMX-24</td><td>131AMX-24</td><td>09/12/2024</td><td style="text-align:right">$1,048.00</td>
+          <td>7571148</td><td>OM GIPU 0817</td><td>29/01/2026</td><td style="text-align:right">$1,048.00</td>
+          <td>26/02/2026</td><td style="text-align:right">20.22</td><td>OT-1942</td>
+          <td style="font-size:11px">FABRICACIÓN DE 1 DADO SUP. FERRULE, SEGÚN DIBUJOS F-006227 REV. B</td>
+          <td>—</td><td><span class="atag" style="background:#e8f5e920;color:#2e7d32">Cerrada</span></td>
+          <td style="text-align:right">0</td><td>—</td><td>—</td>
+          <td style="text-align:right">0</td><td>—</td><td style="text-align:right">$23.00</td><td>—</td>
+          <td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">40</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td>
+          <td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td>
+          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
+          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
+          <td style="text-align:right">$20.60</td><td style="text-align:right">$824.00</td>
+          <td style="text-align:right">0</td><td>—</td><td style="text-align:right">$25.00</td><td>—</td>
+          <td style="text-align:right">$52.78</td><td>—</td><td style="text-align:right">$65.00</td><td>—</td><td style="text-align:right">$60.00</td><td>—</td><td style="text-align:right">$177.78</td><td style="text-align:right">26%</td><td style="text-align:right">$46.22</td><td style="text-align:right">$224.00</td>
+          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
+          <td>—</td><td>—</td><td>—</td>
+          <td>—</td><td>—</td><td style="text-align:right;font-weight:600">$1,048.00</td>
+          <td>—</td><td><button class="btn sm">⋯</button></td>
+        </tr>
+        <tr>
+          <td>9</td><td>ADIENT LERMA</td><td>—</td><td>—</td><td>—</td><td>—</td>
+          <td>084ADL-25</td><td>009ADL-26</td><td>04/02/2026</td><td style="text-align:right">$22,855.00</td>
+          <td>2301481897</td><td style="font-size:11px">Term. y Cond. 14/08/2023</td><td>15/01/2026</td><td style="text-align:right">$22,855.00</td>
+          <td>01/04/2026</td><td style="text-align:right">17.81</td><td>OT-1943</td>
+          <td style="font-size:11px">REFURBISH E INTEGRACIÓN DE NUEVO MODELO — INSERCIÓN DE BOTÓN ISO FIX (OT-1590)</td>
+          <td>—</td><td><span class="atag" style="background:#e8f5e920;color:#2e7d32">Cerrada</span></td>
+          <td style="text-align:right">0</td><td>—</td><td>—</td>
+          <td style="text-align:right">47</td><td>—</td><td style="text-align:right">$20.55</td><td style="text-align:right">$966.00</td>
+          <td style="text-align:right">5</td><td style="text-align:right">16</td><td style="text-align:right">221</td><td style="text-align:right">0</td><td style="text-align:right">72</td><td style="text-align:right">50</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td>
+          <td style="text-align:right">33</td><td style="text-align:right">33</td><td style="text-align:right">33</td><td style="text-align:right">0</td><td style="text-align:right">99</td>
+          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
+          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
+          <td style="text-align:right">$20.58</td><td style="text-align:right">$9,530.00</td>
+          <td style="text-align:right">24</td><td>—</td><td style="text-align:right">$31.63</td><td style="text-align:right">$759.00</td>
+          <td style="text-align:right">$95.20</td><td style="text-align:right">$19.00</td><td style="text-align:right">$110.00</td><td>—</td><td style="text-align:right">$9,234.14</td><td>—</td><td style="text-align:right">$9,458.34</td><td style="text-align:right">20%</td><td style="text-align:right">$1,891.67</td><td style="text-align:right">$11,350.00</td>
+          <td style="text-align:right">$150.00</td><td>—</td><td style="text-align:right">$50.00</td><td style="text-align:right">$50.00</td><td style="text-align:right">$250.00</td>
+          <td>—</td><td>—</td><td>—</td>
+          <td>—</td><td>—</td><td style="text-align:right;font-weight:600">$22,855.00</td>
+          <td>—</td><td><button class="btn sm">⋯</button></td>
+        </tr>
+        <!-- TOTALES -->
+        <tr class="cot-totals" style="background:var(--surface2);font-weight:600;border-top:2px solid var(--border)">
+          <td colspan="9" style="text-align:right;font-size:11px;color:var(--text3)">TOTALES Q1-2026</td>
+          <td style="text-align:right">$75,350.00</td>
+          <td colspan="4">—</td>
+          <td style="text-align:right">$75,350.00</td>
+          <td colspan="2">—</td>
+          <td colspan="3">—</td><td>—</td>
+          <td style="text-align:right">0</td><td>—</td><td>—</td>
+          <td style="text-align:right">119</td><td>—</td><td>—</td><td style="text-align:right">$2,622.00</td>
+          <td colspan="10">1,892 hrs COT</td>
+          <td colspan="5">—</td>
+          <td colspan="9">—</td>
+          <td colspan="5">—</td>
+          <td>—</td><td>—</td>
+          <td style="text-align:right">24</td><td>—</td><td>—</td><td style="text-align:right">$759.00</td>
+          <td colspan="6" style="text-align:right">$25,083.73</td><td>—</td><td>—</td><td style="text-align:right">$31,038.00</td>
+          <td colspan="4" style="text-align:right">$1,630.00</td><td>—</td>
+          <td colspan="2" style="text-align:right">$36.06</td><td>—</td>
+          <td>—</td><td>—</td><td style="text-align:right;color:var(--green)">$75,350.00</td>
+          <td colspan="2">—</td>
+        </tr>
       </tbody>
     </table></div>
+    <!-- BARRA DE CAMBIOS PENDIENTES -->
+    <div class="cot-pending" id="cot-pending">
+      <span style="color:var(--green);font-size:16px">✏</span>
+      <span style="color:var(--text2)"><strong id="cot-pending-n">0</strong> celda(s) modificada(s) sin guardar</span>
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <button class="btn sm" onclick="cotDiscard()">Descartar</button>
+        <button class="btn p sm" onclick="cotSave()">Guardar cambios</button>
+      </div>
+    </div>
   </div>
 </div>
 
 <!-- PRONÓSTICO -->
 <div class="mod" id="mod-pronostico">
   <div class="kg">
-    <div class="kpi"><div class="kl">Costo cotizado total</div><div class="kv" id="kpi-pron-cotizado">—</div><div class="ks" id="kpi-pron-cotizado-sub">USD · activas + cerradas</div></div>
-    <div class="kpi"><div class="kl">Costo real acumulado</div><div class="kv" id="kpi-pron-real" style="color:var(--green)">—</div><div class="ks" id="kpi-pron-real-sub">USD · normalizado con T/C por OT</div></div>
+    <div class="kpi"><div class="kl">Costo cotizado total</div><div class="kv" id="kpi-pron-cotizado">—</div><div class="ks" id="kpi-pron-cotizado-sub">🔵 USD · activas + cerradas</div></div>
+    <div class="kpi"><div class="kl">Costo real acumulado</div><div class="kv" id="kpi-pron-real" style="color:var(--green)">—</div><div class="ks" id="kpi-pron-real-sub">🔵 USD · normalizado con T/C por OT</div></div>
     <div class="kpi"><div class="kl">Varianza promedio</div><div class="kv" id="kpi-pron-variance" style="color:var(--blue)">—</div><div class="ks" id="kpi-pron-variance-sub">% · (real − cotizado) / cotizado</div></div>
     <div class="kpi"><div class="kl">OTs en alerta</div><div class="kv" id="kpi-pron-alert" style="color:var(--amber)">—</div><div class="ks" id="kpi-pron-alert-sub">Atención + Crítico</div></div>
   </div>
@@ -597,7 +919,7 @@ table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
       <button class="btn sm" id="btn-dl-pron" onclick="downloadXlsx(`${API_URL}/forecasting/export`, 'pronostico.xlsx')">⬇ Descargar XLSX</button>
     </div>
     <div class="tw"><table>
-      <thead><tr><th>No. OT</th><th>Cliente</th><th>Descripción</th><th>Cot.</th><th>Moneda</th><th>Real</th><th>T/C</th><th>Cot. (MXN)</th><th>Horas</th><th>Varianza</th><th>Semáforo</th></tr></thead>
+      <thead><tr><th>No. OT</th><th>Cliente</th><th>Descripción</th><th>Cot.</th><th>Moneda</th><th>Real</th><th>T/C</th><th>Cot. (🟢 MXN)</th><th>Horas</th><th>Varianza</th><th>Semáforo</th></tr></thead>
       <tbody id="pron-tbody">
         <tr><td colspan="11" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
       </tbody>
@@ -609,9 +931,9 @@ table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
 <div class="mod" id="mod-material">
   <div class="kg">
     <div class="kpi"><div class="kl">Líneas de material</div><div class="kv" id="mat-kpi-lineas" style="color:var(--blue)">—</div><div class="ks">Registros en base de datos</div></div>
-    <div class="kpi"><div class="kl">Material stock activas</div><div class="kv" id="mat-kpi-stock">—</div><div class="ks">USD · total activas</div></div>
-    <div class="kpi"><div class="kl">Material solicitado</div><div class="kv" id="mat-kpi-solicitado" style="color:var(--amber)">—</div><div class="ks">USD · total activas</div></div>
-    <div class="kpi"><div class="kl">Costo gral. real</div><div class="kv" id="mat-kpi-real" style="color:var(--green)">—</div><div class="ks">MXN · total</div></div>
+    <div class="kpi"><div class="kl">Material stock activas</div><div class="kv" id="mat-kpi-stock">—</div><div class="ks">🔵 USD · total activas</div></div>
+    <div class="kpi"><div class="kl">Material solicitado</div><div class="kv" id="mat-kpi-solicitado" style="color:var(--amber)">—</div><div class="ks">🔵 USD · total activas</div></div>
+    <div class="kpi"><div class="kl">Costo gral. real</div><div class="kv" id="mat-kpi-real" style="color:var(--green)">—</div><div class="ks">🟢 MXN · total</div></div>
   </div>
   <div class="card">
     <div class="ch"><div><div class="ct">Requisición de Material Comercial por OT</div><div class="cs">Listado de requisiciones registradas</div></div><button class="btn p sm" id="mat-new-btn" data-perm-required="material.create">+ Registrar material</button></div>
@@ -771,10 +1093,10 @@ table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
 <!-- HORAS -->
 <div class="mod" id="mod-horas">
   <div class="kg">
-    <div class="kpi"><div class="kl">Horas capturadas</div><div class="kv" style="color:var(--green)">1,864+</div><div class="ks">Registros ERP · Ene–Mar 2026</div></div>
-    <div class="kpi"><div class="kl">Empleados registrados</div><div class="kv">20+</div><div class="ks">Activos en proyectos</div></div>
-    <div class="kpi"><div class="kl">Autorizador principal</div><div class="kv" style="font-size:15px">Jesús Lara</div><div class="ks">Manufactura · Terminal 02</div></div>
-    <div class="kpi"><div class="kl">Período del reporte</div><div class="kv" style="font-size:15px">Ene–Mar</div><div class="ks">01/01/2026 al 16/03/2026</div></div>
+    <div class="kpi"><div class="kl">Horas capturadas</div><div class="kv" id="kpi-hrs-total" style="color:var(--green)">—</div><div class="ks">Registros capturados</div></div>
+    <div class="kpi"><div class="kl">Empleados registrados</div><div class="kv" id="kpi-hrs-empleados">—</div><div class="ks">Activos en sistema</div></div>
+    <div class="kpi"><div class="kl">OTs con horas</div><div class="kv" id="kpi-hrs-ots">—</div><div class="ks">Con al menos un registro</div></div>
+    <div class="kpi"><div class="kl">Última captura</div><div class="kv" id="kpi-hrs-ultima" style="font-size:15px">—</div><div class="ks" id="kpi-hrs-ultima-sub">Sin registros aún</div></div>
   </div>
   <div class="subnav">
     <div class="sntab active" onclick="goSub('horas','main',this)">Resumen</div>
@@ -807,31 +1129,17 @@ table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
 <!-- COSTO MO -->
 <div class="mod" id="mod-costomo">
   <div class="kg">
-    <div class="kpi"><div class="kl">Precio/hr cotizado</div><div class="kv" style="color:var(--blue)">$20.63</div><div class="ks">USD · labor directa</div></div>
-    <div class="kpi"><div class="kl">Costo cotizado MO</div><div class="kv">$8,520</div><div class="ks">USD · OT-1936 · 413 hrs</div></div>
-    <div class="kpi"><div class="kl">Horas reales</div><div class="kv" style="color:var(--green)">388</div><div class="ks">hrs · OT-1936 registradas</div></div>
-    <div class="kpi"><div class="kl">Moneda base</div><div class="kv">USD</div><div class="ks">T/C ref. $17.95 MXN</div></div>
+    <div class="kpi"><div class="kl">Precio/hr cotizado</div><div class="kv" id="kpi-mo-precio-hr" style="color:var(--blue)">—</div><div class="ks">🔵 USD · labor directa</div></div>
+    <div class="kpi"><div class="kl">Costo cotizado MO</div><div class="kv" id="kpi-mo-cotizado">—</div><div class="ks" id="kpi-mo-cotizado-sub">🔵 USD · selecciona una OT</div></div>
+    <div class="kpi"><div class="kl">Horas reales</div><div class="kv" id="kpi-mo-hrs-reales" style="color:var(--green)">—</div><div class="ks" id="kpi-mo-hrs-sub">hrs registradas</div></div>
+    <div class="kpi"><div class="kl">Moneda base</div><div class="kv" id="kpi-mo-moneda">—</div><div class="ks" id="kpi-mo-moneda-sub">Selecciona una OT</div></div>
   </div>
   <div class="card">
-    <div class="ch"><div><div class="ct">Costos MO — Labor Directa / Indirecta · OT-1936</div><div class="cs">Manuf. e Integr. 2 Brazos Neumáticos · Máq. Proceso Alterno Rear RH · Moneda USD</div></div></div>
+    <div class="ch"><div><div class="ct" id="costomo-card-title">Costos MO — Labor Directa / Indirecta</div><div class="cs" id="costomo-card-sub">Selecciona una OT para ver el desglose</div></div></div>
     <div class="tw"><table>
       <thead><tr><th>Parte</th><th>Labor Directa</th><th>Precio/Cot.</th><th>Costo/Cot.</th><th>Hrs. Cot.</th><th>Precio/Real</th><th>Costo/Real</th><th>Hrs. Reales</th><th>Fechas</th></tr></thead>
-      <tbody>
-        <tr class="sec-row"><td colspan="9">COTIZADO vs. REAL · OT-1936</td></tr>
-        <tr><td class="mono" style="font-weight:600">A</td><td>Levantamiento, Ing. y Diseño</td><td class="mono">$20.63</td><td class="mono">$268.19</td><td class="mono">13.00</td><td class="mono">$0.00</td><td class="mono">$0.00</td><td class="mono">28.50</td><td style="font-size:10.5px;color:var(--text3)">14/01–10/03/26</td></tr>
-        <tr><td class="mono" style="font-weight:600">B</td><td>Corte</td><td class="mono">$20.63</td><td class="mono">$722.05</td><td class="mono">35.00</td><td class="mono">$0.00</td><td class="mono">$0.00</td><td class="mono">—</td><td style="font-size:10.5px;color:var(--text3)">19–26/01/2026</td></tr>
-        <tr><td class="mono" style="font-weight:600">C</td><td>Fabricación (Soldadura)</td><td class="mono">$20.63</td><td class="mono">$515.75</td><td class="mono">25.00</td><td class="mono">$0.00</td><td class="mono">$0.00</td><td class="mono">—</td><td style="font-size:10.5px;color:var(--text3)">03–07/01/2026</td></tr>
-        <tr><td class="mono" style="font-weight:600">D</td><td>Otros (Pavonado, Pintura, Temple)</td><td class="mono">$20.63</td><td class="mono">$0.00</td><td class="mono">—</td><td class="mono">$0.00</td><td class="mono">$0.00</td><td class="mono">4.00</td><td style="font-size:10.5px;color:var(--text3)">13/03/2026</td></tr>
-        <tr style="background:var(--amber-lt)"><td class="mono" style="font-weight:600">E</td><td>Maquinado</td><td class="mono">$20.63</td><td class="mono" style="font-weight:700;color:var(--amber)">$4,167.26</td><td class="mono" style="font-weight:700;color:var(--amber)">202.00</td><td class="mono">$0.00</td><td class="mono">$0.00</td><td class="mono">165.50</td><td style="font-size:10.5px;color:var(--text3)">19/01–28/02/2026</td></tr>
-        <tr><td class="mono" style="font-weight:600">F</td><td>Hiloerosión</td><td class="mono">$20.63</td><td class="mono">$0.00</td><td class="mono">—</td><td class="mono">$0.00</td><td class="mono">$0.00</td><td class="mono">2.00</td><td style="font-size:10.5px;color:var(--text3)">24/01/2026</td></tr>
-        <tr style="background:var(--blue-lt)"><td class="mono" style="font-weight:600">G</td><td>Ensamble</td><td class="mono">$20.63</td><td class="mono" style="font-weight:700;color:var(--blue)">$2,063.00</td><td class="mono" style="font-weight:700;color:var(--blue)">100.00</td><td class="mono">$0.00</td><td class="mono">$0.00</td><td class="mono">152.50</td><td style="font-size:10.5px;color:var(--text3)">16/02–01/03/2026</td></tr>
-        <tr><td class="mono" style="font-weight:600">H</td><td>Labor Eléctrica</td><td class="mono">$20.63</td><td class="mono">$247.56</td><td class="mono">12.00</td><td class="mono">$0.00</td><td class="mono">$0.00</td><td class="mono">—</td><td>—</td></tr>
-        <tr><td class="mono" style="font-weight:600">I</td><td>Automatización</td><td class="mono">$20.63</td><td class="mono">$0.00</td><td class="mono">—</td><td class="mono">$0.00</td><td class="mono">$0.00</td><td class="mono">—</td><td>—</td></tr>
-        <tr><td class="mono" style="font-weight:600">J</td><td>Shopper / Picer</td><td class="mono">$20.63</td><td class="mono">$0.00</td><td class="mono">—</td><td class="mono">$0.00</td><td class="mono">$0.00</td><td class="mono">3.00</td><td style="font-size:10.5px;color:var(--text3)">21/01–13/03/2026</td></tr>
-        <tr><td class="mono" style="font-weight:600">K</td><td>Certificación Dimensional</td><td class="mono">$20.63</td><td class="mono">$0.00</td><td class="mono">—</td><td class="mono">$0.00</td><td class="mono">$0.00</td><td class="mono">—</td><td>—</td></tr>
-        <tr><td class="mono" style="font-weight:600">L</td><td>Empaque y Embalaje</td><td class="mono">$20.63</td><td class="mono">$0.00</td><td class="mono">—</td><td class="mono">$0.00</td><td class="mono">$0.00</td><td class="mono">2.50</td><td>—</td></tr>
-        <tr><td class="mono" style="font-weight:600">M</td><td>Instalación en Campo</td><td class="mono">$20.63</td><td class="mono">$536.38</td><td class="mono">26.00</td><td class="mono">$0.00</td><td class="mono">$0.00</td><td class="mono">—</td><td>—</td></tr>
-        <tr style="background:var(--green-lt)"><td colspan="2" style="font-weight:700;color:var(--green)">TOTAL</td><td></td><td class="mono" style="font-weight:700;color:var(--green)">$8,520.19</td><td class="mono" style="font-weight:700;color:var(--green)">413 hrs</td><td></td><td class="mono" style="font-weight:700;color:var(--red)">$0.00</td><td class="mono" style="font-weight:700;color:var(--green)">388 hrs</td><td style="font-size:10.5px;font-weight:600;color:var(--green)">= Total horas reales</td></tr>
+      <tbody id="costomo-tbody">
+        <tr><td colspan="9" style="padding:16px;color:var(--text3);text-align:center">Sin datos · módulo Costo MO pendiente de implementación (Phase 5)</td></tr>
       </tbody>
     </table></div>
   </div>
@@ -926,7 +1234,7 @@ table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
           <div class="conciliacion-card" style="padding:18px">
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
               <div><label class="fl">Empleado</label><select class="fi" id="clasif-empleado"><option value="">Selecciona…</option></select></div>
-              <div><label class="fl">Proyecto / OT</label><input class="fi" id="clasif-proyecto" placeholder="OT-AL-1948"></div>
+              <div><label class="fl">Proyecto / OT</label><input class="fi" id="clasif-proyecto" placeholder="OT-AL-XXXX"></div>
               <div><label class="fl">Fecha</label><input class="fi" id="clasif-fecha" type="date"></div>
               <div><label class="fl">Horas</label><input class="fi" id="clasif-horas" type="number" min="0" step="0.25"></div>
               <div><label class="fl">Actividad</label><input class="fi" id="clasif-actividad" placeholder="Maquinado, Ensamble"></div>
@@ -964,7 +1272,6 @@ table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
       </div>
     </div>
   </div>
-</div>
 
 <div class="mod" id="mod-nomina">
   <div class="subnav">
@@ -1108,7 +1415,7 @@ table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
   <div class="submod" id="sub-nomina-resumen">
     <div class="kg">
       <div class="kpi"><div class="kl">Registros de nómina</div><div class="kv" id="kpi-nom-lineas">0</div><div class="ks">Líneas capturadas</div></div>
-      <div class="kpi"><div class="kl">Percepciones totales</div><div class="kv" id="kpi-nom-percepciones">—</div><div class="ks">MXN · acumulado semana</div></div>
+      <div class="kpi"><div class="kl">Percepciones totales</div><div class="kv" id="kpi-nom-percepciones">—</div><div class="ks">🟢 MXN · acumulado semana</div></div>
       <div class="kpi"><div class="kl">Deducciones totales</div><div class="kv" id="kpi-nom-deducciones">—</div><div class="ks">ISR · IMSS · INFONAVIT</div></div>
       <div class="kpi"><div class="kl">Pago de nómina</div><div class="kv" id="kpi-nom-pago">—</div><div class="ks">Monto neto</div></div>
     </div>
@@ -1295,11 +1602,11 @@ table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
           <div class="adm-opt-row">
             <div><div class="adm-opt-lbl">Color primario</div><div class="adm-opt-sub">Marca la app — botones y resaltados</div></div>
             <div class="adm-swatch-row">
-              <div class="adm-swatch sel" style="background:#2E9E5A" title="Verde Alenstec" onclick="pickSwatch(this)"></div>
-              <div class="adm-swatch" style="background:#3B82F6" title="Azul" onclick="pickSwatch(this)"></div>
-              <div class="adm-swatch" style="background:#8B5CF6" title="Morado" onclick="pickSwatch(this)"></div>
-              <div class="adm-swatch" style="background:#F59E0B" title="Ámbar" onclick="pickSwatch(this)"></div>
-              <div class="adm-swatch" style="background:#EF4444" title="Rojo" onclick="pickSwatch(this)"></div>
+              <div class="adm-swatch sel" style="background:#2E9E5A" data-color="#2E9E5A" title="Verde Alenstec" onclick="pickSwatch(this)"></div>
+              <div class="adm-swatch" style="background:#3B82F6" data-color="#3B82F6" title="Azul" onclick="pickSwatch(this)"></div>
+              <div class="adm-swatch" style="background:#8B5CF6" data-color="#8B5CF6" title="Morado" onclick="pickSwatch(this)"></div>
+              <div class="adm-swatch" style="background:#F59E0B" data-color="#F59E0B" title="Ámbar" onclick="pickSwatch(this)"></div>
+              <div class="adm-swatch" style="background:#EF4444" data-color="#EF4444" title="Rojo" onclick="pickSwatch(this)"></div>
             </div>
           </div>
           <div class="adm-opt-row">
@@ -1369,7 +1676,11 @@ table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
         </div>
       </div>
 
-      <div class="adm-mtx-wrap">
+      <!-- barra de scroll horizontal siempre visible; se sincroniza con adm-mtx-wrap vía JS -->
+      <div class="adm-mtx-hscroll" id="perm-hscroll">
+        <div class="adm-mtx-hscroll-inner" id="perm-hscroll-inner"></div>
+      </div>
+      <div class="adm-mtx-wrap" id="perm-mtx-wrap">
         <table class="mtx" id="perm-matrix">
           <thead>
             <tr>
@@ -1426,6 +1737,7 @@ table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
     </div>
   </div>
 </div>
+</div><!-- /main -->
 
 <script>
 const API_URL = '/api';
@@ -1495,7 +1807,19 @@ function hideLogin() {
   document.getElementById('login-overlay').style.display = 'none';
   const app = document.querySelector('.app');
   if (app) app.style.visibility = 'visible';
-  goMod(getCurrentModule());
+  // Restore last visited module (falls back to dashboard on first visit)
+  const savedMod = localStorage.getItem('alenstec_last_mod') || 'dashboard';
+  goMod(savedMod);
+  // Restore last active sub-tab for that module (if any)
+  const savedSub = localStorage.getItem('alenstec_last_sub_' + savedMod);
+  if (savedSub) {
+    const modEl = document.getElementById('mod-' + savedMod);
+    if (modEl) {
+      const sntabEl = [...modEl.querySelectorAll('.sntab')]
+        .find(t => (t.getAttribute('onclick') || '').includes(`'${savedSub}'`));
+      if (sntabEl) goSub(savedMod, savedSub, sntabEl);
+    }
+  }
 }
 
 function renderUserChip() {
@@ -1662,10 +1986,17 @@ async function loadDashboardKpis() {
 
     const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
     set('kpi-ots-active',      wo.activeCount ?? '—');
+    // Sidebar badge — muestra el total de OTs activas; se oculta si es 0.
+    const otBadge = document.getElementById('sidebar-ot-badge');
+    if (otBadge) {
+      const n = wo.activeCount ?? 0;
+      otBadge.textContent = n;
+      otBadge.style.display = n > 0 ? '' : 'none';
+    }
     set('kpi-cost-total',      fmtCurrencyCompact(wo.totalCost, 'USD'));
     set('kpi-material-transit', fmtCurrencyCompact(mt.total, 'MXN'));
     set('kpi-material-transit-sub',
-        `MXN · ${mt.count ?? 0} OC${(mt.count ?? 0) === 1 ? '' : 's'} pendiente${(mt.count ?? 0) === 1 ? '' : 's'}`);
+        `🟢 MXN · ${mt.count ?? 0} OC${(mt.count ?? 0) === 1 ? '' : 's'} pendiente${(mt.count ?? 0) === 1 ? '' : 's'}`);
     set('kpi-quotes-open',     q.openCount ?? '—');
   } catch (err) {
     console.warn('⚠ Failed to load dashboard KPIs:', err);
@@ -1867,9 +2198,9 @@ async function loadPronostico() {
     setKpi('kpi-pron-real',     kpi.totalActualUsd != null ? fmtCurrency(kpi.totalActualUsd, 'USD') : '—');
     setKpi('kpi-pron-variance', kpi.avgVariancePct != null ? `${kpi.avgVariancePct > 0 ? '+' : ''}${kpi.avgVariancePct.toFixed(1)}%` : '—');
     setKpi('kpi-pron-alert',    String(kpi.alertCount ?? '—'));
-    setKpi('kpi-pron-cotizado-sub', `USD · ${kpi.otCount || 0} OTs · ${kpi.activeCount || 0} activas`);
+    setKpi('kpi-pron-cotizado-sub', `🔵 USD · ${kpi.otCount || 0} OTs · ${kpi.activeCount || 0} activas`);
     if (kpi.missingFxCount > 0) {
-      setKpi('kpi-pron-real-sub', `USD · ${kpi.missingFxCount} OTs sin T/C excluidas`);
+      setKpi('kpi-pron-real-sub', `🔵 USD · ${kpi.missingFxCount} OTs sin T/C excluidas`);
     }
 
     // Table
@@ -2165,6 +2496,15 @@ const ADM_PREFS_DEFAULTS = {
   dateFormat: 'dmy',
   tz: 'America/Mexico_City',
   animations: true,
+  primaryColor: '#2E9E5A',
+};
+// Paleta de colores primarios: hex → { lt (tint oscuro), md (hover/claro) }
+const SWATCH_PALETTE = {
+  '#2E9E5A': { lt: '#0F2A1A', md: '#38B86A' },
+  '#3B82F6': { lt: '#0F1F3A', md: '#60A5FA' },
+  '#8B5CF6': { lt: '#1E1035', md: '#A78BFA' },
+  '#F59E0B': { lt: '#2A1B04', md: '#FBBF24' },
+  '#EF4444': { lt: '#2A0A0A', md: '#F87171' },
 };
 function loadUserPrefs() {
   try {
@@ -2173,6 +2513,14 @@ function loadUserPrefs() {
   } catch { return { ...ADM_PREFS_DEFAULTS }; }
 }
 function saveUserPrefs(p) { localStorage.setItem(ADM_PREFS_KEY, JSON.stringify(p)); }
+function applyPrimaryColor(hex) {
+  if (!hex) return;
+  const palette = SWATCH_PALETTE[hex] || SWATCH_PALETTE['#2E9E5A'];
+  const root = document.documentElement;
+  root.style.setProperty('--green',    hex);
+  root.style.setProperty('--green-lt', palette.lt);
+  root.style.setProperty('--green-md', palette.md);
+}
 function applyUserPrefs(p) {
   // font-size — body rule has higher specificity than html, so set on both
   if (p.fontSize) {
@@ -2181,6 +2529,8 @@ function applyUserPrefs(p) {
   }
   // theme — light flips CSS vars; auto follows the OS
   applyTheme(p.theme);
+  // color primario — actualiza --green, --green-lt, --green-md
+  applyPrimaryColor(p.primaryColor);
 }
 function applyTheme(theme) {
   const root = document.documentElement;
@@ -2237,6 +2587,11 @@ function hydrateAparienciaUi() {
       el.value = p[key];
     }
   });
+  // Marcar el swatch de color primario guardado
+  const savedColor = (p.primaryColor || '#2E9E5A').toUpperCase();
+  document.querySelectorAll('.adm-swatch[data-color]').forEach(s => {
+    s.classList.toggle('sel', (s.dataset.color || '').toUpperCase() === savedColor);
+  });
 }
 function segLocal(el) {
   el.parentElement.querySelectorAll('.adm-seg-i').forEach(b => b.classList.remove('active'));
@@ -2245,6 +2600,12 @@ function segLocal(el) {
 function pickSwatch(el) {
   el.parentElement.querySelectorAll('.adm-swatch').forEach(s => s.classList.remove('sel'));
   el.classList.add('sel');
+  const hex = el.dataset.color;
+  if (!hex) return;
+  const p = loadUserPrefs();
+  p.primaryColor = hex;
+  saveUserPrefs(p);
+  applyPrimaryColor(hex);
 }
 // Apply prefs on boot.
 applyUserPrefs(loadUserPrefs());
@@ -2346,6 +2707,8 @@ function renderPermMatrix() {
   });
   refreshPermDirty();
   filterPermUsers();
+  // Actualizar barra de scroll horizontal fija tras re-render (después del layout)
+  setTimeout(syncPermHScroll, 0);
 }
 function renderPermCell(td, userId, colIdx, def, locked) {
   const ovr = _permOverrides[userId] && _permOverrides[userId][colIdx];
@@ -2416,6 +2779,20 @@ function filterPermUsers() {
     const matchR = !rol || tr.dataset.rol === rol;
     tr.style.display = (matchQ && matchR) ? '' : 'none';
   });
+}
+/** Sincroniza el scrollbar horizontal fijo (#perm-hscroll) con el wrapper de la tabla. */
+function syncPermHScroll() {
+  const bar   = document.getElementById('perm-hscroll');
+  const inner = document.getElementById('perm-hscroll-inner');
+  const wrap  = document.getElementById('perm-mtx-wrap');
+  if (!bar || !inner || !wrap) return;
+  // Ajustar ancho del div interno al ancho real de la tabla
+  inner.style.width = wrap.scrollWidth + 'px';
+  // Registrar listeners una sola vez (flag en el nodo)
+  if (bar._syncBound) return;
+  bar._syncBound = true;
+  bar.addEventListener('scroll', () => { wrap.scrollLeft = bar.scrollLeft; });
+  wrap.addEventListener('scroll', () => { bar.scrollLeft = wrap.scrollLeft; });
 }
 function exportPermissionsCsv() {
   if (!_permUsers) return;
@@ -2856,7 +3233,7 @@ function showNewOTModal() {
         <div class="fg" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
           <div><label>Costo cotizado *</label><input name="quotedCost" type="number" step="0.01" min="0" required></div>
           <div><label>Moneda</label>
-            <select name="currency"><option value="USD" selected>USD</option><option value="MXN">MXN</option></select>
+            <select name="currency"><option value="USD" selected>🔵 USD</option><option value="MXN">🟢 MXN</option></select>
           </div>
         </div>
         <div class="modal-error" id="new-ot-error"></div>
@@ -2965,7 +3342,7 @@ async function showNewProveedorModal() {
           <div><label>Teléfono</label><input name="contactPhone" placeholder="—"></div>
         </div>
         <div class="fg" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div><label>Saldo pendiente (MXN)</label><input name="saldoPendiente" type="number" step="0.01" min="0" value="0"></div>
+          <div><label>Saldo pendiente (🟢 MXN)</label><input name="saldoPendiente" type="number" step="0.01" min="0" value="0"></div>
           <div><label>Estado</label>
             <select name="status"><option value="Activo" selected>Activo</option><option value="Pendiente">Pendiente</option><option value="Inactivo">Inactivo</option></select>
           </div>
@@ -3280,7 +3657,7 @@ async function showNewOCPModal() {
         <div class="fg"><label>Descripción *</label><textarea name="description" required></textarea></div>
         <div class="fg" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
           <div><label>Monto *</label><input name="amount" type="number" step="0.01" min="0" required></div>
-          <div><label>Moneda</label><select name="currency"><option value="MXN" selected>MXN</option><option value="USD">USD</option></select></div>
+          <div><label>Moneda</label><select name="currency"><option value="MXN" selected>🟢 MXN</option><option value="USD">🔵 USD</option></select></div>
           <div><label>F. Emisión</label><input name="issueDate" type="date" value="${today}"></div>
         </div>
         <div class="fg"><label>F. Entrega prometida</label><input name="expectedDeliveryDate" type="date"></div>
@@ -3368,7 +3745,7 @@ async function showNewInventoryModal() {
         <div class="fg"><label>Descripción *</label><input name="description" required></div>
         <div class="fg" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
           <div><label>Proveedor</label><input name="supplierName"></div>
-          <div><label>Moneda</label><select name="currency"><option value="MXN" selected>MXN</option><option value="USD">USD</option></select></div>
+          <div><label>Moneda</label><select name="currency"><option value="MXN" selected>🟢 MXN</option><option value="USD">🔵 USD</option></select></div>
         </div>
         <div class="fg" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
           <div><label>Existencia *</label><input name="existencia" type="number" step="0.01" min="0" required value="0"></div>
@@ -3496,7 +3873,7 @@ async function showNewInvoiceModal() {
         </div>
         <div class="fg" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
           <div><label>Total *</label><input name="total" type="number" step="0.01" required></div>
-          <div><label>Moneda</label><select name="moneda"><option value="MXN" selected>MXN</option><option value="USD">USD</option></select></div>
+          <div><label>Moneda</label><select name="moneda"><option value="MXN" selected>🟢 MXN</option><option value="USD">🔵 USD</option></select></div>
           <div><label>T/C</label><input name="tipoCambio" type="number" step="0.0001"></div>
         </div>
         <div class="fg"><label>OT asociada</label>
@@ -3637,7 +4014,7 @@ async function showNewDeliveryModal() {
         <div class="fg" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
           <div><label>Pzas *</label><input name="piezas" type="number" step="0.01" min="0" required></div>
           <div><label>Precio unit.</label><input name="unitCost" type="number" step="0.0001" min="0"></div>
-          <div><label>Moneda</label><select name="currency"><option value="MXN" selected>MXN</option><option value="USD">USD</option></select></div>
+          <div><label>Moneda</label><select name="currency"><option value="MXN" selected>🟢 MXN</option><option value="USD">🔵 USD</option></select></div>
         </div>
         <div class="fg" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
           <div><label>Entregado por</label><input name="entregadoPor"></div>
@@ -3989,7 +4366,7 @@ async function showNewHorasModal() {
         </div>
         <div class="fg" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
           <div><label>Moneda</label>
-            <select name="currency"><option value="MXN" selected>MXN</option><option value="USD">USD</option></select>
+            <select name="currency"><option value="MXN" selected>🟢 MXN</option><option value="USD">🔵 USD</option></select>
           </div>
           <div><label>Fecha *</label><input name="date" type="date" required value="${new Date().toISOString().slice(0, 10)}"></div>
         </div>
@@ -4051,7 +4428,8 @@ function materialStatusBadge(status) {
 }
 function moneyBadge(currency) {
   const cls = currency === 'USD' ? 'bb' : 'bn';
-  return `<span class="badge ${cls}">${esc(currency || 'MXN')}</span>`;
+  const label = currency === 'USD' ? '🔵 USD' : currency === 'MXN' ? '🟢 MXN' : esc(currency || 'MXN');
+  return `<span class="badge ${cls}">${label}</span>`;
 }
 
 async function loadMaterialCosts() {
@@ -4130,7 +4508,7 @@ async function showNewMaterialModal() {
         <div class="fg" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
           <div><label>Total *</label><input name="totalCost" type="number" step="0.01" min="0" required placeholder="auto"></div>
           <div><label>Moneda</label>
-            <select name="currency"><option value="MXN" selected>MXN</option><option value="USD">USD</option></select>
+            <select name="currency"><option value="MXN" selected>🟢 MXN</option><option value="USD">🔵 USD</option></select>
           </div>
           <div><label>Estado</label>
             <select name="status"><option value="Pendiente" selected>Pendiente</option><option value="En tránsito">En tránsito</option><option value="Entregado">Entregado</option></select>
@@ -4198,19 +4576,56 @@ async function loadCotizaciones() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const quotes = await res.json();
 
-    // Table (P2.5) — 20 columnas alineadas 1:1 con el XLSX master
-    // "Control Ventas 2026" (mismo orden que el export/import para que
-    // el operador vea en pantalla exactamente lo que sube/baja).
+    // Table — 85 columnas alineadas con el Excel "Control de Ventas 2026".
+    // Sección 1 (20 col básicas) + Labor Indirecta (3) + Labor Directa Ing (4)
+    // + Labor Directa Mnf (31) + Labor Directa Auto (4) + Materiales (10)
+    // + Viáticos (5) + Logística (3) + Totales Finales (3) + Notas + Acc = 85.
     if (tbody) {
       if (!quotes.length) {
-        tbody.innerHTML = '<tr><td colspan="21" style="padding:16px;color:var(--text3);text-align:center">Sin cotizaciones registradas.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="85" style="padding:16px;color:var(--text3);text-align:center">Sin cotizaciones registradas.</td></tr>';
       } else {
         const canDel = canPerm('quote.delete');
+        // Helpers para formatear celdas numéricas
+        const nh = (v) => (v == null || v === '' || isNaN(Number(v))) ? '—' : Number(v).toFixed(1);
+        const nm = (v) => (v == null || v === '' || isNaN(Number(v))) ? '—' : fmtCurrency(Number(v), 'USD');
+        const nc = (v) => `<td class="mono">${nh(v)}</td>`;
+        const nmu = (v) => `<td class="mono">${nm(v)}</td>`;
+
         tbody.innerHTML = quotes.map((q, i) => {
-          const amount = Number(q.amount) || 0;
-          const costoOC = q.costoOC != null ? fmtCurrency(Number(q.costoOC), 'USD') : '—';
-          const fx = q.exchangeRate != null ? `$${Number(q.exchangeRate).toFixed(2)}` : '—';
+          // ── Sección 1: Datos básicos ──
+          const amount   = Number(q.amount) || 0;
+          const costoOC  = nm(q.costoOC);
+          const fx       = q.exchangeRate != null ? `$${Number(q.exchangeRate).toFixed(4)}` : '—';
           const fechaCot = q.fechaCotizacion ? fmtDateDMY(q.fechaCotizacion) : fmtDateDMY(q.createdAt);
+
+          // ── Sección 2: Labor Indirecta ──
+          const li = Array.isArray(q.laborIndirecta) ? q.laborIndirecta : [];
+          const liCotHrs   = li.length ? li.reduce((s, r) => s + (Number(r.cotHrs)    || 0), 0) : null;
+          const liRealHrs  = li.length ? li.reduce((s, r) => s + (Number(r.realHrs)   || 0), 0) : null;
+          const liCostTot  = li.length ? li.reduce((s, r) => s + (Number(r.totalCost) || 0), 0) : null;
+
+          // ── Sección 3: Labor Directa Ingeniería ──
+          const ldI = q.laborDirectaIngenieria || {};
+
+          // ── Sección 4: Labor Directa Manufactura ──
+          const ldM   = q.laborDirectaManufactura || {};
+          const ldMCP = ldM.cotProcesses  || {};
+          const ldMCI = ldM.cotInstall    || {};
+          const ldMRP = ldM.realProcesses || {};
+          const ldMRI = ldM.realInstall   || {};
+
+          // ── Sección 5: Labor Directa Automatización ──
+          const ldA = q.laborDirectaAutomatizacion || {};
+
+          // ── Sección 6: Materiales ──
+          const mat = q.materiales || {};
+
+          // ── Sección 7: Viáticos ──
+          const via = q.viaticos || {};
+
+          // ── Sección 8: Logística ──
+          const log = q.logistica || {};
+
           return `<tr>
             <td class="mono">${i + 1}</td>
             <td>${esc(q.client) || '—'}</td>
@@ -4232,7 +4647,43 @@ async function loadCotizaciones() {
             <td>${esc(q.description) || '—'}</td>
             <td>${quoteTipoBadge(q.tipo)}</td>
             <td>${quoteStatusBadge(q.status)}</td>
-            <td>${canDel ? `<button class="btn sm" title="Eliminar" onclick="deleteRow_quote('${esc(q.id)}','${esc(q.quoteNumber || '')}')" style="padding:2px 6px">🗑</button>` : ''}</td>
+            <!-- Labor Indirecta -->
+            ${nc(liCotHrs)}${nc(liRealHrs)}${nmu(liCostTot)}
+            <!-- Labor Directa Ingeniería -->
+            ${nc(ldI.cotHrs)}${nc(ldI.realHrs)}${nc(ldI.costPerHr)}${nmu(ldI.totalCost)}
+            <!-- Labor Directa Manufactura — Proc COT -->
+            ${nc(ldMCP.corte)}${nc(ldMCP.fabricacion)}${nc(ldMCP.maquinado)}${nc(ldMCP.hiloErosion)}
+            ${nc(ldMCP.ensamble)}${nc(ldMCP.laborElectrica)}${nc(ldMCP.otrosProc)}
+            ${nc(ldMCP.shopper)}${nc(ldMCP.certDimensional)}${nc(ldMCP.empaque)}
+            <!-- Inst COT -->
+            ${nc(ldMCI.supervisor)}${nc(ldMCI.tecnicoMecanico)}${nc(ldMCI.electrico)}
+            ${nc(ldMCI.programador)}${nc(ldMCI.total)}
+            <!-- Proc REAL -->
+            ${nc(ldMRP.corte)}${nc(ldMRP.fabricacion)}${nc(ldMRP.maquinado)}${nc(ldMRP.hiloErosion)}
+            ${nc(ldMRP.ensamble)}${nc(ldMRP.laborElectrica)}${nc(ldMRP.otrosProc)}
+            ${nc(ldMRP.shopper)}${nc(ldMRP.certDimensional)}
+            <!-- Inst REAL -->
+            ${nc(ldMRI.diseno)}${nc(ldMRI.tecnico)}${nc(ldMRI.electrico)}
+            ${nc(ldMRI.programador)}${nc(ldMRI.total)}
+            <!-- MNF Cost -->
+            ${nc(ldM.costPerHr)}${nmu(ldM.totalCost)}
+            <!-- Labor Directa Automatización -->
+            ${nc(ldA.cotHrs)}${nc(ldA.realHrs)}${nc(ldA.costPerHr)}${nmu(ldA.totalCost)}
+            <!-- Materiales -->
+            ${nmu(mat.aceros)}${nmu(mat.plasticos)}${nmu(mat.recubrimientos)}${nmu(mat.tratamientos)}
+            ${nmu(mat.componentes)}${nmu(mat.certificados)}${nmu(mat.subtotal)}
+            <td class="mono">${mat.profitPct != null ? Number(mat.profitPct).toFixed(1) + '%' : '—'}</td>
+            ${nmu(mat.profitUsd)}<td class="mono" style="font-weight:600">${nm(mat.total)}</td>
+            <!-- Viáticos -->
+            ${nmu(via.comida)}${nmu(via.estancia)}${nmu(via.peaje)}${nmu(via.gasolina)}${nmu(via.total)}
+            <!-- Logística -->
+            ${nmu(log.envio)}${nmu(log.embalaje)}${nmu(log.total)}
+            <!-- Totales finales -->
+            ${nmu(q.utilidadFinal)}${nmu(q.ivaEmpresa)}
+            <td class="mono" style="font-weight:600;color:var(--green)">${nm(q.totalFinal)}</td>
+            <!-- Notas & Acc -->
+            <td style="font-size:11px;max-width:130px;white-space:normal">${esc(q.notas) || ''}</td>
+            <td>${canDel ? `<button class="btn sm" title="Eliminar" data-id="${esc(q.id)}" data-label="${esc(q.quoteNumber || '')}" onclick="deleteRow_quote(this.dataset.id,this.dataset.label)" style="padding:2px 6px">🗑</button>` : ''}</td>
           </tr>`;
         }).join('');
       }
@@ -4241,7 +4692,7 @@ async function loadCotizaciones() {
     // KPIs (P2.6) — derived from the same list so we don't need a new endpoint.
     setKpi('kpi-cot-count', String(quotes.length));
 
-    // Sum only USD quotes — mixing currencies would require an FX pass.
+    // Sum only 🔵 USD quotes — mixing currencies would require an FX pass.
     const usdTotal = quotes
       .filter((q) => (q.currency || 'USD') === 'USD')
       .reduce((sum, q) => sum + (Number(q.amount) || 0), 0);
@@ -4261,70 +4712,325 @@ async function loadCotizaciones() {
   }
 }
 
-// G-COT-1 — + Nueva cotización modal. Captures the Control-Ventas cotización
-// block minus the O.C. sub-block (that's filled in later when the OC lands).
-function showNewCotizacionModal() {
+// G-COT-1 — + Nueva cotización modal. Captura el formulario completo del
+// "Control de Ventas 2026": datos básicos + Labor Indirecta + Labor Directa
+// (Ingeniería / Manufactura / Automatización) + Materiales + Viáticos +
+// Logística + Totales Finales. Ref: cotizaciones-estructura.md.
+async function showNewCotizacionModal() {
+  // Cargar lista de OTs para el selector (usa caché)
+  let orders = _otCache;
+  if (!orders.length) {
+    try {
+      const res = await apiFetch(`${API_URL}/work-orders`);
+      if (res.ok) { orders = await res.json(); _otCache = orders; }
+    } catch { /* continuar con lista vacía */ }
+  }
+  const otOptions = orders.map((o) =>
+    `<option value="${esc(o.otNumber || o.id)}" data-id="${esc(o.id)}">${esc(o.otNumber)} · ${esc(o.client)}</option>`
+  ).join('');
+
+  const actOptions = [
+    'Actividad no especificada','Desarrollo y preventa','Compras',
+    'Planeacion y Ctrl prod (procesos)','Seguridad Industrial','Gestion de calidad (ISO)',
+    'Almacen','Control de Costo','Supervicion','Mantenimiento',
+    'Actividades administrativas/contables/RH','Juntas','Curso/capacitacion',
+  ].map((a) => `<option value="${esc(a)}">${esc(a)}</option>`).join('');
+
   const today = new Date().toISOString().slice(0, 10);
+  const fs = (s) => `style="display:grid;grid-template-columns:${s};gap:10px"`;
+
   openModal({
-    title: '+ Nueva cotización',
+    title: '+ Nueva Cotización',
     bodyHtml: `
-      <form id="new-cot-form">
-        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div><label>COT Alenstec *</label><input name="quoteNumber" required placeholder="CZ-2026-### / 0##ADL-26"></div>
-          <div><label>COT Ref.</label><input name="cotRef"></div>
-        </div>
-        <div class="fg"><label>Cliente *</label><input name="client" required></div>
-        <div class="fg"><label>Descripción del proyecto *</label><textarea name="description" required></textarea></div>
-        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-          <div><label>Proyecto / Programa</label><input name="proyecto"></div>
-          <div><label>Celda</label><input name="celda"></div>
-          <div><label>RFQ</label><input name="rfq"></div>
-        </div>
-        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-          <div><label>MECR</label><input name="mecr"></div>
-          <div><label>Tipo</label>
-            <select name="tipo"><option value="">—</option><option value="Nuevo">Nuevo</option><option value="Refurbish">Refurbish</option><option value="Servicio">Servicio</option></select>
+    <form id="new-cot-form" style="max-height:72vh;overflow-y:auto;padding-right:10px">
+
+      <!-- ─── SECCIÓN 1: Datos Básicos ─── -->
+      <fieldset style="margin-bottom:10px"><legend>📋 Datos Básicos</legend>
+        <div ${fs('1fr 1fr')}><div class="fg"><label>Cliente *</label><input name="client" required></div>
+          <div class="fg"><label>Proyecto / Programa</label><input name="proyecto"></div></div>
+        <div ${fs('1fr 1fr 1fr')}><div class="fg"><label>Celda</label><input name="celda"></div>
+          <div class="fg"><label>RFQ</label><input name="rfq"></div>
+          <div class="fg"><label>MECR</label><input name="mecr"></div></div>
+        <div ${fs('1fr 1fr')}><div class="fg"><label>COT Alenstec (COT-AL) *</label><input name="quoteNumber" required placeholder="0##ADL-26"></div>
+          <div class="fg"><label>COT REF. ALENSTEC</label><input name="cotRef" placeholder="COT-AL-…"></div></div>
+        <div ${fs('1fr 1fr')}><div class="fg"><label>Fecha COT *</label><input name="fechaCotizacion" type="date" value="${today}" required></div>
+          <div class="fg"><label>Costo COT-AL (🔵 USD s/IVA) *</label><input name="amount" type="number" step="0.01" min="0" required></div></div>
+        <div ${fs('1fr 1fr')}><div class="fg"><label>OC Cliente</label><input name="ocCliente"></div>
+          <div class="fg"><label>Tipo de Contrato</label>
+            <select name="tipoContrato"><option value="">—</option><option>Abierta</option><option>Cerrada</option><option>Administración</option><option>Marco</option></select>
+          </div></div>
+        <div ${fs('1fr 1fr')}><div class="fg"><label>Fecha O.C.</label><input name="fechaOC" type="date"></div>
+          <div class="fg"><label>Costo O.C. (🔵 USD s/IVA)</label><input name="costoOC" type="number" step="0.01" min="0"></div></div>
+        <div ${fs('1fr 1fr')}><div class="fg"><label>Fecha Compromiso Entrega</label><input name="fechaCompromiso" type="date"></div>
+          <div class="fg"><label>Tipo de Cambio (🔵 USD)</label><input name="exchangeRate" type="number" step="0.0001" min="0" placeholder="17.50"></div></div>
+        <div ${fs('1fr 1fr')}><div class="fg"><label>OT Alenstec</label>
+            <select name="otNumber"><option value="">—</option>${otOptions}</select></div>
+          <div class="fg"><label>Tipo</label>
+            <select name="tipo"><option value="">—</option><option>Nuevo</option><option>Refurbish</option><option>Servicio</option></select></div></div>
+        <div ${fs('1fr 1fr')}><div class="fg"><label>Estado</label>
+            <select name="status"><option value="Pendiente" selected>Pendiente</option><option>Aprobada</option><option>Rechazada</option><option>Expirada</option></select></div>
+          <div class="fg"><label>Moneda</label>
+            <select name="currency"><option value="USD" selected>🔵 USD</option><option>🟢 MXN</option></select></div></div>
+        <div class="fg"><label>Descripción del Proyecto *</label><textarea name="description" required style="min-height:60px"></textarea></div>
+      </fieldset>
+
+      <!-- ─── SECCIÓN 2: Labor Indirecta ─── -->
+      <fieldset style="margin-bottom:10px"><legend>👤 Labor Indirecta [1–13 actividades]</legend>
+        <div id="labor-indirecta-group">
+          <div ${fs('2fr 1fr 1fr 1fr 1fr')} style="align-items:end">
+            <div class="fg"><label>Actividad</label>
+              <select name="actividad_1" class="act-sel"><option value="">Selecciona…</option>${actOptions}</select></div>
+            <div class="fg"><label>Cot. (HRS)</label><input name="cotHrs_1" type="number" step="0.01" min="0" class="li-hrs-cot"></div>
+            <div class="fg"><label>Real (HRS)</label><input name="realHrs_1" type="number" step="0.01" min="0"></div>
+            <div class="fg"><label>$/HR (🔵 USD)</label><input name="costPerHr_1" type="number" step="0.01" min="0" class="li-hr-cost"></div>
+            <div class="fg"><label>Costo (🔵 USD)</label><input name="totalCost_1" type="number" step="0.01" min="0" readonly class="li-calc"></div>
           </div>
-          <div><label>Estado</label>
-            <select name="status"><option value="Pendiente" selected>Pendiente</option><option value="Aprobada">Aprobada</option><option value="Rechazada">Rechazada</option><option value="Expirada">Expirada</option></select>
-          </div>
         </div>
-        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-          <div><label>Costo COT (USD s/IVA) *</label><input name="amount" type="number" step="0.01" min="0" required></div>
-          <div><label>Moneda</label>
-            <select name="currency"><option value="USD" selected>USD</option><option value="MXN">MXN</option></select>
-          </div>
-          <div><label>Tipo de cambio</label><input name="exchangeRate" type="number" step="0.0001" min="0"></div>
+        <button type="button" class="btn sm" onclick="addLaborIndirectRow()" style="margin-top:8px">+ Actividad</button>
+      </fieldset>
+
+      <!-- ─── SECCIÓN 3: Labor Directa — Ingeniería ─── -->
+      <fieldset style="margin-bottom:10px"><legend>🔧 Labor Directa — Ingeniería/Diseño</legend>
+        <div ${fs('1fr 1fr 1fr 1fr')}>
+          <div class="fg"><label>Cot. (HRS) [A]</label><input name="ing_cotHrs" type="number" step="0.01" min="0" class="ing-input"></div>
+          <div class="fg"><label>Real (HRS) [A]</label><input name="ing_realHrs" type="number" step="0.01" min="0"></div>
+          <div class="fg"><label>$/HR (🔵 USD)</label><input name="ing_costPerHr" type="number" step="0.01" min="0" class="ing-input"></div>
+          <div class="fg"><label>Costo Ing. (🔵 USD)</label><input name="ing_total" type="number" step="0.01" min="0" readonly></div>
         </div>
-        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-          <div><label>Fecha cotización</label><input name="fechaCotizacion" type="date" value="${today}"></div>
-          <div><label>Válida hasta</label><input name="validUntil" type="date"></div>
-          <div><label>Fecha compromiso</label><input name="fechaCompromiso" type="date"></div>
+      </fieldset>
+
+      <!-- ─── SECCIÓN 4: Labor Directa — Manufactura ─── -->
+      <fieldset style="margin-bottom:10px"><legend>⚙️ Labor Directa — Manufactura</legend>
+        <p style="margin:0 0 6px;font-size:11px;color:var(--text2);text-transform:uppercase">Procesos COTIZADO (HRS)</p>
+        <div ${fs('repeat(5,1fr)')} style="font-size:12px">
+          <div class="fg"><label>[B] Corte</label><input name="mnf_cp_corte" type="number" step="0.01" min="0" class="mnf-proc-cot"></div>
+          <div class="fg"><label>[C] Fabricación</label><input name="mnf_cp_fab" type="number" step="0.01" min="0" class="mnf-proc-cot"></div>
+          <div class="fg"><label>[E] Maquinado</label><input name="mnf_cp_maq" type="number" step="0.01" min="0" class="mnf-proc-cot"></div>
+          <div class="fg"><label>[F] Hilo erosión</label><input name="mnf_cp_hilo" type="number" step="0.01" min="0" class="mnf-proc-cot"></div>
+          <div class="fg"><label>[G] Ensamble</label><input name="mnf_cp_ens" type="number" step="0.01" min="0" class="mnf-proc-cot"></div>
         </div>
-        <div class="fg" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div><label>OT Alenstec</label><input name="otNumber" placeholder="OT-AL-#### (opcional)"></div>
-          <div><label>Tipo de contrato</label><input name="tipoContrato"></div>
+        <div ${fs('repeat(5,1fr)')} style="font-size:12px">
+          <div class="fg"><label>[H] Labor Elec.</label><input name="mnf_cp_elec" type="number" step="0.01" min="0" class="mnf-proc-cot"></div>
+          <div class="fg"><label>[D] Otros Proc.</label><input name="mnf_cp_otros" type="number" step="0.01" min="0" class="mnf-proc-cot"></div>
+          <div class="fg"><label>[J] Shopper</label><input name="mnf_cp_shop" type="number" step="0.01" min="0" class="mnf-proc-cot"></div>
+          <div class="fg"><label>[K] Cert. Dim.</label><input name="mnf_cp_cert" type="number" step="0.01" min="0" class="mnf-proc-cot"></div>
+          <div class="fg"><label>[L] Empaque</label><input name="mnf_cp_emp" type="number" step="0.01" min="0" class="mnf-proc-cot"></div>
         </div>
-        <div class="modal-error" id="new-cot-error"></div>
-        <div class="modal-actions">
-          <button type="button" class="btn sm" onclick="closeModal()">Cancelar</button>
-          <button type="submit" class="btn p sm" id="new-cot-submit">Crear cotización</button>
+        <p style="margin:8px 0 6px;font-size:11px;color:var(--text2);text-transform:uppercase">Instalación COTIZADO [M] (HRS)</p>
+        <div ${fs('repeat(4,1fr) auto')}>
+          <div class="fg"><label>Supervisor</label><input name="mnf_ci_sup" type="number" step="0.01" min="0" class="mnf-inst-cot"></div>
+          <div class="fg"><label>Téc. Mecánico</label><input name="mnf_ci_tec" type="number" step="0.01" min="0" class="mnf-inst-cot"></div>
+          <div class="fg"><label>Eléctrico</label><input name="mnf_ci_elec" type="number" step="0.01" min="0" class="mnf-inst-cot"></div>
+          <div class="fg"><label>Programador</label><input name="mnf_ci_prog" type="number" step="0.01" min="0" class="mnf-inst-cot"></div>
+          <div class="fg"><label>Total Inst. COT</label><input name="mnf_ci_total" type="number" step="0.01" min="0" readonly></div>
         </div>
-      </form>`,
+        <p style="margin:8px 0 6px;font-size:11px;color:var(--text2);text-transform:uppercase">Procesos REAL (HRS)</p>
+        <div ${fs('repeat(5,1fr)')} style="font-size:12px">
+          <div class="fg"><label>[B] Corte</label><input name="mnf_rp_corte" type="number" step="0.01" min="0"></div>
+          <div class="fg"><label>[C] Fabricación</label><input name="mnf_rp_fab" type="number" step="0.01" min="0"></div>
+          <div class="fg"><label>[E] Maquinado</label><input name="mnf_rp_maq" type="number" step="0.01" min="0"></div>
+          <div class="fg"><label>[F] Hilo erosión</label><input name="mnf_rp_hilo" type="number" step="0.01" min="0"></div>
+          <div class="fg"><label>[G] Ensamble</label><input name="mnf_rp_ens" type="number" step="0.01" min="0"></div>
+        </div>
+        <div ${fs('repeat(4,1fr)')} style="font-size:12px">
+          <div class="fg"><label>[H] Labor Elec.</label><input name="mnf_rp_elec" type="number" step="0.01" min="0"></div>
+          <div class="fg"><label>[D] Otros Proc.</label><input name="mnf_rp_otros" type="number" step="0.01" min="0"></div>
+          <div class="fg"><label>[J] Shopper</label><input name="mnf_rp_shop" type="number" step="0.01" min="0"></div>
+          <div class="fg"><label>[K] Cert. Dim.</label><input name="mnf_rp_cert" type="number" step="0.01" min="0"></div>
+        </div>
+        <p style="margin:8px 0 6px;font-size:11px;color:var(--text2);text-transform:uppercase">Instalación REAL [L] (HRS)</p>
+        <div ${fs('repeat(4,1fr) auto')}>
+          <div class="fg"><label>Diseño</label><input name="mnf_ri_dis" type="number" step="0.01" min="0"></div>
+          <div class="fg"><label>Técnico</label><input name="mnf_ri_tec" type="number" step="0.01" min="0"></div>
+          <div class="fg"><label>Eléctrico</label><input name="mnf_ri_elec" type="number" step="0.01" min="0"></div>
+          <div class="fg"><label>Programador</label><input name="mnf_ri_prog" type="number" step="0.01" min="0"></div>
+          <div class="fg"><label>Total Inst. REAL</label><input name="mnf_ri_total" type="number" step="0.01" min="0" readonly></div>
+        </div>
+        <div ${fs('1fr 1fr')} style="margin-top:8px">
+          <div class="fg"><label>$/HR COTIZADO (🔵 USD)</label><input name="mnf_costPerHr" type="number" step="0.01" min="0" class="mnf-hr-cost"></div>
+          <div class="fg"><label>Costo Mnf. COTIZADO (🔵 USD)</label><input name="mnf_total" type="number" step="0.01" min="0" readonly></div>
+        </div>
+      </fieldset>
+
+      <!-- ─── SECCIÓN 5: Labor Directa — Automatización ─── -->
+      <fieldset style="margin-bottom:10px"><legend>🤖 Labor Directa — Automatización</legend>
+        <div ${fs('1fr 1fr 1fr 1fr')}>
+          <div class="fg"><label>Cot. (HRS) [I]</label><input name="aut_cotHrs" type="number" step="0.01" min="0" class="aut-input"></div>
+          <div class="fg"><label>Real (HRS) [I]</label><input name="aut_realHrs" type="number" step="0.01" min="0"></div>
+          <div class="fg"><label>$/HR (🔵 USD)</label><input name="aut_costPerHr" type="number" step="0.01" min="0" class="aut-input"></div>
+          <div class="fg"><label>Costo Auto. (🔵 USD)</label><input name="aut_total" type="number" step="0.01" min="0" readonly></div>
+        </div>
+      </fieldset>
+
+      <!-- ─── SECCIÓN 6: Materiales ─── -->
+      <fieldset style="margin-bottom:10px"><legend>📦 Materiales COTIZADO (🔵 USD)</legend>
+        <div ${fs('1fr')}>
+          <div class="fg"><label>Aceros (Aluminio, Hierro, Bronce, C.R., Amutit, Inox)</label><input name="mat_aceros" type="number" step="0.01" min="0" class="mat-input"></div>
+          <div class="fg"><label>Plásticos (Nylamid, Acetal, PVC, Ultem, Renshape, Policarbonato, Acrílico)</label><input name="mat_plas" type="number" step="0.01" min="0" class="mat-input"></div>
+          <div class="fg"><label>Recubrimientos (Electroless, Pavonado, Pintura, Galvanizado, Zincado, Titanio)</label><input name="mat_recub" type="number" step="0.01" min="0" class="mat-input"></div>
+          <div class="fg"><label>Tratamientos Térmicos (Temple, Normalizado, R.F, Recocido, Revenido, Cementado)</label><input name="mat_trat" type="number" step="0.01" min="0" class="mat-input"></div>
+          <div class="fg"><label>Componentes (Eléctrico, Mecánico, Control, Consumibles)</label><input name="mat_comp" type="number" step="0.01" min="0" class="mat-input"></div>
+          <div class="fg"><label>Certificados (Dureza, Dimensional)</label><input name="mat_cert" type="number" step="0.01" min="0" class="mat-input"></div>
+        </div>
+        <div ${fs('1fr 1fr')} style="margin-top:8px">
+          <div class="fg"><label>Sub-total Materiales (🔵 USD)</label><input name="mat_subtotal" type="number" step="0.01" min="0" readonly></div>
+          <div class="fg"><label>% Utilidad {PROFIT}</label><input name="mat_profitPct" type="number" step="0.01" min="0" placeholder="10"></div>
+        </div>
+        <div ${fs('1fr 1fr')}>
+          <div class="fg"><label>Utilidad {PROFIT} (🔵 USD)</label><input name="mat_profitUsd" type="number" step="0.01" min="0" readonly></div>
+          <div class="fg"><label style="font-weight:600">Total Mat. Comerciales (🔵 USD)</label><input name="mat_total" type="number" step="0.01" min="0" readonly style="font-weight:600"></div>
+        </div>
+      </fieldset>
+
+      <!-- ─── SECCIÓN 7: Viáticos ─── -->
+      <fieldset style="margin-bottom:10px"><legend>✈️ Viáticos COTIZADO (🔵 USD)</legend>
+        <div ${fs('repeat(4,1fr)')}>
+          <div class="fg"><label>Comida</label><input name="via_comida" type="number" step="0.01" min="0" class="via-input"></div>
+          <div class="fg"><label>Estancia</label><input name="via_estancia" type="number" step="0.01" min="0" class="via-input"></div>
+          <div class="fg"><label>Peaje</label><input name="via_peaje" type="number" step="0.01" min="0" class="via-input"></div>
+          <div class="fg"><label>Gasolina</label><input name="via_gasolina" type="number" step="0.01" min="0" class="via-input"></div>
+        </div>
+        <div class="fg"><label>TOTAL Viáticos (🔵 USD)</label><input name="via_total" type="number" step="0.01" min="0" readonly></div>
+      </fieldset>
+
+      <!-- ─── SECCIÓN 8: Logística ─── -->
+      <fieldset style="margin-bottom:10px"><legend>📮 Logística COTIZADO (🔵 USD)</legend>
+        <div ${fs('1fr 1fr')}>
+          <div class="fg"><label>Envío</label><input name="log_envio" type="number" step="0.01" min="0" class="log-input"></div>
+          <div class="fg"><label>Embalaje</label><input name="log_embalaje" type="number" step="0.01" min="0" class="log-input"></div>
+        </div>
+        <div class="fg"><label>TOTAL Logística (🔵 USD)</label><input name="log_total" type="number" step="0.01" min="0" readonly></div>
+      </fieldset>
+
+      <!-- ─── SECCIÓN 9: Totales Finales ─── -->
+      <fieldset style="margin-bottom:10px"><legend>💰 Totales Finales</legend>
+        <div ${fs('1fr 1fr')}>
+          <div class="fg"><label>UTILIDAD / PROFIT (🔵 USD)</label><input name="utilidadFinal" type="number" step="0.01" min="0"></div>
+          <div class="fg"><label>IVA p/ Empresa US (🔵 USD)</label><input name="ivaEmpresa" type="number" step="0.01" min="0"></div>
+        </div>
+        <div class="fg"><label style="font-weight:600">TOTAL FINAL COTIZADO (🔵 USD) ★</label>
+          <input name="totalFinal" type="number" step="0.01" min="0" readonly style="font-weight:600;font-size:14px;color:var(--green)"></div>
+        <div class="fg"><label>Notas</label><textarea name="notas" style="min-height:60px" placeholder="Observaciones…"></textarea></div>
+      </fieldset>
+
+      <div class="modal-error" id="new-cot-error"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn sm" onclick="closeModal()">Cancelar</button>
+        <button type="submit" class="btn p sm" id="new-cot-submit">Crear cotización</button>
+      </div>
+    </form>`,
   });
-  const form = document.getElementById('new-cot-form');
-  const errEl = document.getElementById('new-cot-error');
+
+  // ── Calculadoras automáticas ──
+  setupCotizacionCalculators();
+
+  // ── Submit handler: transforma campos flat → JSON objects ──
+  const form    = document.getElementById('new-cot-form');
+  const errEl   = document.getElementById('new-cot-error');
   const submitBtn = document.getElementById('new-cot-submit');
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     errEl.textContent = '';
     submitBtn.disabled = true;
     submitBtn.textContent = 'Creando…';
     try {
-      const fd = new FormData(form);
-      const payload = Object.fromEntries([...fd.entries()].map(([k, v]) => [k, v === '' ? null : v]));
-      payload.amount = Number(payload.amount);
-      if (payload.exchangeRate != null) payload.exchangeRate = Number(payload.exchangeRate);
+      const fd  = new FormData(form);
+      const raw = Object.fromEntries([...fd.entries()].map(([k, v]) => [k, v === '' ? null : v]));
+      const n   = (k) => (raw[k] != null ? Number(raw[k]) : null);
+
+      // Helper: construir array Labor Indirecta
+      const liRows = [];
+      let ri = 1;
+      while (raw[`actividad_${ri}`] !== undefined) {
+        liRows.push({
+          actividad:  raw[`actividad_${ri}`] || '',
+          cotHrs:     n(`cotHrs_${ri}`),
+          realHrs:    n(`realHrs_${ri}`),
+          costPerHr:  n(`costPerHr_${ri}`),
+          totalCost:  n(`totalCost_${ri}`),
+        });
+        ri++;
+      }
+
+      const payload = {
+        // Sección 1
+        client:          raw.client,
+        quoteNumber:     raw.quoteNumber,
+        cotRef:          raw.cotRef,
+        proyecto:        raw.proyecto,
+        celda:           raw.celda,
+        rfq:             raw.rfq,
+        mecr:            raw.mecr,
+        fechaCotizacion: raw.fechaCotizacion,
+        amount:          n('amount'),
+        currency:        raw.currency || 'USD',
+        ocCliente:       raw.ocCliente,
+        tipoContrato:    raw.tipoContrato,
+        fechaOC:         raw.fechaOC,
+        costoOC:         n('costoOC'),
+        fechaCompromiso: raw.fechaCompromiso,
+        exchangeRate:    n('exchangeRate'),
+        otNumber:        raw.otNumber || null,
+        description:     raw.description,
+        tipo:            raw.tipo || null,
+        status:          raw.status || 'Pendiente',
+        // Sección 2 — Labor Indirecta (JSON array)
+        laborIndirecta: liRows.length ? liRows : null,
+        // Sección 3 — Labor Directa Ingeniería
+        laborDirectaIngenieria: {
+          cotHrs: n('ing_cotHrs'), realHrs: n('ing_realHrs'),
+          costPerHr: n('ing_costPerHr'), totalCost: n('ing_total'),
+        },
+        // Sección 4 — Labor Directa Manufactura
+        laborDirectaManufactura: {
+          cotProcesses: {
+            corte: n('mnf_cp_corte'), fabricacion: n('mnf_cp_fab'), maquinado: n('mnf_cp_maq'),
+            hiloErosion: n('mnf_cp_hilo'), ensamble: n('mnf_cp_ens'), laborElectrica: n('mnf_cp_elec'),
+            otrosProc: n('mnf_cp_otros'), shopper: n('mnf_cp_shop'), certDimensional: n('mnf_cp_cert'),
+            empaque: n('mnf_cp_emp'),
+          },
+          cotInstall: {
+            supervisor: n('mnf_ci_sup'), tecnicoMecanico: n('mnf_ci_tec'),
+            electrico: n('mnf_ci_elec'), programador: n('mnf_ci_prog'), total: n('mnf_ci_total'),
+          },
+          realProcesses: {
+            corte: n('mnf_rp_corte'), fabricacion: n('mnf_rp_fab'), maquinado: n('mnf_rp_maq'),
+            hiloErosion: n('mnf_rp_hilo'), ensamble: n('mnf_rp_ens'), laborElectrica: n('mnf_rp_elec'),
+            otrosProc: n('mnf_rp_otros'), shopper: n('mnf_rp_shop'), certDimensional: n('mnf_rp_cert'),
+          },
+          realInstall: {
+            diseno: n('mnf_ri_dis'), tecnico: n('mnf_ri_tec'),
+            electrico: n('mnf_ri_elec'), programador: n('mnf_ri_prog'), total: n('mnf_ri_total'),
+          },
+          costPerHr: n('mnf_costPerHr'), totalCost: n('mnf_total'),
+        },
+        // Sección 5 — Labor Directa Automatización
+        laborDirectaAutomatizacion: {
+          cotHrs: n('aut_cotHrs'), realHrs: n('aut_realHrs'),
+          costPerHr: n('aut_costPerHr'), totalCost: n('aut_total'),
+        },
+        // Sección 6 — Materiales
+        materiales: {
+          aceros: n('mat_aceros'), plasticos: n('mat_plas'), recubrimientos: n('mat_recub'),
+          tratamientos: n('mat_trat'), componentes: n('mat_comp'), certificados: n('mat_cert'),
+          subtotal: n('mat_subtotal'), profitPct: n('mat_profitPct'),
+          profitUsd: n('mat_profitUsd'), total: n('mat_total'),
+        },
+        // Sección 7 — Viáticos
+        viaticos: {
+          comida: n('via_comida'), estancia: n('via_estancia'),
+          peaje: n('via_peaje'), gasolina: n('via_gasolina'), total: n('via_total'),
+        },
+        // Sección 8 — Logística
+        logistica: { envio: n('log_envio'), embalaje: n('log_embalaje'), total: n('log_total') },
+        // Sección 9 — Finales
+        utilidadFinal: n('utilidadFinal'),
+        ivaEmpresa:    n('ivaEmpresa'),
+        totalFinal:    n('totalFinal'),
+        notas:         raw.notas || null,
+      };
+
       const res = await apiFetch(`${API_URL}/quotes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -4340,6 +5046,130 @@ function showNewCotizacionModal() {
       submitBtn.textContent = 'Crear cotización';
     }
   });
+}
+
+// ── Calculadoras auto para el modal de cotizaciones ──
+function setupCotizacionCalculators() {
+  const form = document.getElementById('new-cot-form');
+  if (!form) return;
+
+  // Labor Indirecta: cotHrs × $/HR → Costo
+  form.addEventListener('input', (e) => {
+    const t = e.target;
+    // Para cada fila de Labor Indirecta
+    if (t.classList.contains('li-hrs-cot') || t.classList.contains('li-hr-cost')) {
+      const row  = t.closest('div[style*="grid-template-columns"]');
+      if (!row) return;
+      const hrs  = Number(row.querySelector('.li-hrs-cot')?.value)  || 0;
+      const rate = Number(row.querySelector('.li-hr-cost')?.value) || 0;
+      const calc = row.querySelector('.li-calc');
+      if (calc) calc.value = (hrs * rate).toFixed(2);
+    }
+    // Ingeniería: cotHrs × $/HR → totalCost
+    if (t.classList.contains('ing-input')) {
+      const cotHrs    = Number(form.querySelector('[name="ing_cotHrs"]')?.value)   || 0;
+      const costPerHr = Number(form.querySelector('[name="ing_costPerHr"]')?.value) || 0;
+      const tot = form.querySelector('[name="ing_total"]');
+      if (tot) tot.value = (cotHrs * costPerHr).toFixed(2);
+    }
+    // Manufactura instalación COT total
+    if (t.classList.contains('mnf-inst-cot')) {
+      const sup  = Number(form.querySelector('[name="mnf_ci_sup"]')?.value)  || 0;
+      const tec  = Number(form.querySelector('[name="mnf_ci_tec"]')?.value)  || 0;
+      const elec = Number(form.querySelector('[name="mnf_ci_elec"]')?.value) || 0;
+      const prog = Number(form.querySelector('[name="mnf_ci_prog"]')?.value) || 0;
+      const tot  = form.querySelector('[name="mnf_ci_total"]');
+      if (tot) tot.value = (sup + tec + elec + prog).toFixed(2);
+    }
+    // Manufactura total costo = (sum proc cot + inst cot total) × costPerHr
+    if (t.classList.contains('mnf-proc-cot') || t.classList.contains('mnf-hr-cost') || t.classList.contains('mnf-inst-cot')) {
+      const procSum = [...form.querySelectorAll('.mnf-proc-cot')].reduce((s, el) => s + (Number(el.value) || 0), 0);
+      const instTot = Number(form.querySelector('[name="mnf_ci_total"]')?.value) || 0;
+      const rate    = Number(form.querySelector('[name="mnf_costPerHr"]')?.value) || 0;
+      const tot     = form.querySelector('[name="mnf_total"]');
+      if (tot) tot.value = ((procSum + instTot) * rate).toFixed(2);
+    }
+    // Automatización
+    if (t.classList.contains('aut-input')) {
+      const hrs  = Number(form.querySelector('[name="aut_cotHrs"]')?.value)   || 0;
+      const rate = Number(form.querySelector('[name="aut_costPerHr"]')?.value) || 0;
+      const tot  = form.querySelector('[name="aut_total"]');
+      if (tot) tot.value = (hrs * rate).toFixed(2);
+    }
+    // Materiales subtotal / profit / total
+    if (t.classList.contains('mat-input') || t.name === 'mat_profitPct') {
+      const sum = ['mat_aceros','mat_plas','mat_recub','mat_trat','mat_comp','mat_cert']
+        .reduce((s, nm) => s + (Number(form.querySelector(`[name="${nm}"]`)?.value) || 0), 0);
+      const stEl = form.querySelector('[name="mat_subtotal"]');
+      if (stEl) stEl.value = sum.toFixed(2);
+      const pct  = Number(form.querySelector('[name="mat_profitPct"]')?.value) || 0;
+      const puEl = form.querySelector('[name="mat_profitUsd"]');
+      const pu   = sum * pct / 100;
+      if (puEl) puEl.value = pu.toFixed(2);
+      const totEl = form.querySelector('[name="mat_total"]');
+      if (totEl) totEl.value = (sum + pu).toFixed(2);
+    }
+    // Viáticos total
+    if (t.classList.contains('via-input')) {
+      const tot = ['via_comida','via_estancia','via_peaje','via_gasolina']
+        .reduce((s, nm) => s + (Number(form.querySelector(`[name="${nm}"]`)?.value) || 0), 0);
+      const totEl = form.querySelector('[name="via_total"]');
+      if (totEl) totEl.value = tot.toFixed(2);
+    }
+    // Logística total
+    if (t.classList.contains('log-input')) {
+      const envio   = Number(form.querySelector('[name="log_envio"]')?.value)   || 0;
+      const emb     = Number(form.querySelector('[name="log_embalaje"]')?.value) || 0;
+      const totEl   = form.querySelector('[name="log_total"]');
+      if (totEl) totEl.value = (envio + emb).toFixed(2);
+    }
+    // Total Final: suma de todos los subtotales de costo.
+    // Disparado por cualquier campo que pueda afectar un subtotal (incluyendo
+    // los campos fuente de labor, ya que los campos readonly [ing_total, etc.]
+    // no disparan input events cuando se actualizan por JS).
+    const _tfTrigger = ['utilidadFinal','ivaEmpresa'].includes(t.name)
+      || ['mat-input','via-input','log-input',
+          'li-hrs-cot','li-hr-cost',
+          'ing-input','aut-input',
+          'mnf-proc-cot','mnf-inst-cot','mnf-hr-cost'].some((cls) => t.classList.contains(cls))
+      || t.name === 'mat_profitPct';
+    if (_tfTrigger) {
+      const _subKeys = ['ing_total','mnf_total','aut_total','mat_total','via_total','log_total','utilidadFinal','ivaEmpresa'];
+      const _liTot = [...(form.querySelectorAll('.li-calc'))].reduce((s, el) => s + (Number(el.value) || 0), 0);
+      const _rest  = _subKeys.reduce((s, nm) => s + (Number(form.querySelector(`[name="${nm}"]`)?.value) || 0), 0);
+      const _tfEl  = form.querySelector('[name="totalFinal"]');
+      if (_tfEl) _tfEl.value = (_liTot + _rest).toFixed(2);
+    }
+    // Manufactura instalación REAL total
+    if (['mnf_ri_dis','mnf_ri_tec','mnf_ri_elec','mnf_ri_prog'].includes(t.name)) {
+      const tot = ['mnf_ri_dis','mnf_ri_tec','mnf_ri_elec','mnf_ri_prog']
+        .reduce((s, nm) => s + (Number(form.querySelector(`[name="${nm}"]`)?.value) || 0), 0);
+      const totEl = form.querySelector('[name="mnf_ri_total"]');
+      if (totEl) totEl.value = tot.toFixed(2);
+    }
+  });
+}
+
+// ── Añadir fila dinámica a Labor Indirecta ──
+function addLaborIndirectRow() {
+  const container = document.getElementById('labor-indirecta-group');
+  if (!container) return;
+  const idx = container.querySelectorAll('[name^="actividad_"]').length + 1;
+  const actOptions = [
+    'Actividad no especificada','Desarrollo y preventa','Compras',
+    'Planeacion y Ctrl prod (procesos)','Seguridad Industrial','Gestion de calidad (ISO)',
+    'Almacen','Control de Costo','Supervicion','Mantenimiento',
+    'Actividades administrativas/contables/RH','Juntas','Curso/capacitacion',
+  ].map((a) => `<option value="${esc(a)}">${esc(a)}</option>`).join('');
+  container.insertAdjacentHTML('beforeend', `
+    <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:10px;align-items:end;margin-top:8px">
+      <div class="fg"><label>Actividad</label>
+        <select name="actividad_${idx}" class="act-sel"><option value="">Selecciona…</option>${actOptions}</select></div>
+      <div class="fg"><label>Cot. (HRS)</label><input name="cotHrs_${idx}" type="number" step="0.01" min="0" class="li-hrs-cot"></div>
+      <div class="fg"><label>Real (HRS)</label><input name="realHrs_${idx}" type="number" step="0.01" min="0"></div>
+      <div class="fg"><label>$/HR (🔵 USD)</label><input name="costPerHr_${idx}" type="number" step="0.01" min="0" class="li-hr-cost"></div>
+      <div class="fg"><label>Costo (🔵 USD)</label><input name="totalCost_${idx}" type="number" step="0.01" min="0" readonly class="li-calc"></div>
+    </div>`);
 }
 
 async function uploadCotizacionesXlsx(file) {
@@ -4389,10 +5219,10 @@ const CFG = {
   pronostico:   { title: 'Pronóstico del Costo',    crumb: '· Cotizado vs. Real por OT' },
   material:     { title: 'Costo de Material',       crumb: '· Requisición por OT' },
   entregas:     { title: 'Entregas de Material',    crumb: '· Control de Recepciones' },
-  horas:        { title: 'Horas de Mano de Obra',   crumb: '· ALE-030424-J83 · Ene–Mar 2026' },
+  horas:        { title: 'Horas de Mano de Obra',   crumb: '· Registro de horas por OT' },
   conciliacion: { title: 'Conciliación',           crumb: '· Gestión de checador y horas',    newLabel: '+ Cerrar Semana' },
   nomina:       { title: 'Nómina / CFDI',           crumb: '· Registro de nómina y CFDI' },
-  costomo:      { title: 'Costo de Mano de Obra',   crumb: '· Labor Directa / Indirecta · OT-1936' },
+  costomo:      { title: 'Costo de Mano de Obra',   crumb: '· Labor Directa / Indirecta' },
   admin:        { title: 'Administración',          crumb: '· Configuración y bitácora · solo admin' }
 };
 
@@ -4486,27 +5316,27 @@ function generateOTPDF() {
   yPos += 10;
 
   // Row 1: FECHA, CANTIDAD, No. OT
-  addLabelValue(margin, yPos, 30, 30, 'FECHA:', formData['Fecha de liberación'] || '10 de marzo de 2026', 8);
-  addLabelValue(margin + 70, yPos, 25, 35, 'CANTIDAD', formData['Cantidad'] || '1', 8);
+  addLabelValue(margin, yPos, 30, 30, 'FECHA:', formData['Fecha de liberación'] || '', 8);
+  addLabelValue(margin + 70, yPos, 25, 35, 'CANTIDAD', formData['Cantidad'] || '', 8);
   addText(pageWidth - margin - 40, yPos + 1, 'No. DE OT ASIGNADA', 8, 'bold');
   addRect(pageWidth - margin - 40, yPos + 4, 40, 6);
   addText(pageWidth - margin - 38, yPos + 7.5, otNum, 11, 'bold');
   yPos += 8;
 
   // Row 2: CLIENTE
-  addLabelValue(margin, yPos, 30, contentWidth - 30, 'CLIENTE:', formData['Cliente'] || 'ADIENT LERMA', 8);
+  addLabelValue(margin, yPos, 30, contentWidth - 30, 'CLIENTE:', formData['Cliente'] || '', 8);
   yPos += 8;
 
   // Row 3: AREA REQUISITOR
-  addLabelValue(margin, yPos, 30, contentWidth - 30, 'AREA REQUISITOR:', formData['Área Requisitora'] || 'COORDINATOR PROYECT', 8);
+  addLabelValue(margin, yPos, 30, contentWidth - 30, 'AREA REQUISITOR:', formData['Área Requisitora'] || '', 8);
   yPos += 8;
 
   // Row 4: REQUISITOR
-  addLabelValue(margin, yPos, 30, contentWidth - 30, 'REQUISITOR:', formData['Requisitor'] || 'ING. ALEJANDRO GARCIA', 8);
+  addLabelValue(margin, yPos, 30, contentWidth - 30, 'REQUISITOR:', formData['Requisitor'] || '', 8);
   yPos += 8;
 
   // Row 5: EMAIL
-  addLabelValue(margin, yPos, 30, contentWidth - 30, 'E-MAIL:', formData['E-mail'] || 'j.garcia.calzada@adient.com', 8);
+  addLabelValue(margin, yPos, 30, contentWidth - 30, 'E-MAIL:', formData['E-mail'] || '', 8);
   yPos += 8;
 
   // Row 6: PROGRAMA
@@ -4516,17 +5346,17 @@ function generateOTPDF() {
   // Row 7: FECHA LIBERACION & ENTREGA
   const dateY = yPos;
   addCell(margin, dateY, 30, 6, 'FECHA LIBERACION:', 8, 'bold');
-  addCell(margin + 30, dateY, 40, 6, formData['Fecha de liberación'] || '3 de marzo de 2026', 8);
+  addCell(margin + 30, dateY, 40, 6, formData['Fecha de liberación'] || '', 8);
   addCell(margin + 80, dateY, 40, 6, 'F. ENTREGA COMPROMISO:', 8, 'bold');
-  addCell(pageWidth - margin - 30, dateY, 30, 6, formData['F. Entrega Compromiso'] || '7 de abril de 2026', 8);
+  addCell(pageWidth - margin - 30, dateY, 30, 6, formData['F. Entrega Compromiso'] || '', 8);
   yPos += 8;
 
   // Row 8: OC CLIENTE & COT
   const ocY = yPos;
   addCell(margin, ocY, 30, 6, '# OC CLIENTE:', 8, 'bold');
-  addCell(margin + 30, ocY, 40, 6, formData['# OC Cliente'] || '2301498137', 8);
+  addCell(margin + 30, ocY, 40, 6, formData['# OC Cliente'] || '', 8);
   addCell(margin + 80, ocY, 40, 6, '# COT REF. ALENSTEC:', 8, 'bold');
-  addCell(pageWidth - margin - 30, ocY, 30, 6, formData['COT Ref. Alenstec'] || 'COT-AL-027ADL-26C', 8);
+  addCell(pageWidth - margin - 30, ocY, 30, 6, formData['COT Ref. Alenstec'] || '', 8);
   yPos += 10;
 
   // Description Header
@@ -4535,7 +5365,7 @@ function generateOTPDF() {
   yPos += 6;
 
   // Description Box
-  const description = 'TRAB. ADIC. POR CAMBIO DE UBIC. DE BOTÓN EN VESTIDURA, PARA MAQ. EXIS. DEL PROY. RIVIAN Y TOYOTA, PARA LA PLANTA DE ADIENT LERMA';
+  const description = (formData['Descripción del trabajo'] || formData['Descripcion'] || '').toUpperCase();
   addRect(margin, yPos, contentWidth, 12);
   const descLines = doc.splitTextToSize(description, contentWidth - 4);
   doc.setFontSize(9);
@@ -4552,7 +5382,7 @@ function generateOTPDF() {
 
   // Budget Section Header
   addText(margin + 2, yPos, 'TIPO DE CAMBIO:', 9, 'bold');
-  addText(margin + 40, yPos, formData['Tipo de Cambio'] || '$17.34 USD', 9);
+  addText(margin + 40, yPos, formData['Tipo de Cambio'] || '', 9);
   addText(pageWidth - margin - 50, yPos, '(REF. DIARIO OFICIAL)', 8);
   yPos += 8;
 
@@ -4570,10 +5400,10 @@ function generateOTPDF() {
   yPos += 6;
 
   // Budget Values
-  addCell(margin, yPos, 30, 5, formData['Ppto. MO (MXN)'] || '$21,263', 8);
-  addCell(margin + 30, yPos, 23, 5, formData['Ppto. MO (USD)'] || '$1,226', 8);
-  addCell(margin + 85, yPos, 30, 5, formData['Ppto. Material (MXN)'] || '$12,050', 8);
-  addCell(margin + 115, yPos, 28, 5, formData['Ppto. Material (USD)'] || '$695', 8);
+  addCell(margin, yPos, 30, 5, formData['Ppto. MO (🟢 MXN)'] || '', 8);
+  addCell(margin + 30, yPos, 23, 5, formData['Ppto. MO (🔵 USD)'] || '', 8);
+  addCell(margin + 85, yPos, 30, 5, formData['Ppto. Material (🟢 MXN)'] || '', 8);
+  addCell(margin + 115, yPos, 28, 5, formData['Ppto. Material (🔵 USD)'] || '', 8);
   yPos += 8;
 
   // Horas Estimadas
@@ -4582,7 +5412,7 @@ function generateOTPDF() {
 
   const hoursData = [
     ['ING/DISEÑO', 'CORTE', 'FABRICACION', 'MAQUINADO', 'L.ENSAMBLE', 'L.ELECTRICA', 'AUTOMATIZ.', 'TOTAL'],
-    ['36', '2', '15', '84', '17', '5', '0', '243']
+    ['', '', '', '', '', '', '', '']
   ];
 
   const colW = contentWidth / 8;
@@ -4631,6 +5461,7 @@ function generateOTPDF() {
 
 
 function goMod(id) {
+  localStorage.setItem('alenstec_last_mod', id);
   document.querySelectorAll('.mod').forEach(m => m.classList.remove('active'));
   document.querySelectorAll('.ni').forEach(n => n.classList.remove('active'));
   const m = document.getElementById('mod-' + id);
@@ -4680,6 +5511,7 @@ function updateOTBanner(val) {
   document.querySelector('.ot-num').textContent = val;
 }
 function goSub(mod, sub, el) {
+  localStorage.setItem('alenstec_last_sub_' + mod, sub);
   const parent = document.getElementById('mod-' + mod);
   parent.querySelectorAll('.submod').forEach(s => s.classList.remove('active'));
   parent.querySelectorAll('.sntab').forEach(s => s.classList.remove('active'));
@@ -5365,7 +6197,7 @@ function handleXMLUpload(event) {
         <td>—</td>
         <td>—</td>
         <td class="mono" style="font-weight:600">$${parseFloat(total).toLocaleString('es-MX')}</td>
-        <td><span class="badge ${moneda === 'USD' ? 'bb' : 'bn'}">${moneda}</span></td>
+        <td><span class="badge ${moneda === 'USD' ? 'bb' : 'bn'}">${moneda === 'USD' ? '🔵 USD' : moneda === 'MXN' ? '🟢 MXN' : moneda}</span></td>
         <td>—</td>
         <td><span class="badge ${badgeClass}">${metodoPago}</span></td>
         <td><span class="badge bg">✓ Importada</span></td>
@@ -5507,6 +6339,208 @@ function handleXMLUpload(event) {
   tabs.style.display  = 'flex';
   dates.style.display = 'none';
   otSel.style.display = 'none';
+})();
+
+/* ══════════════════════════════════════════════════
+   GRID EDIT — Cotizaciones (edición inline tipo MS Lists)
+   ══════════════════════════════════════════════════ */
+(function initCotGridEdit() {
+  // Columnas que NO son editables (índice base-0)
+  // 0=Item, 19=Estado(badge), 84=Acc(botones)
+  const NO_EDIT = new Set([0, 19, 84]);
+
+  // Columnas numéricas (input type number para validar)
+  const NUM_COLS = new Set([
+    9,13,15,                          // costos OC/COT, T/C
+    20,21,22,                         // labor indirecta
+    23,24,25,26,                      // ingeniería
+    27,28,29,30,31,32,33,34,35,36,   // proc cot
+    37,38,39,40,41,                   // inst cot
+    42,43,44,45,46,47,48,49,50,       // proc real
+    51,52,53,54,55,                   // inst real
+    56,57,                            // $/HR, costo mnf
+    58,59,60,61,                      // auto
+    62,63,64,65,66,67,68,69,70,71,   // mat
+    72,73,74,75,76,                   // viáticos
+    77,78,79,                         // logística
+    80,81,82                          // totales
+  ]);
+
+  let pendingCount = 0;
+
+  const tbody = document.getElementById('cot-tbody');
+  if (!tbody) return;
+
+  // ── Delegación: un solo listener en el tbody ──────────────────────────
+  tbody.addEventListener('click', function (e) {
+    // Ignorar si ya hay un input activo o si clickearon en botón/input
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+
+    const td = e.target.closest('td');
+    if (!td) return;
+    if (td.classList.contains('cot-ing')) return;           // ya en edición
+
+    const tr = td.closest('tr');
+    if (tr && tr.classList.contains('cot-totals')) return;  // fila totales
+
+    const colIdx = Array.from(tr.children).indexOf(td);
+    if (NO_EDIT.has(colIdx)) return;
+
+    startEdit(td, colIdx);
+  });
+
+  // ── Lógica de edición de una celda ────────────────────────────────────
+  function startEdit(td, colIdx) {
+    const origText = td.dataset.orig ?? td.innerText.trim();
+    td.dataset.orig = origText;
+
+    const input = document.createElement('input');
+    input.type  = NUM_COLS.has(colIdx) ? 'number' : 'text';
+    input.value = origText.replace(/[$,%]/g, '').trim();
+    input.step  = 'any';
+
+    td.classList.add('cot-ing');
+    td.innerHTML = '';
+    td.appendChild(input);
+    input.focus();
+    input.select();
+
+    // Guardar al salir de la celda
+    let committed = false;
+    function commit() {
+      if (committed) return;
+      committed = true;
+      const newVal = input.value.trim();
+      td.classList.remove('cot-ing');
+
+      // Restaurar formato visual si es número con $
+      const hasSign = (td.dataset.orig || '').startsWith('$');
+      td.innerText = hasSign && newVal !== '' ? '$' + parseFloat(newVal || 0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) : newVal;
+
+      if (newVal !== origText.replace(/[$,%]/g, '').trim()) {
+        td.classList.add('cot-mod');
+        pendingCount++;
+        const n = document.getElementById('cot-pending-n');
+        if (n) n.textContent = pendingCount;
+        const bar = document.getElementById('cot-pending');
+        if (bar) bar.classList.add('vis');
+      }
+    }
+
+    function cancel() {
+      if (committed) return;
+      committed = true;
+      td.classList.remove('cot-ing');
+      td.innerText = origText;
+    }
+
+    input.addEventListener('blur', commit);
+
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        input.removeEventListener('blur', commit);
+        commit();
+      }
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        input.removeEventListener('blur', commit);
+        cancel();
+      }
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        input.removeEventListener('blur', commit);
+        commit();
+        navigateFrom(td, e.shiftKey);
+      }
+    });
+  }
+
+  // ── Navegación Tab / Shift+Tab ─────────────────────────────────────────
+  function navigateFrom(currentTd, backwards) {
+    const tr    = currentTd.closest('tr');
+    const tbody = tr.closest('tbody');
+    const rows  = Array.from(tbody.querySelectorAll('tr:not(.cot-totals)'));
+    const cells = Array.from(tr.children);
+    const ci    = cells.indexOf(currentTd);
+    const ri    = rows.indexOf(tr);
+
+    // Buscar siguiente celda editable en la misma fila
+    let nextTd = null;
+    if (!backwards) {
+      for (let i = ci + 1; i < cells.length; i++) {
+        if (!NO_EDIT.has(i)) { nextTd = cells[i]; break; }
+      }
+      // Si no hay más en esta fila → primera editable de la siguiente
+      if (!nextTd && ri + 1 < rows.length) {
+        const nextRow = rows[ri + 1];
+        for (let i = 0; i < nextRow.children.length; i++) {
+          if (!NO_EDIT.has(i)) { nextTd = nextRow.children[i]; break; }
+        }
+      }
+    } else {
+      for (let i = ci - 1; i >= 0; i--) {
+        if (!NO_EDIT.has(i)) { nextTd = cells[i]; break; }
+      }
+      if (!nextTd && ri - 1 >= 0) {
+        const prevRow = rows[ri - 1];
+        for (let i = prevRow.children.length - 1; i >= 0; i--) {
+          if (!NO_EDIT.has(i)) { nextTd = prevRow.children[i]; break; }
+        }
+      }
+    }
+
+    if (nextTd) {
+      // Scroll para que sea visible
+      nextTd.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      const colIdx = Array.from(nextTd.parentElement.children).indexOf(nextTd);
+      startEdit(nextTd, colIdx);
+    }
+  }
+
+  // ── Exponer funciones globales para los botones del pending bar ────────
+  window.cotDiscard = function () {
+    tbody.querySelectorAll('td.cot-mod').forEach(td => {
+      td.classList.remove('cot-mod');
+      td.innerText = td.dataset.orig || td.innerText;
+      delete td.dataset.orig;
+    });
+    pendingCount = 0;
+    const bar = document.getElementById('cot-pending');
+    if (bar) bar.classList.remove('vis');
+  };
+
+  window.cotSave = function () {
+    // Recoge todos los cambios por fila (identificada por OT en col 16)
+    const changes = [];
+    tbody.querySelectorAll('tr:not(.cot-totals)').forEach(tr => {
+      const modified = Array.from(tr.querySelectorAll('td.cot-mod'));
+      if (!modified.length) return;
+      const otCell = tr.children[16];
+      const ot = otCell ? otCell.innerText.trim() : '?';
+      const rowChanges = { ot, fields: {} };
+      modified.forEach(td => {
+        const ci = Array.from(tr.children).indexOf(td);
+        rowChanges.fields[ci] = td.innerText.trim();
+      });
+      changes.push(rowChanges);
+    });
+
+    console.log('cotSave payload:', changes); // → aquí va el PUT /api/quotes/:id
+
+    // Limpiar estado visual (mock: sin API todavía)
+    tbody.querySelectorAll('td.cot-mod').forEach(td => {
+      td.classList.remove('cot-mod');
+      td.dataset.orig = td.innerText.trim();
+    });
+    pendingCount = 0;
+    document.getElementById('cot-pending')?.classList.remove('vis');
+
+    // Toast
+    if (typeof showToast === 'function') {
+      showToast(`${changes.length} fila(s) guardada(s) · integración API pendiente`, 'success');
+    }
+  };
 })();
 
 </script>

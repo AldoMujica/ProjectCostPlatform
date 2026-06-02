@@ -1,5 +1,5 @@
 const express = require('express');
-const multer = require('multer');
+const multer  = require('multer');
 const ExcelJS = require('exceljs');
 const { Quote } = require('../models');
 const { verificarRol } = require('../middleware/auth');
@@ -8,41 +8,128 @@ const { normalizeBreakdown } = require('../utils/laborActivities');
 
 const router = express.Router();
 
-// In-memory upload — the XLSX is parsed once and discarded; no need to
-// persist it on disk (unlike the checador flow which keeps it for a preview).
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 20 * 1024 * 1024 }, // 20MB — the master workbook is ~108KB
-  fileFilter: (req, file, cb) => {
-    const ok = /\.xlsx$/i.test(file.originalname || '');
-    cb(ok ? null : new Error('Solo se aceptan archivos .xlsx'), ok);
-  },
-});
+// multer en memoria (límite 20 MB — los XLSX del Control de Ventas pueden ser grandes)
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 20 * 1024 * 1024 } });
 
-// Columns exported, in the same order as the "Control Ventas 2026"
-// workbook's cotización block (first 19 columns, minus the blank C1
-// column and the ITEM counter which we regenerate from array index).
+// Helpers para extraer sub-campos de columnas JSON
+const jn = (obj, key) => { const v = obj && obj[key]; return v == null ? '' : Number(v); };
+
+// Columns exported — alineadas con "Control de Ventas 2026" + secciones
+// expandidas (Labor Indirecta / Labor Directa / Materiales / Viáticos /
+// Logística / Totales Finales).
 const EXPORT_COLUMNS = [
-  { header: 'Item', key: 'item', width: 6 },
-  { header: 'CLIENTE', key: 'client', width: 22 },
-  { header: 'PROYECTO / PROGRAMA', key: 'proyecto', width: 22 },
-  { header: 'CELDA', key: 'celda', width: 10 },
-  { header: 'RFQ', key: 'rfq', width: 12 },
-  { header: 'MECR', key: 'mecr', width: 12 },
-  { header: 'COT REF. ALENSTEC (COT-AL)', key: 'cotRef', width: 22 },
-  { header: 'COT ALENSTEC (COT-AL)', key: 'quoteNumber', width: 22 },
-  { header: 'FECHA (COT-AL)', key: 'fechaCotizacion', width: 14, fmt: fmtDate },
-  { header: 'COSTO COT-AL (USD) (Sin IVA)', key: 'amount', width: 16, fmt: (v) => (v == null ? '' : Number(v)) },
-  { header: 'ORDEN DE COMPRA (CLIENTE)', key: 'ocCliente', width: 22 },
-  { header: 'TIPO DE CONTRATO', key: 'tipoContrato', width: 22 },
-  { header: 'FECHA O.C.', key: 'fechaOC', width: 14, fmt: fmtDate },
-  { header: 'COSTO O.C. (USD) (Sin IVA)', key: 'costoOC', width: 16, fmt: (v) => (v == null ? '' : Number(v)) },
-  { header: 'FECHA COMPROMISO ENTREGA', key: 'fechaCompromiso', width: 20, fmt: fmtDate },
-  { header: 'TIPO DE CAMBIO (USD)', key: 'exchangeRate', width: 12, fmt: (v) => (v == null ? '' : Number(v)) },
-  { header: 'OT. ALENSTEC (OT-AL-)', key: 'otNumber', width: 16 },
-  { header: 'DESCRIPCION DE PROYECTO', key: 'description', width: 60 },
-  { header: 'TIPO', key: 'tipo', width: 12 },
-  { header: 'ESTADO', key: 'status', width: 12 },
+  // ── Sección 1: Datos básicos (20 col) ──
+  { header: 'Item',                          key: 'item',            width: 6 },
+  { header: 'CLIENTE',                       key: 'client',          width: 22 },
+  { header: 'PROYECTO / PROGRAMA',           key: 'proyecto',        width: 22 },
+  { header: 'CELDA',                         key: 'celda',           width: 10 },
+  { header: 'RFQ',                           key: 'rfq',             width: 12 },
+  { header: 'MECR',                          key: 'mecr',            width: 12 },
+  { header: 'COT REF. ALENSTEC',             key: 'cotRef',          width: 22 },
+  { header: 'COT ALENSTEC (COT-AL)',          key: 'quoteNumber',     width: 22 },
+  { header: 'FECHA (COT-AL)',                key: 'fechaCotizacion', width: 14, fmt: fmtDate },
+  { header: 'COSTO COT-AL (USD) (Sin IVA)', key: 'amount',          width: 16, fmt: (v) => (v == null ? '' : Number(v)) },
+  { header: 'ORDEN DE COMPRA (CLIENTE)',     key: 'ocCliente',       width: 22 },
+  { header: 'TIPO DE CONTRATO',              key: 'tipoContrato',    width: 20 },
+  { header: 'FECHA O.C.',                   key: 'fechaOC',         width: 14, fmt: fmtDate },
+  { header: 'COSTO O.C. (USD) (Sin IVA)',   key: 'costoOC',         width: 16, fmt: (v) => (v == null ? '' : Number(v)) },
+  { header: 'FECHA COMPROMISO ENTREGA',     key: 'fechaCompromiso', width: 20, fmt: fmtDate },
+  { header: 'TIPO DE CAMBIO (USD)',          key: 'exchangeRate',    width: 12, fmt: (v) => (v == null ? '' : Number(v)) },
+  { header: 'OT. ALENSTEC (OT-AL-)',         key: 'otNumber',        width: 16 },
+  { header: 'DESCRIPCION DE PROYECTO',      key: 'description',     width: 60 },
+  { header: 'TIPO',                          key: 'tipo',            width: 12 },
+  { header: 'ESTADO',                        key: 'status',          width: 12 },
+
+  // ── Sección 2: Labor Indirecta (3 col — suma de actividades) ──
+  { header: 'LI · HRS COT',   key: '_liCotHrs',  width: 10,
+    fmt: (_, r) => { const li = Array.isArray(r.laborIndirecta) ? r.laborIndirecta : []; return li.reduce((s, x) => s + (Number(x.cotHrs) || 0), 0) || ''; } },
+  { header: 'LI · HRS REAL',  key: '_liRealHrs', width: 10,
+    fmt: (_, r) => { const li = Array.isArray(r.laborIndirecta) ? r.laborIndirecta : []; return li.reduce((s, x) => s + (Number(x.realHrs) || 0), 0) || ''; } },
+  { header: 'LI · COSTO (USD)', key: '_liCost',  width: 12,
+    fmt: (_, r) => { const li = Array.isArray(r.laborIndirecta) ? r.laborIndirecta : []; return li.reduce((s, x) => s + (Number(x.totalCost) || 0), 0) || ''; } },
+
+  // ── Sección 3: Labor Directa — Ingeniería (4 col) ──
+  { header: 'ING · HRS COT',    key: '_ingCotHrs',   width: 10, fmt: (_, r) => jn(r.laborDirectaIngenieria, 'cotHrs')   || '' },
+  { header: 'ING · HRS REAL',   key: '_ingRealHrs',  width: 10, fmt: (_, r) => jn(r.laborDirectaIngenieria, 'realHrs')  || '' },
+  { header: 'ING · $/HR',       key: '_ingCostPerHr',width: 10, fmt: (_, r) => jn(r.laborDirectaIngenieria, 'costPerHr')|| '' },
+  { header: 'ING · COSTO (USD)',key: '_ingTotal',     width: 12, fmt: (_, r) => jn(r.laborDirectaIngenieria, 'totalCost')|| '' },
+
+  // ── Sección 4: Labor Directa — Manufactura — Proc COT (10 col) ──
+  { header: 'MNF-CP [B] Corte',    key: '_mnfCpCorte',  width: 10, fmt: (_, r) => jn((r.laborDirectaManufactura||{}).cotProcesses, 'corte')          || '' },
+  { header: 'MNF-CP [C] Fab.',     key: '_mnfCpFab',    width: 10, fmt: (_, r) => jn((r.laborDirectaManufactura||{}).cotProcesses, 'fabricacion')     || '' },
+  { header: 'MNF-CP [E] Maq.',     key: '_mnfCpMaq',    width: 10, fmt: (_, r) => jn((r.laborDirectaManufactura||{}).cotProcesses, 'maquinado')       || '' },
+  { header: 'MNF-CP [F] Hilo',     key: '_mnfCpHilo',   width: 10, fmt: (_, r) => jn((r.laborDirectaManufactura||{}).cotProcesses, 'hiloErosion')     || '' },
+  { header: 'MNF-CP [G] Ens.',     key: '_mnfCpEns',    width: 10, fmt: (_, r) => jn((r.laborDirectaManufactura||{}).cotProcesses, 'ensamble')        || '' },
+  { header: 'MNF-CP [H] Elec.',    key: '_mnfCpElec',   width: 10, fmt: (_, r) => jn((r.laborDirectaManufactura||{}).cotProcesses, 'laborElectrica')  || '' },
+  { header: 'MNF-CP [D] Otros',    key: '_mnfCpOtros',  width: 10, fmt: (_, r) => jn((r.laborDirectaManufactura||{}).cotProcesses, 'otrosProc')       || '' },
+  { header: 'MNF-CP [J] Shop.',    key: '_mnfCpShop',   width: 10, fmt: (_, r) => jn((r.laborDirectaManufactura||{}).cotProcesses, 'shopper')         || '' },
+  { header: 'MNF-CP [K] Cert.',    key: '_mnfCpCert',   width: 10, fmt: (_, r) => jn((r.laborDirectaManufactura||{}).cotProcesses, 'certDimensional') || '' },
+  { header: 'MNF-CP [L] Emp.',     key: '_mnfCpEmp',    width: 10, fmt: (_, r) => jn((r.laborDirectaManufactura||{}).cotProcesses, 'empaque')         || '' },
+
+  // Inst COT (5 col)
+  { header: 'MNF-CI Sup.',   key: '_mnfCiSup',   width: 10, fmt: (_, r) => jn((r.laborDirectaManufactura||{}).cotInstall, 'supervisor')      || '' },
+  { header: 'MNF-CI TecMec.',key: '_mnfCiTec',   width: 10, fmt: (_, r) => jn((r.laborDirectaManufactura||{}).cotInstall, 'tecnicoMecanico') || '' },
+  { header: 'MNF-CI Eléc.',  key: '_mnfCiElec',  width: 10, fmt: (_, r) => jn((r.laborDirectaManufactura||{}).cotInstall, 'electrico')       || '' },
+  { header: 'MNF-CI Prog.',  key: '_mnfCiProg',  width: 10, fmt: (_, r) => jn((r.laborDirectaManufactura||{}).cotInstall, 'programador')     || '' },
+  { header: 'MNF-CI Total',  key: '_mnfCiTotal', width: 10, fmt: (_, r) => jn((r.laborDirectaManufactura||{}).cotInstall, 'total')           || '' },
+
+  // Proc REAL (9 col)
+  { header: 'MNF-RP [B] Corte',  key: '_mnfRpCorte',  width: 10, fmt: (_, r) => jn((r.laborDirectaManufactura||{}).realProcesses, 'corte')         || '' },
+  { header: 'MNF-RP [C] Fab.',   key: '_mnfRpFab',    width: 10, fmt: (_, r) => jn((r.laborDirectaManufactura||{}).realProcesses, 'fabricacion')    || '' },
+  { header: 'MNF-RP [E] Maq.',   key: '_mnfRpMaq',    width: 10, fmt: (_, r) => jn((r.laborDirectaManufactura||{}).realProcesses, 'maquinado')      || '' },
+  { header: 'MNF-RP [F] Hilo',   key: '_mnfRpHilo',   width: 10, fmt: (_, r) => jn((r.laborDirectaManufactura||{}).realProcesses, 'hiloErosion')    || '' },
+  { header: 'MNF-RP [G] Ens.',   key: '_mnfRpEns',    width: 10, fmt: (_, r) => jn((r.laborDirectaManufactura||{}).realProcesses, 'ensamble')       || '' },
+  { header: 'MNF-RP [H] Elec.',  key: '_mnfRpElec',   width: 10, fmt: (_, r) => jn((r.laborDirectaManufactura||{}).realProcesses, 'laborElectrica') || '' },
+  { header: 'MNF-RP [D] Otros',  key: '_mnfRpOtros',  width: 10, fmt: (_, r) => jn((r.laborDirectaManufactura||{}).realProcesses, 'otrosProc')      || '' },
+  { header: 'MNF-RP [J] Shop.',  key: '_mnfRpShop',   width: 10, fmt: (_, r) => jn((r.laborDirectaManufactura||{}).realProcesses, 'shopper')        || '' },
+  { header: 'MNF-RP [K] Cert.',  key: '_mnfRpCert',   width: 10, fmt: (_, r) => jn((r.laborDirectaManufactura||{}).realProcesses, 'certDimensional')|| '' },
+
+  // Inst REAL (5 col)
+  { header: 'MNF-RI Diseño', key: '_mnfRiDis',   width: 10, fmt: (_, r) => jn((r.laborDirectaManufactura||{}).realInstall, 'diseno')     || '' },
+  { header: 'MNF-RI Tec.',   key: '_mnfRiTec',   width: 10, fmt: (_, r) => jn((r.laborDirectaManufactura||{}).realInstall, 'tecnico')    || '' },
+  { header: 'MNF-RI Eléc.',  key: '_mnfRiElec',  width: 10, fmt: (_, r) => jn((r.laborDirectaManufactura||{}).realInstall, 'electrico')  || '' },
+  { header: 'MNF-RI Prog.',  key: '_mnfRiProg',  width: 10, fmt: (_, r) => jn((r.laborDirectaManufactura||{}).realInstall, 'programador')|| '' },
+  { header: 'MNF-RI Total',  key: '_mnfRiTotal', width: 10, fmt: (_, r) => jn((r.laborDirectaManufactura||{}).realInstall, 'total')      || '' },
+
+  // MNF $/HR + Costo (2 col)
+  { header: 'MNF $/HR',        key: '_mnfCostPerHr', width: 10, fmt: (_, r) => jn(r.laborDirectaManufactura, 'costPerHr') || '' },
+  { header: 'MNF COSTO (USD)', key: '_mnfTotal',     width: 12, fmt: (_, r) => jn(r.laborDirectaManufactura, 'totalCost') || '' },
+
+  // ── Sección 5: Labor Directa — Automatización (4 col) ──
+  { header: 'AUT · HRS COT',    key: '_autCotHrs',   width: 10, fmt: (_, r) => jn(r.laborDirectaAutomatizacion, 'cotHrs')   || '' },
+  { header: 'AUT · HRS REAL',   key: '_autRealHrs',  width: 10, fmt: (_, r) => jn(r.laborDirectaAutomatizacion, 'realHrs')  || '' },
+  { header: 'AUT · $/HR',       key: '_autCostPerHr',width: 10, fmt: (_, r) => jn(r.laborDirectaAutomatizacion, 'costPerHr')|| '' },
+  { header: 'AUT · COSTO (USD)',key: '_autTotal',     width: 12, fmt: (_, r) => jn(r.laborDirectaAutomatizacion, 'totalCost')|| '' },
+
+  // ── Sección 6: Materiales (10 col) ──
+  { header: 'MAT Aceros',        key: '_matAceros',  width: 12, fmt: (_, r) => jn(r.materiales, 'aceros')        || '' },
+  { header: 'MAT Plásticos',     key: '_matPlas',    width: 12, fmt: (_, r) => jn(r.materiales, 'plasticos')     || '' },
+  { header: 'MAT Recubrimientos',key: '_matRecub',   width: 14, fmt: (_, r) => jn(r.materiales, 'recubrimientos')|| '' },
+  { header: 'MAT Tratamientos',  key: '_matTrat',    width: 14, fmt: (_, r) => jn(r.materiales, 'tratamientos')  || '' },
+  { header: 'MAT Componentes',   key: '_matComp',    width: 12, fmt: (_, r) => jn(r.materiales, 'componentes')   || '' },
+  { header: 'MAT Certificados',  key: '_matCert',    width: 12, fmt: (_, r) => jn(r.materiales, 'certificados')  || '' },
+  { header: 'MAT Sub-total',     key: '_matSub',     width: 12, fmt: (_, r) => jn(r.materiales, 'subtotal')      || '' },
+  { header: 'MAT % Utilidad',    key: '_matPct',     width: 10, fmt: (_, r) => jn(r.materiales, 'profitPct')     || '' },
+  { header: 'MAT Utilidad USD',  key: '_matProfitUsd',width:12, fmt: (_, r) => jn(r.materiales, 'profitUsd')     || '' },
+  { header: 'MAT Total USD',     key: '_matTotal',   width: 12, fmt: (_, r) => jn(r.materiales, 'total')         || '' },
+
+  // ── Sección 7: Viáticos (5 col) ──
+  { header: 'VIA Comida',   key: '_viaComida',   width: 10, fmt: (_, r) => jn(r.viaticos, 'comida')   || '' },
+  { header: 'VIA Estancia', key: '_viaEstancia', width: 10, fmt: (_, r) => jn(r.viaticos, 'estancia') || '' },
+  { header: 'VIA Peaje',    key: '_viaPeaje',    width: 10, fmt: (_, r) => jn(r.viaticos, 'peaje')    || '' },
+  { header: 'VIA Gasolina', key: '_viaGasolina', width: 10, fmt: (_, r) => jn(r.viaticos, 'gasolina') || '' },
+  { header: 'VIA Total',    key: '_viaTotal',    width: 10, fmt: (_, r) => jn(r.viaticos, 'total')    || '' },
+
+  // ── Sección 8: Logística (3 col) ──
+  { header: 'LOG Envío',   key: '_logEnvio',   width: 10, fmt: (_, r) => jn(r.logistica, 'envio')    || '' },
+  { header: 'LOG Embalaje',key: '_logEmbalaje',width: 10, fmt: (_, r) => jn(r.logistica, 'embalaje') || '' },
+  { header: 'LOG Total',   key: '_logTotal',   width: 10, fmt: (_, r) => jn(r.logistica, 'total')    || '' },
+
+  // ── Sección 9: Totales Finales (3 col) + Notas ──
+  { header: 'UTILIDAD / PROFIT (USD)', key: 'utilidadFinal', width: 14, fmt: (v) => (v == null ? '' : Number(v)) },
+  { header: 'IVA EMPRESA (USD)',        key: 'ivaEmpresa',    width: 14, fmt: (v) => (v == null ? '' : Number(v)) },
+  { header: 'TOTAL FINAL (USD)',        key: 'totalFinal',    width: 14, fmt: (v) => (v == null ? '' : Number(v)) },
+  { header: 'NOTAS',                    key: 'notas',         width: 40 },
 ];
 
 function fmtDate(v) {
@@ -51,199 +138,202 @@ function fmtDate(v) {
   return Number.isNaN(d.getTime()) ? '' : d;
 }
 
+// ══════════════════════════════════════════════════════════════════
+// POST /import — Upsert masivo desde el XLSX "Control de Ventas 2026"
+// El upsert usa quoteNumber (COT Alenstec) como clave. Columnas que no
+// existan en la hoja se omiten (null). Devuelve { created, updated,
+// skipped, errors[] }.
+// ══════════════════════════════════════════════════════════════════
+router.post('/import', verificarRol('admin', 'ventas'), upload.single('archivo'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'Archivo no recibido. Campo multipart esperado: "archivo".' });
+
+  // ── Helpers de conversión de celda ExcelJS ──
+  const toStr = (v) => {
+    if (v == null) return null;
+    if (typeof v === 'object' && v.richText) return v.richText.map((r) => r.text || '').join('').trim() || null;
+    if (typeof v === 'object' && v.text != null) return String(v.text).trim() || null;
+    if (v instanceof Date) return v.toISOString().slice(0, 10);
+    return String(v).trim() || null;
+  };
+  const toNum = (v) => {
+    if (v == null || v === '') return null;
+    const n = Number(v);
+    return isNaN(n) ? null : n;
+  };
+  const toDate = (v) => {
+    if (!v) return null;
+    if (v instanceof Date) return v.toISOString().slice(0, 10);
+    const d = new Date(v);
+    return isNaN(d.getTime()) ? null : d.toISOString().slice(0, 10);
+  };
+
+  try {
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(req.file.buffer);
+
+    // Buscar la hoja: prefiere "Control Ventas 2026" o la primera disponible
+    const sheet =
+      workbook.getWorksheet('Control Ventas 2026') ||
+      workbook.getWorksheet('Control de Ventas 2026') ||
+      workbook.getWorksheet('Cotizaciones') ||
+      workbook.worksheets[0];
+
+    if (!sheet) return res.status(400).json({ error: 'No se encontró ninguna hoja en el archivo XLSX.' });
+
+    // ── Construir mapa header-normalizado → número de columna ──
+    // Maneja multi-fila de cabeceras: toma la última fila con valor en col 1
+    // o la fila 1 si no hay multi-cabecera. Normaliza a mayúsculas sin espacios
+    // extra para matching flexible.
+    const norm = (s) => String(s || '').replace(/\s+/g, ' ').trim().toUpperCase();
+    const headerMap = {};  // { NORMALIZED_HEADER: colNumber }
+
+    // Escanear las primeras 4 filas buscando los encabezados de columna
+    // (la tabla puede tener multi-fila de headers con grupos)
+    for (let r = 1; r <= Math.min(4, sheet.rowCount); r++) {
+      sheet.getRow(r).eachCell({ includeEmpty: false }, (cell, col) => {
+        const key = norm(toStr(cell.value));
+        if (key && !headerMap[key]) headerMap[key] = col;
+      });
+    }
+
+    // Detectar fila de datos (primera fila después de cabeceras que tenga
+    // datos numéricos o string en las primeras columnas)
+    let dataStartRow = 2;
+    for (let r = 2; r <= Math.min(6, sheet.rowCount); r++) {
+      const firstCell = toStr(sheet.getRow(r).getCell(1).value);
+      if (firstCell && !isNaN(Number(firstCell))) { dataStartRow = r; break; }
+      if (firstCell && firstCell.length > 0 && !/^(CLIENTE|PROYECTO|ITEM)/i.test(firstCell)) {
+        dataStartRow = r; break;
+      }
+    }
+
+    // Función para obtener valor de celda por nombre de header (prueba varios alias)
+    const getByHeaders = (row, ...aliases) => {
+      for (const alias of aliases) {
+        const col = headerMap[norm(alias)];
+        if (col) return row.getCell(col).value;
+      }
+      return undefined;
+    };
+
+    let created = 0, updated = 0, skipped = 0;
+    const errors = [];
+
+    for (let rowNum = dataStartRow; rowNum <= sheet.rowCount; rowNum++) {
+      const row = sheet.getRow(rowNum);
+
+      // Saltar filas completamente vacías
+      let rowEmpty = true;
+      row.eachCell({ includeEmpty: false }, () => { rowEmpty = false; });
+      if (rowEmpty) continue;
+
+      // quoteNumber es la clave de upsert (obligatoria).
+      // Normalizar whitespace: colapsar saltos de línea / tabs a espacio simple.
+      let quoteNumber = toStr(
+        getByHeaders(row,
+          'COT ALENSTEC (COT-AL)', 'COT ALENSTEC', 'COTIZACION', 'COT-AL',
+          'COT REF. ALENSTEC (COT-AL)', 'NUMERO DE COTIZACION')
+      );
+      if (quoteNumber) quoteNumber = quoteNumber.replace(/\s+/g, ' ').trim();
+      if (!quoteNumber) { skipped++; continue; }
+
+      // Saltar filas que son cabeceras disfrazadas de datos (el excel puede
+      // tener el texto del header repetido en la primera celda de datos).
+      const HEADER_RE = /^(COT[\s-]ALENSTEC|CLIENTE|PROYECTO|ITEM|N[oO]\.?[\s#]|DESCRIPCI[OÓ]N|COSTO|FECHA|ESTADO)/i;
+      if (HEADER_RE.test(quoteNumber)) { skipped++; continue; }
+
+      // ── Campos escalares básicos ──
+      const payload = {
+        quoteNumber,
+        client: toStr(getByHeaders(row, 'CLIENTE', 'CLIENT')) || 'Sin nombre',
+        description: toStr(getByHeaders(row,
+          'DESCRIPCION DE PROYECTO', 'DESCRIPCION', 'DESCRIPTION', 'PROYECTO')) || '',
+        amount: toNum(getByHeaders(row,
+          'COSTO COT-AL (USD) (SIN IVA)', 'COSTO COT-AL (USD)', 'COSTO COT-AL', 'MONTO')) || 0,
+        currency: 'USD',
+        status: toStr(getByHeaders(row, 'ESTADO', 'STATUS')) || 'Pendiente',
+        tipo: toStr(getByHeaders(row, 'TIPO', 'TYPE')) || null,
+        proyecto: toStr(getByHeaders(row, 'PROYECTO / PROGRAMA', 'PROYECTO', 'PROGRAMA')) || null,
+        celda: toStr(getByHeaders(row, 'CELDA')) || null,
+        rfq: toStr(getByHeaders(row, 'RFQ')) || null,
+        mecr: toStr(getByHeaders(row, 'MECR')) || null,
+        cotRef: toStr(getByHeaders(row,
+          'COT REF. ALENSTEC', 'COT REF. ALENSTEC (COT-AL)', 'COT REF')) || null,
+        fechaCotizacion: toDate(getByHeaders(row,
+          'FECHA (COT-AL)', 'FECHA COT-AL', 'FECHA COT', 'FECHA')) || null,
+        ocCliente: toStr(getByHeaders(row,
+          'ORDEN DE COMPRA (CLIENTE)', 'OC CLIENTE', 'OC')) || null,
+        tipoContrato: toStr(getByHeaders(row, 'TIPO DE CONTRATO', 'TIPO CONTRATO')) || null,
+        fechaOC: toDate(getByHeaders(row, 'FECHA O.C.', 'FECHA OC')) || null,
+        costoOC: toNum(getByHeaders(row,
+          'COSTO O.C. (USD) (SIN IVA)', 'COSTO O.C. (USD)', 'COSTO O.C.', 'COSTO OC')) || null,
+        fechaCompromiso: toDate(getByHeaders(row,
+          'FECHA COMPROMISO ENTREGA', 'FECHA COMPROMISO')) || null,
+        exchangeRate: toNum(getByHeaders(row,
+          'TIPO DE CAMBIO (USD)', 'TIPO DE CAMBIO', 'T/C')) || null,
+        otNumber: toStr(getByHeaders(row,
+          'OT. ALENSTEC (OT-AL-)', 'OT ALENSTEC', 'OT-AL')) || null,
+        // Campos extendidos (presentes en nuestro export; ignorados si no existen)
+        utilidadFinal: toNum(getByHeaders(row, 'UTILIDAD / PROFIT (USD)', 'UTILIDAD')) || null,
+        ivaEmpresa:    toNum(getByHeaders(row, 'IVA EMPRESA (USD)', 'IVA EMPRESA')) || null,
+        totalFinal:    toNum(getByHeaders(row, 'TOTAL FINAL (USD)', 'TOTAL FINAL')) || null,
+        notas:         toStr(getByHeaders(row, 'NOTAS', 'OBSERVACIONES')) || null,
+      };
+
+      // Validar status permitido
+      const validStatus = ['Pendiente', 'Aprobada', 'Rechazada', 'Expirada'];
+      if (payload.status && !validStatus.includes(payload.status)) payload.status = 'Pendiente';
+      const validTipo = ['Nuevo', 'Refurbish', 'Servicio'];
+      if (payload.tipo && !validTipo.includes(payload.tipo)) payload.tipo = null;
+
+      try {
+        const existing = await Quote.findOne({ where: { quoteNumber } });
+        if (existing) {
+          await existing.update(payload);
+          updated++;
+        } else {
+          await Quote.create(payload);
+          created++;
+        }
+      } catch (rowErr) {
+        // Violación de UNIQUE: el registro existe pero está soft-deleted (paranoid:true).
+        // Recuperarlo con paranoid:false, restaurarlo y actualizar.
+        if (rowErr.name === 'SequelizeUniqueConstraintError') {
+          try {
+            const softDeleted = await Quote.findOne({ where: { quoteNumber }, paranoid: false });
+            if (softDeleted) {
+              await softDeleted.restore();
+              await softDeleted.update(payload);
+              updated++;
+            } else {
+              errors.push({ row: rowNum, quoteNumber, error: rowErr.message });
+            }
+          } catch (restoreErr) {
+            errors.push({ row: rowNum, quoteNumber, error: restoreErr.message });
+          }
+        } else {
+          errors.push({ row: rowNum, quoteNumber, error: rowErr.message });
+        }
+      }
+    }
+
+    return res.json({ created, updated, skipped, errors });
+  } catch (err) {
+    console.error('quotes/import error:', err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 router.get('/export', async (req, res) => {
   try {
     const rows = await Quote.findAll({ order: [['createdAt', 'DESC']], raw: true });
     const withItem = rows.map((r, i) => ({ ...r, item: i + 1 }));
     await sendTableXlsx(res, {
-      filename: `control-ventas-${new Date().toISOString().slice(0, 10)}.xlsx`,
-      sheetName: 'Control Ventas 2026',
+      filename: `cotizaciones-${new Date().toISOString().slice(0, 10)}.xlsx`,
+      sheetName: 'Cotizaciones',
       columns: EXPORT_COLUMNS,
       rows: withItem,
     });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Header-string → model field. Matches are case-insensitive and whitespace/
-// line-break insensitive so the same mapping handles both the workbook's
-// multi-line rich-text headers and whatever the user types manually.
-const HEADER_MAP = new Map([
-  ['cliente', 'client'],
-  ['proyecto/programa', 'proyecto'],
-  ['celda', 'celda'],
-  ['rfq', 'rfq'],
-  ['mecr', 'mecr'],
-  ['cotref.alenstec', 'cotRef'],
-  ['cotref.alenstec(cot-al)', 'cotRef'],
-  ['cotalenstec', 'quoteNumber'],
-  ['cotalenstec(cot-al)', 'quoteNumber'],
-  ['fecha(cot-al)', 'fechaCotizacion'],
-  ['fecha(cot-al)(dd/mm/aaaa)', 'fechaCotizacion'],
-  ['costocot-al', 'amount'],
-  ['costocot-al(usd)', 'amount'],
-  ['costocot-al(usd)(siniva)', 'amount'],
-  ['ordendecompra', 'ocCliente'],
-  ['ordendecompra(cliente)', 'ocCliente'],
-  ['tipodecontrato', 'tipoContrato'],
-  ['fechao.c.', 'fechaOC'],
-  ['fechao.c.(dd/mm/aaaa)', 'fechaOC'],
-  ['costoo.c.', 'costoOC'],
-  ['costoo.c.(usd)', 'costoOC'],
-  ['costoo.c.(usd)(siniva)', 'costoOC'],
-  ['fechacompromisoentrega', 'fechaCompromiso'],
-  ['fechacompromisoentrega(dd/mm/aaaa)', 'fechaCompromiso'],
-  ['tipodecambio', 'exchangeRate'],
-  ['tipodecambio(usd)', 'exchangeRate'],
-  ['ot.alenstec', 'otNumber'],
-  ['ot.alenstec(ot-al-)', 'otNumber'],
-  ['descripciondeproyecto', 'description'],
-  ['tipo', 'tipo'],
-  ['estado', 'status'],
-]);
-
-const DATE_FIELDS = new Set(['fechaCotizacion', 'fechaOC', 'fechaCompromiso']);
-const NUMBER_FIELDS = new Set(['amount', 'costoOC', 'exchangeRate']);
-
-function normalizeHeader(raw) {
-  if (raw == null) return '';
-  let s;
-  if (typeof raw === 'object') {
-    if (Array.isArray(raw.richText)) s = raw.richText.map((t) => t.text).join('');
-    else if (raw.text) s = raw.text;
-    else s = '';
-  } else {
-    s = String(raw);
-  }
-  return s.toLowerCase().replace(/\s+/g, '').replace(/[\n\r\t]/g, '');
-}
-
-function cellValue(cell) {
-  const v = cell && cell.value;
-  if (v == null) return null;
-  if (typeof v === 'object') {
-    if (v instanceof Date) return v;
-    if (Array.isArray(v.richText)) return v.richText.map((t) => t.text).join('');
-    if (v.text) return v.text;
-    if (v.result !== undefined) return v.result;
-    if (v.formula) return null; // formula with no cached result
-  }
-  return v;
-}
-
-function coerce(field, value) {
-  if (value == null || value === '' || value === 'N/A') return null;
-  if (DATE_FIELDS.has(field)) {
-    if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;
-    const d = new Date(value);
-    return Number.isNaN(d.getTime()) ? null : d;
-  }
-  if (NUMBER_FIELDS.has(field)) {
-    const n = typeof value === 'number' ? value : Number(String(value).replace(/[,\s]/g, ''));
-    return Number.isFinite(n) ? n : null;
-  }
-  return typeof value === 'string' ? value.trim() : String(value);
-}
-
-// Scan the first 10 rows for a row whose cells collectively match the
-// most known headers. The workbook's header lives on row 3 but hand-made
-// uploads may start on row 1 — this stays tolerant without hardcoding.
-// Uses actualColumnCount (sparse bound) instead of columnCount (nominal
-// max) because XLSX files often report columnCount as the sheet's
-// theoretical 16k limit even when only a handful of cells are populated.
-function locateHeaderRow(ws) {
-  const colBound = Math.max(ws.actualColumnCount || 0, 1);
-  const maxScan = Math.min(10, Math.max(ws.actualRowCount || 0, 1));
-  let best = { rowNum: null, map: null, score: 0 };
-  for (let r = 1; r <= maxScan; r++) {
-    const row = ws.getRow(r);
-    const map = {};
-    let score = 0;
-    for (let c = 1; c <= colBound; c++) {
-      const key = normalizeHeader(row.getCell(c).value);
-      if (!key) continue;
-      const field = HEADER_MAP.get(key);
-      if (field && map[field] == null) {
-        map[field] = c;
-        score += 1;
-      }
-    }
-    if (score > best.score) best = { rowNum: r, map, score };
-  }
-  return best;
-}
-
-router.post('/import', verificarRol('admin', 'ventas'), upload.single('archivo'), async (req, res) => {
-  try {
-    if (!req.file) return res.status(400).json({ error: 'No se envió archivo' });
-
-    const wb = new ExcelJS.Workbook();
-    await wb.xlsx.load(req.file.buffer);
-
-    const preferred = wb.getWorksheet('Control Ventas 2026');
-    const sheet = preferred || wb.worksheets[0];
-    if (!sheet) return res.status(400).json({ error: 'El libro no contiene hojas' });
-
-    const header = locateHeaderRow(sheet);
-    if (!header.map || header.map.quoteNumber == null) {
-      return res.status(400).json({
-        error: 'No se encontró la columna "COT ALENSTEC" — revise la plantilla.',
-      });
-    }
-
-    const results = { created: 0, updated: 0, skipped: 0, errors: [] };
-    // Use actualRowCount (sparse bound) not rowCount — XLSX files often
-    // report rowCount = 1,048,576 (the XLSX row limit) even when only a
-    // handful of cells are populated. Looping to that number OOMs Node.
-    // Hard cap to 10_000 data rows as a defensive upper bound.
-    const MAX_DATA_ROWS = 10_000;
-    const actualLast = Math.max(sheet.actualRowCount || 0, header.rowNum);
-    const lastRow = Math.min(actualLast, header.rowNum + MAX_DATA_ROWS);
-    const quoteNumberCol = header.map.quoteNumber;
-
-    let consecutiveBlank = 0;
-    for (let r = header.rowNum + 1; r <= lastRow; r++) {
-      const row = sheet.getRow(r);
-
-      // The workbook repeats compound/sub-headers on the row after the main
-      // one (e.g. "COT ALENSTEC\n(COT-AL)" again). Skip any row whose
-      // quoteNumber cell is itself a header label instead of a real value.
-      const qnKey = normalizeHeader(row.getCell(quoteNumberCol).value);
-      if (qnKey && HEADER_MAP.get(qnKey) === 'quoteNumber') { results.skipped += 1; continue; }
-
-      const record = {};
-      for (const [field, col] of Object.entries(header.map)) {
-        record[field] = coerce(field, cellValue(row.getCell(col)));
-      }
-      if (!record.quoteNumber) {
-        results.skipped += 1;
-        consecutiveBlank += 1;
-        // Early-exit if we hit a long blank tail — protects against runaway
-        // iteration if actualRowCount was miscomputed.
-        if (consecutiveBlank >= 50) break;
-        continue;
-      }
-      consecutiveBlank = 0;
-      if (!record.client) record.client = 'SIN CLIENTE';
-      if (!record.description) record.description = record.proyecto || record.quoteNumber;
-      if (record.amount == null) record.amount = 0;
-
-      try {
-        const existing = await Quote.findOne({ where: { quoteNumber: record.quoteNumber } });
-        if (existing) {
-          await existing.update(record);
-          results.updated += 1;
-        } else {
-          await Quote.create(record);
-          results.created += 1;
-        }
-      } catch (err) {
-        results.errors.push({ row: r, quoteNumber: record.quoteNumber, message: err.message });
-      }
-    }
-
-    res.json({ exitoso: true, ...results });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
