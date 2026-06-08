@@ -19,6 +19,7 @@ const SystemConfig = require('./SystemConfig');
 const AuditEvent = require('./AuditEvent');
 const PayrollWeek = require('./PayrollWeek');
 const PayrollLine = require('./PayrollLine');
+const Notification = require('./Notification');
 
 // Associations (ADR-006: FK enforced, otNumber kept redundant)
 WorkOrder.hasMany(MaterialCost, { foreignKey: 'workOrderId', as: 'materialCosts' });
@@ -118,4 +119,5 @@ module.exports = {
   AuditEvent,
   PayrollWeek,
   PayrollLine,
+  Notification,
 };

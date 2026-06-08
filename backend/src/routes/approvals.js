@@ -2,6 +2,7 @@ const express = require('express');
 const { WorkOrderApproval, WorkOrder, User } = require('../models');
 const { verificarRol } = require('../middleware/auth');
 const configService = require('../services/configService');
+const notifSvc = require('../services/notificationService');
 
 const router = express.Router();
 
@@ -92,11 +93,21 @@ router.post('/:id/transition', async (req, res) => {
       comments: comments || row.comments,
     });
     // When the final liberation step is approved, flip the OT to Liberada.
-    // The "final step" is the last entry in `approval.steps` from config.
     const finalStep = steps[steps.length - 1];
     if (row.step === finalStep && status === 'aprobada') {
       await WorkOrder.update({ status: 'Liberada' }, { where: { id: row.workOrderId } });
     }
+
+    // Fire notifications (non-blocking — don't fail the transition if notif errors)
+    const workOrder = await WorkOrder.findByPk(row.workOrderId, { attributes: ['id', 'otNumber'], raw: true });
+    const idx = steps.indexOf(row.step);
+    const nextStep = (status === 'aprobada' && idx !== -1 && idx + 1 < steps.length)
+      ? steps[idx + 1] : null;
+    const nextStepRoles = nextStep ? await getRolesForStep(nextStep) : [];
+    notifSvc.onApprovalTransition({
+      row, status, workOrder, nextStep, nextStepRoles, steps, actor: req.user,
+    }).catch(e => console.warn('[approvals] notif error:', e.message));
+
     res.json(row);
   } catch (error) {
     res.status(400).json({ error: error.message });

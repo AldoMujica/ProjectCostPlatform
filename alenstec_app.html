@@ -159,6 +159,42 @@ select.fi{cursor:pointer}
 .sntab.active{color:var(--green);font-weight:500;border-bottom-color:var(--green)}
 .submod{display:none}.submod.active{display:block;animation:fi .15s ease}
 
+/* NOTIFICACIONES */
+.notif-btn{position:relative;width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);transition:background .12s;flex-shrink:0}
+.notif-btn:hover{background:var(--surface2);color:var(--text)}
+.notif-badge{position:absolute;top:-5px;right:-5px;background:#ef4444;color:#fff;font-size:9px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 3px;border:2px solid var(--bg);display:none}
+.notif-badge.vis{display:flex}
+.notif-panel{position:absolute;top:calc(100% + 8px);right:0;width:380px;max-height:520px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.18);z-index:200;display:none;flex-direction:column;overflow:hidden}
+.notif-panel.vis{display:flex}
+.notif-panel-head{padding:14px 16px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-shrink:0}
+.notif-panel-title{font-size:13px;font-weight:600;flex:1}
+.notif-panel-body{overflow-y:auto;flex:1;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.notif-item{display:flex;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;align-items:flex-start}
+.notif-item:hover{background:var(--surface2)}
+.notif-item.unread{background:var(--green-lt)}
+.notif-item.unread:hover{background:color-mix(in srgb,var(--green-lt) 80%,var(--surface2))}
+.notif-icon{font-size:18px;flex-shrink:0;margin-top:1px;width:24px;text-align:center}
+.notif-body{flex:1;min-width:0}
+.notif-titulo{font-size:12.5px;font-weight:500;color:var(--text);line-height:1.3;margin-bottom:2px}
+.notif-msg{font-size:11px;color:var(--text3);line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.notif-time{font-size:10px;color:var(--text3);flex-shrink:0;margin-top:2px}
+.notif-empty{padding:32px 16px;text-align:center;color:var(--text3);font-size:12.5px}
+.notif-panel-foot{padding:10px 16px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;flex-shrink:0}
+
+/* Módulo notificaciones (sidebar) */
+#mod-notificaciones .notif-filters{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+#mod-notificaciones .nf-chip{padding:4px 12px;border-radius:20px;font-size:11.5px;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text2);transition:all .12s}
+#mod-notificaciones .nf-chip.active{background:var(--green);color:#fff;border-color:var(--green)}
+#mod-notificaciones .notif-list{display:flex;flex-direction:column;gap:6px}
+#mod-notificaciones .notif-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;gap:12px;cursor:pointer;transition:background .1s;align-items:flex-start}
+#mod-notificaciones .notif-card:hover{background:var(--surface2)}
+#mod-notificaciones .notif-card.unread{border-left:3px solid var(--green)}
+#mod-notificaciones .notif-card .notif-icon{font-size:22px;flex-shrink:0}
+#mod-notificaciones .notif-card .notif-body{flex:1;min-width:0}
+#mod-notificaciones .notif-card .notif-titulo{font-size:13px;font-weight:500;margin-bottom:3px}
+#mod-notificaciones .notif-card .notif-msg{font-size:12px;color:var(--text2);line-height:1.4}
+#mod-notificaciones .notif-card .notif-meta{font-size:10.5px;color:var(--text3);margin-top:4px}
+
 /* GRID EDIT — Cotizaciones (edición inline tipo MS Lists) */
 #cot-tbody tr:not(.cot-totals) td:not(.cot-no-edit):hover{background:var(--surface2);outline:1px solid var(--border)}
 #cot-tbody td.cot-mod{background:#fff8e140;border-bottom:2px solid #f59e0b!important}
@@ -386,6 +422,11 @@ table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
       <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a4 4 0 110 8A4 4 0 0110 2zm0 9c4.42 0 8 1.79 8 4v2H2v-2c0-2.21 3.58-4 8-4z"/></svg>
       <span>Costo de Mano de Obra</span>
     </div>
+    <div class="ni" data-mod="notificaciones" style="position:relative">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <span>Notificaciones</span>
+      <span id="notif-sidebar-badge" style="display:none;margin-left:auto;background:#ef4444;color:#fff;font-size:9px;font-weight:700;min-width:16px;height:16px;border-radius:8px;align-items:center;justify-content:center;padding:0 3px">0</span>
+    </div>
     <div class="ni" data-mod="admin" data-admin-only="true" style="display:none">
       <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2l7 3v5c0 4.42-3.08 7.58-7 8-3.92-.42-7-3.58-7-8V5l7-3zm0 2.11L5 6.13V10c0 3.03 2.08 5.44 5 5.87 2.92-.43 5-2.84 5-5.87V6.13l-5-2.02zM9 8h2v4H9V8zm0 5h2v2H9v-2z"/></svg>
       <span>Administración</span>
@@ -427,6 +468,27 @@ table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
         <div class="pill-tab">Cerradas</div>
       </div>
       <button class="btn p" id="ctrl-new" data-perm-required="ot.create">+ Nueva OT</button>
+      <!-- CAMPANA DE NOTIFICACIONES -->
+      <div style="position:relative" id="notif-wrapper">
+        <button class="notif-btn" id="notif-bell-btn" onclick="toggleNotifPanel()" title="Notificaciones">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span class="notif-badge" id="notif-badge">0</span>
+        </button>
+        <!-- PANEL DROPDOWN -->
+        <div class="notif-panel" id="notif-panel">
+          <div class="notif-panel-head">
+            <span class="notif-panel-title">Notificaciones</span>
+            <button class="btn sm" onclick="notifMarkAllRead()" style="font-size:11px;padding:3px 8px">Marcar todo leído</button>
+            <button class="btn sm" onclick="goMod('notificaciones');toggleNotifPanel()" style="font-size:11px;padding:3px 8px">Ver todas</button>
+          </div>
+          <div class="notif-panel-body" id="notif-panel-body">
+            <div class="notif-empty">Cargando…</div>
+          </div>
+          <div class="notif-panel-foot">
+            <span id="notif-panel-foot-txt" style="font-size:11px;color:var(--text3);flex:1;align-self:center"></span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1452,6 +1514,35 @@ table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
         </tbody>
       </table></div>
     </div>
+  </div>
+</div>
+
+<!-- NOTIFICACIONES -->
+<div class="mod" id="mod-notificaciones">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+    <div>
+      <div style="font-size:15px;font-weight:600">Notificaciones</div>
+      <div style="font-size:12px;color:var(--text3)" id="notif-mod-subtitle">Cargando…</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn sm" onclick="notifMarkAllRead()">✓ Marcar todo leído</button>
+      <button class="btn sm" onclick="loadNotifModule()">↺ Actualizar</button>
+    </div>
+  </div>
+
+  <!-- Filtros por tipo -->
+  <div class="notif-filters" id="notif-filters">
+    <div class="nf-chip active" data-tipo="all" onclick="notifFilterClick(this)">Todas</div>
+    <div class="nf-chip" data-tipo="aprobacion_pendiente" onclick="notifFilterClick(this)">⏳ Aprobaciones</div>
+    <div class="nf-chip" data-tipo="ocp_vencida" onclick="notifFilterClick(this)">📦 OCP vencida</div>
+    <div class="nf-chip" data-tipo="pronostico_critico" onclick="notifFilterClick(this)">📊 Pronóstico crítico</div>
+    <div class="nf-chip" data-tipo="inventario_bajo" onclick="notifFilterClick(this)">🏭 Inventario bajo</div>
+    <div class="nf-chip" data-tipo="cfdi_sin_validar" onclick="notifFilterClick(this)">🧾 CFDI</div>
+    <div class="nf-chip" data-tipo="empleado_incompleto" onclick="notifFilterClick(this)">👤 Empleados</div>
+  </div>
+
+  <div class="notif-list" id="notif-mod-list">
+    <div style="padding:32px;text-align:center;color:var(--text3)">Cargando notificaciones…</div>
   </div>
 </div>
 
@@ -5205,6 +5296,7 @@ async function bootstrapAuth() {
       if (data.user) AUTH.setSession(null, null, data.user);
       renderUserChip();
       hideLogin();
+      document.dispatchEvent(new Event('alenstec:authed'));
       return true;
     }
   } catch { /* fall through to showLogin */ }
@@ -5223,6 +5315,7 @@ const CFG = {
   conciliacion: { title: 'Conciliación',           crumb: '· Gestión de checador y horas',    newLabel: '+ Cerrar Semana' },
   nomina:       { title: 'Nómina / CFDI',           crumb: '· Registro de nómina y CFDI' },
   costomo:      { title: 'Costo de Mano de Obra',   crumb: '· Labor Directa / Indirecta' },
+  notificaciones: { title: 'Notificaciones',        crumb: '· Alertas y aprobaciones pendientes' },
   admin:        { title: 'Administración',          crumb: '· Configuración y bitácora · solo admin' }
 };
 
@@ -5479,6 +5572,7 @@ function goMod(id) {
   if (id === 'nomina') loadPayrollWeeks(_payrollWeekId);
   if (id === 'conciliacion') loadConciliacionSemanas();
   if (id === 'admin') loadAdminAudit();
+  if (id === 'notificaciones') loadNotifModule();
   refreshAllDlButtons();
   const c = CFG[id] || {};
   document.getElementById('ttitle').textContent = c.title || id;
@@ -6339,6 +6433,177 @@ function handleXMLUpload(event) {
   tabs.style.display  = 'flex';
   dates.style.display = 'none';
   otSel.style.display = 'none';
+})();
+
+/* ══════════════════════════════════════════════════
+   NOTIFICACIONES — campana, panel, módulo completo
+   ══════════════════════════════════════════════════ */
+(function initNotifications() {
+  let _all = [];
+  let _panelOpen = false;
+  const POLL_MS = 60_000;
+
+  // ── Helpers ────────────────────────────────────────────────────────────
+  function timeAgo(dateStr) {
+    if (!dateStr) return '';
+    const diff = (Date.now() - new Date(dateStr)) / 1000;
+    if (diff < 60)   return 'ahora';
+    if (diff < 3600) return `${Math.floor(diff/60)}m`;
+    if (diff < 86400)return `${Math.floor(diff/3600)}h`;
+    return `${Math.floor(diff/86400)}d`;
+  }
+
+  function updateBadge(count) {
+    const badge   = document.getElementById('notif-badge');
+    const sidebar = document.getElementById('notif-sidebar-badge');
+    if (!badge) return;
+    if (count > 0) {
+      badge.textContent   = count > 99 ? '99+' : count;
+      badge.classList.add('vis');
+      if (sidebar) { sidebar.textContent = count > 99 ? '99+' : count; sidebar.style.display = 'flex'; }
+    } else {
+      badge.classList.remove('vis');
+      if (sidebar) sidebar.style.display = 'none';
+    }
+  }
+
+  // ── Render panel dropdown ───────────────────────────────────────────────
+  function renderPanel(items) {
+    const body = document.getElementById('notif-panel-body');
+    const foot = document.getElementById('notif-panel-foot-txt');
+    if (!body) return;
+    const unread = items.filter(n => !n.leida);
+    if (foot) foot.textContent = `${unread.length} sin leer · ${items.length} total`;
+
+    if (!items.length) {
+      body.innerHTML = '<div class="notif-empty">Sin notificaciones 🎉</div>';
+      return;
+    }
+
+    body.innerHTML = items.slice(0, 15).map(n => `
+      <div class="notif-item${n.leida ? '' : ' unread'}"
+           onclick="notifItemClick('${n.id}','${n.linkModulo||''}')">
+        <div class="notif-icon">${n.icono || '🔔'}</div>
+        <div class="notif-body">
+          <div class="notif-titulo">${n.titulo}</div>
+          <div class="notif-msg">${n.mensaje || ''}</div>
+        </div>
+        <div class="notif-time">${timeAgo(n.createdAt || n.created_at)}</div>
+      </div>`).join('');
+  }
+
+  // ── Render módulo completo ──────────────────────────────────────────────
+  function renderModule(items, tipoFilter) {
+    const list = document.getElementById('notif-mod-list');
+    const sub  = document.getElementById('notif-mod-subtitle');
+    if (!list) return;
+
+    const filtered = tipoFilter && tipoFilter !== 'all'
+      ? items.filter(n => n.tipo === tipoFilter)
+      : items;
+    const unread = items.filter(n => !n.leida).length;
+    if (sub) sub.textContent = `${unread} sin leer · ${items.length} en total`;
+
+    if (!filtered.length) {
+      list.innerHTML = '<div style="padding:32px;text-align:center;color:var(--text3)">Sin notificaciones de este tipo 🎉</div>';
+      return;
+    }
+
+    list.innerHTML = filtered.map(n => `
+      <div class="notif-card${n.leida ? '' : ' unread'}"
+           onclick="notifItemClick('${n.id}','${n.linkModulo||''}')">
+        <div class="notif-icon">${n.icono || '🔔'}</div>
+        <div class="notif-body">
+          <div class="notif-titulo">${n.titulo}</div>
+          <div class="notif-msg">${n.mensaje || ''}</div>
+          <div class="notif-meta">${timeAgo(n.createdAt || n.created_at)}
+            ${n.entidad ? `· ${n.entidad}` : ''}
+            ${!n.leida ? '· <strong style="color:var(--green)">sin leer</strong>' : ''}
+          </div>
+        </div>
+      </div>`).join('');
+  }
+
+  // ── Fetch & refresh ─────────────────────────────────────────────────────
+  async function fetchAll() {
+    try {
+      const data = await apiFetch(`${API_URL}/notifications`);
+      if (Array.isArray(data)) {
+        _all = data;
+        const unread = data.filter(n => !n.leida).length;
+        updateBadge(unread);
+        if (_panelOpen) renderPanel(data);
+        // Refresh module if open
+        const modActive = document.querySelector('#mod-notificaciones.active');
+        if (modActive) {
+          const activeChip = document.querySelector('.nf-chip.active');
+          renderModule(data, activeChip?.dataset.tipo || 'all');
+        }
+      }
+    } catch {}
+  }
+
+  // ── Public API (used by HTML event handlers) ────────────────────────────
+  window.toggleNotifPanel = function() {
+    const panel = document.getElementById('notif-panel');
+    if (!panel) return;
+    _panelOpen = !_panelOpen;
+    panel.classList.toggle('vis', _panelOpen);
+    if (_panelOpen) { fetchAll(); renderPanel(_all); }
+  };
+
+  window.notifItemClick = async function(id, modulo) {
+    // Mark as read
+    if (id && !id.startsWith('computed-')) {
+      apiFetch(`${API_URL}/notifications/${id}/read`, { method: 'PUT' }).catch(() => {});
+      const item = _all.find(n => n.id === id);
+      if (item) item.leida = true;
+    }
+    // Navigate
+    if (modulo) goMod(modulo);
+    // Close panel
+    const panel = document.getElementById('notif-panel');
+    if (panel) { panel.classList.remove('vis'); _panelOpen = false; }
+    // Re-render
+    updateBadge(_all.filter(n => !n.leida).length);
+    renderModule(_all, document.querySelector('.nf-chip.active')?.dataset.tipo || 'all');
+  };
+
+  window.notifMarkAllRead = async function() {
+    try {
+      await apiFetch(`${API_URL}/notifications/read-all`, { method: 'PUT' });
+      _all.forEach(n => { if (!n.id?.startsWith('computed-')) n.leida = true; });
+      updateBadge(_all.filter(n => !n.leida).length);
+      renderPanel(_all);
+      renderModule(_all, document.querySelector('.nf-chip.active')?.dataset.tipo || 'all');
+    } catch {}
+  };
+
+  window.loadNotifModule = function() {
+    fetchAll();
+  };
+
+  window.notifFilterClick = function(chip) {
+    document.querySelectorAll('.nf-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    renderModule(_all, chip.dataset.tipo);
+  };
+
+  // Close panel on outside click
+  document.addEventListener('click', (e) => {
+    if (!_panelOpen) return;
+    const wrapper = document.getElementById('notif-wrapper');
+    if (wrapper && !wrapper.contains(e.target)) {
+      document.getElementById('notif-panel')?.classList.remove('vis');
+      _panelOpen = false;
+    }
+  });
+
+  // Start polling after auth (60s interval)
+  document.addEventListener('alenstec:authed', () => {
+    fetchAll();
+    setInterval(fetchAll, POLL_MS);
+  });
 })();
 
 /* ══════════════════════════════════════════════════

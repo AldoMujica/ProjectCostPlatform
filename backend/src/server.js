@@ -25,6 +25,7 @@ const forecastingRoutes = require('./routes/forecasting');
 const adminRoutes = require('./routes/admin');
 const payrollRoutes = require('./routes/payroll');
 const conciliacionRoutes = require('./routes/conciliacionRoutes');
+const notificationRoutes = require('./routes/notifications');
 
 const app = express();
 
@@ -85,6 +86,7 @@ app.use('/api/forecasting', forecastingRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/payroll', payrollRoutes);
 app.use('/api/conciliacion', conciliacionRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Serve the app SPA at root
 app.get('/', (req, res) => {
