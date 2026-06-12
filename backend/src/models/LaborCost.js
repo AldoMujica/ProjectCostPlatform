@@ -19,6 +19,14 @@ const LaborCost = sequelize.define('LaborCost', {
     allowNull: false,
     field: 'ot_number',
   },
+  employeeId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    field: 'employee_id',
+    references: { model: 'empleados', key: 'id' },
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE',
+  },
   employeeName: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -51,6 +59,9 @@ const LaborCost = sequelize.define('LaborCost', {
     allowNull: true,
     field: 'activity_code',
   },
+
+  // REPSE — línea de MO prestada por empresa REPSE; requiere tratamiento diferenciado
+  esRepse: { type: DataTypes.BOOLEAN, defaultValue: false, allowNull: false, field: 'es_repse' },
 }, {
   tableName: 'labor_costs',
   timestamps: true,

@@ -15,6 +15,7 @@ const {
 const { verificarRol, filtrarPorSupervisor } = require('../middleware/auth');
 const { sendTableXlsx } = require('../utils/xlsxTable');
 const configService = require('../services/configService');
+const notifSvc = require('../services/notificationService');
 
 const router = express.Router();
 
@@ -122,7 +123,15 @@ router.put('/:id', verificarRol('admin', 'ventas', 'jefe_area'), async (req, res
   try {
     const wo = await WorkOrder.findByPk(req.params.id);
     if (!wo) return res.status(404).json({ error: 'Work order not found' });
+    const wasRepse = wo.esRepse;
     await wo.update(req.body);
+    if (!wasRepse && wo.esRepse) {
+      notifSvc.onRepseFlag({
+        entidad: 'work_order', entidadId: wo.id,
+        otNumber: wo.otNumber, actorNombre: req.user?.nombre || req.user?.email,
+        linkModulo: 'ot',
+      }).catch(() => {});
+    }
     res.json(wo);
   } catch (error) {
     res.status(400).json({ error: error.message });

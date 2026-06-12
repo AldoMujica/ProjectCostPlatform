@@ -1,8 +1,9 @@
 const express = require('express');
 const { Op } = require('sequelize');
-const { MaterialCost, LaborCost, WorkOrder } = require('../models');
+const { MaterialCost, LaborCost, WorkOrder, Employee } = require('../models');
 const { verificarRol } = require('../middleware/auth');
 const { sendTableXlsx } = require('../utils/xlsxTable');
+const notifSvc = require('../services/notificationService');
 
 const router = express.Router();
 
@@ -43,6 +44,7 @@ router.get('/labor/export', async (req, res) => {
         { header: 'No. OT', key: 'otNumber', width: 14 },
         { header: 'Empleado', key: 'employeeName', width: 26 },
         { header: 'Rol', key: 'role', width: 22 },
+        { header: 'Actividad', key: 'activityCode', width: 10 },
         { header: 'Horas', key: 'hoursWorked', width: 10, fmt: (v) => Number(v) },
         { header: 'Tarifa/hr', key: 'hourlyRate', width: 12, fmt: (v) => Number(v) },
         { header: 'Total', key: 'totalCost', width: 14, fmt: (v) => Number(v) },
@@ -61,6 +63,19 @@ async function resolveWorkOrderId(body) {
   if (!body.otNumber) return null;
   const wo = await WorkOrder.findOne({ where: { otNumber: body.otNumber } });
   return wo ? wo.id : null;
+}
+
+async function resolveEmployee(body) {
+  const out = { ...body };
+  if (!out.employeeId) return out;
+  const emp = await Employee.findByPk(out.employeeId);
+  if (!emp) return out;
+  out.employeeName = emp.nombre;
+  if (!out.role && emp.puesto) out.role = emp.puesto;
+  if ((!out.hourlyRate || out.hourlyRate === '') && emp.salarioDiario) {
+    out.hourlyRate = Number(emp.salarioDiario);
+  }
+  return out;
 }
 
 router.get('/material', async (req, res) => {
@@ -117,8 +132,38 @@ router.post('/labor', verificarRol('admin', 'rh', 'jefe_area', 'supervisor'), as
     if (!workOrderId) {
       return res.status(400).json({ error: 'workOrderId u otNumber válido es requerido' });
     }
-    const cost = await LaborCost.create({ ...req.body, workOrderId });
+    const payload = await resolveEmployee(req.body);
+    if (!payload.employeeName) {
+      return res.status(400).json({ error: 'employeeId válido o employeeName es requerido' });
+    }
+    const cost = await LaborCost.create({ ...payload, workOrderId });
+    if (cost.esRepse) {
+      notifSvc.onRepseFlag({
+        entidad: 'labor_cost', entidadId: cost.id,
+        otNumber: cost.otNumber, actorNombre: req.user?.nombre || req.user?.email,
+        linkModulo: 'horas',
+      }).catch(() => {});
+    }
     res.status(201).json(cost);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.put('/labor/:id', verificarRol('admin', 'rh', 'jefe_area', 'supervisor'), async (req, res) => {
+  try {
+    const row = await LaborCost.findByPk(req.params.id);
+    if (!row) return res.status(404).json({ error: 'Hora MO no encontrada' });
+    const wasRepse = row.esRepse;
+    await row.update(req.body);
+    if (!wasRepse && row.esRepse) {
+      notifSvc.onRepseFlag({
+        entidad: 'labor_cost', entidadId: row.id,
+        otNumber: row.otNumber, actorNombre: req.user?.nombre || req.user?.email,
+        linkModulo: 'horas',
+      }).catch(() => {});
+    }
+    res.json(row);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

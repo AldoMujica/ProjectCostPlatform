@@ -1,4 +1,5 @@
 const express = require('express');
+const bcrypt = require('bcryptjs');
 const { Op } = require('sequelize');
 const {
   SystemConfig, AuditEvent, User,
@@ -16,6 +17,125 @@ const router = express.Router();
 
 // Phase-5b — every route under /api/admin requires the admin role.
 router.use(verificarRol('admin'));
+
+// ─────────────── /api/admin/users ─────────────────────────────────────
+
+router.get('/users', async (req, res) => {
+  try {
+    const { all } = req.query;
+    const where = all === '1' ? {} : { activo: true };
+    const users = await User.findAll({
+      where,
+      attributes: ['id', 'nombre', 'email', 'rol', 'activo', 'permissionOverrides', 'updatedAt'],
+      order: [['nombre', 'ASC']],
+    });
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/users', async (req, res) => {
+  try {
+    const { nombre, email, rol, password } = req.body;
+    if (!nombre || !email || !rol || !password) {
+      return res.status(400).json({ error: 'nombre, email, rol y password son requeridos' });
+    }
+    if (!User.ROLES.includes(rol)) {
+      return res.status(400).json({ error: `Rol inválido. Valores permitidos: ${User.ROLES.join(', ')}` });
+    }
+    const passwordHash = await bcrypt.hash(password, 12);
+    const user = await User.create({ nombre, email: email.toLowerCase(), rol, passwordHash });
+    await logAudit({
+      accion: 'user_created', entidad: 'usuarios', entidadId: String(user.id),
+      descripcion: `Usuario creado: ${user.nombre} (${user.rol})`,
+      user: req.user,
+    });
+    res.status(201).json({ id: user.id, nombre: user.nombre, email: user.email, rol: user.rol, activo: user.activo });
+  } catch (error) {
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      return res.status(409).json({ error: 'Ya existe un usuario con ese email' });
+    }
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.put('/users/:id', async (req, res) => {
+  try {
+    const user = await User.findByPk(req.params.id);
+    if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+    if (user.id === req.user.id && req.body.rol && req.body.rol !== user.rol) {
+      return res.status(400).json({ error: 'No puedes cambiar tu propio rol' });
+    }
+    const updates = {};
+    if (req.body.nombre)   updates.nombre = req.body.nombre;
+    if (req.body.email)    updates.email  = req.body.email.toLowerCase();
+    if (req.body.rol && User.ROLES.includes(req.body.rol)) updates.rol = req.body.rol;
+    if (req.body.password) updates.passwordHash = await bcrypt.hash(req.body.password, 12);
+    await user.update(updates);
+    await logAudit({
+      accion: 'user_updated', entidad: 'usuarios', entidadId: String(user.id),
+      descripcion: `Usuario actualizado: ${user.nombre} — campos: ${Object.keys(updates).join(', ')}`,
+      user: req.user,
+    });
+    res.json({ id: user.id, nombre: user.nombre, email: user.email, rol: user.rol, activo: user.activo });
+  } catch (error) {
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      return res.status(409).json({ error: 'Ya existe un usuario con ese email' });
+    }
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.patch('/users/:id/toggle-active', async (req, res) => {
+  try {
+    const user = await User.findByPk(req.params.id);
+    if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+    if (user.id === req.user.id) {
+      return res.status(400).json({ error: 'No puedes desactivar tu propia cuenta' });
+    }
+    await user.update({ activo: !user.activo });
+    await logAudit({
+      accion: user.activo ? 'user_activated' : 'user_deactivated',
+      entidad: 'usuarios', entidadId: String(user.id),
+      descripcion: `Usuario ${user.activo ? 'activado' : 'desactivado'}: ${user.nombre}`,
+      user: req.user,
+    });
+    res.json({ id: user.id, activo: user.activo });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// ─────────────── /api/admin/permissions ───────────────────────────────
+
+router.post('/permissions/overrides', async (req, res) => {
+  try {
+    const changes = req.body;
+    if (!Array.isArray(changes) || !changes.length) {
+      return res.status(400).json({ error: 'Se espera un array de cambios' });
+    }
+    await Promise.all(changes.map(async ({ userId, overrides }) => {
+      const user = await User.findByPk(userId);
+      if (!user) return;
+      const merged = { ...(user.permissionOverrides || {}) };
+      for (const { permiso, allow } of overrides) {
+        merged[permiso] = allow;
+      }
+      await user.update({ permissionOverrides: merged });
+    }));
+    await logAudit({
+      accion: 'permission_overrides_saved',
+      entidad: 'usuarios',
+      entidadId: changes.map((c) => c.userId).join(','),
+      descripcion: `Overrides de permisos guardados para ${changes.length} usuario(s)`,
+      user: req.user,
+    });
+    res.json({ ok: true, saved: changes.length });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
 
 // ─────────────── /api/admin/config ────────────────────────────────────
 

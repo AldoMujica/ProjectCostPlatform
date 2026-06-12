@@ -33,6 +33,11 @@ const User = sequelize.define('User', {
     type: DataTypes.BOOLEAN,
     defaultValue: true,
   },
+  permissionOverrides: {
+    type: DataTypes.JSONB,
+    defaultValue: {},
+    field: 'permission_overrides',
+  },
 }, {
   tableName: 'usuarios',
   timestamps: true,

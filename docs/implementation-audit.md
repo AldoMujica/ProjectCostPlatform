@@ -1,11 +1,11 @@
 # Implementation Audit — Mockup vs. Implemented
 
 > **Audit date:** 2026-04-20 (original baseline against `alenstec_app.html` at commit `3c22899`).
-> **Last refresh:** 2026-04-23 — Phase-3 complete (Entregas sub-tabs + Approvals + Employee master all wired).
+> **Last refresh:** 2026-06-12 — Cotizaciones table expanded to 85 cols, import hardening, mockup data purge, Permisos/Usuarios fully wired.
 >
 > **Method:** Every visible UI element in `alenstec_app.html` was inventoried. For each, the backend (models + routes) and client JS wiring were inspected. Each element is classified **Implemented / Partial / Mockup** with a gap ID (`G-<MODULE>-<N>`) when work remains.
 >
-> **Headline:** After Phase 3 + Pronóstico + the admin-panel infra (2026-04-23), roughly **95 %** of the ~72 grouped features are fully wired end-to-end. Remaining: Nómina (module 8 — entire module, Phase-4), Costo-MO (module 10 — blocked on client signoff of Costo/Real rule), and a handful of nice-to-haves (Horas Estimadas table, G-MAT-3 KPI extras, G-HOR-4 activity codes). **New module 11 "Administración" (admin-only): panel de configuración + bitácora de cambios.**
+> **Headline:** After Phase 3 + Pronóstico + admin panel (2026-04-23) + correctivas 2026-06-12, roughly **96 %** of the ~72 grouped features are fully wired. Remaining: Nómina calculadoras (Phase-4 blocked), Costo-MO (Phase-5), Horas Estimadas table, G-MAT-3 KPI extras, G-HOR-4 activity codes.
 
 ## Phase-1 closures (2026-04-20)
 
@@ -112,6 +112,22 @@ Cliente solicitó poder borrar items en cualquier módulo. Hasta ese punto la SP
 
 Tablas **excluidas** del soft-delete por diseño: `usuarios`, `system_config`, `bitacora` (identidad / auditoría inmutable).
 
+## Sesión correctiva 2026-06-12
+
+Cambios aplicados fuera del roadmap de fases, en respuesta a auditoría rev. 2:
+
+| Cambio | Resolución |
+|--------|------------|
+| **Cotizaciones tabla 20 → 85 columnas** | `<thead>` reemplazado por estructura 3 filas / 85 columnas con grupos de color: Labor Indirecta · Labor Directa Ing/Mnf/Aut · Materiales · Viáticos · Logística · Totales. `loadCotizaciones` genera las 85 celdas por fila. `Quote` model + migration ya tenían las columnas JSON necesarias (migración 20260424-0001). |
+| **`POST /api/quotes/import` endpoint** | Nuevo endpoint multer+ExcelJS para carga masiva del workbook "Control Ventas 2026". Upsert por `quoteNumber`. Tolerante a multi-fila de headers, XLSX sparse metadata, y filas de sub-encabezado que el regex `HEADER_RE` descarta. |
+| **Fix: import + paranoid soft-delete** | Cuando `Quote.create()` falla con `SequelizeUniqueConstraintError` (registro existe con `deleted_at IS NOT NULL`), el catch hace `findOne({ paranoid: false })` → `restore()` → `update()`. Cuenta como `updated`, no error. Causa raíz: PostgreSQL UNIQUE constraint se aplica incluso sobre rows soft-deleted. |
+| **Fix: botón delete onclick con newline** | Cotización importada con `quoteNumber = 'COT ALENSTEC\n(COT-AL)'` generaba atributo `onclick` con LF literal, rompiendo el JS. Solución: import normaliza whitespace con `.replace(/\s+/g, ' ').trim()` + regex `HEADER_RE` descarta filas de cabecera. Botón delete migrado de `onclick="deleteRow_quote('id','label')"` a `data-id`/`data-label` + `onclick="deleteRow_quote(this.dataset.id,this.dataset.label)"`. |
+| **Purga de datos mockup hardcodeados en HTML** | `<tbody id="cot-tbody">` contenía 9 filas + 1 fila de totales (22 KB) con datos reales de la hoja "Control Ventas 2026-03-17" incrustados directamente en el HTML. Eliminados. La tabla se rellena exclusivamente mediante `loadCotizaciones()` desde `GET /api/quotes`. |
+| **Permisos — guardar real** | `savePermChanges()` ahora llama a `POST /api/admin/permissions/overrides` (ya no muestra alert mockup). |
+| **Usuarios — crear real** | `showNewUserModal()` ahora POSTea a `POST /api/admin/users` (endpoint existe en `admin.js`). |
+| **PERM_SAMPLE eliminado** | Array de 6 usuarios de muestra hardcoded eliminado del código. `loadAdminPermisos()` depende 100% de la API. |
+| **XLSX export sub-tabs Entregas** | `btn-dl-ocp`, `btn-dl-inv`, `btn-dl-fact` ahora tienen `onclick` conectado a `purchase-orders/export`, `inventory/export`, `invoices/export` respectivamente. |
+
 ## Legend
 
 | Symbol | Meaning                                                   |
@@ -126,7 +142,7 @@ Tablas **excluidas** del soft-delete por diseño: `usuarios`, `system_config`, `
 |------------------------------|-----------------:|---------------:|-----------:|----------:|--------------------------|
 | 1. Dashboard                 | 6                | 6              | 0          | 0         | **Module complete** — 4 KPIs + Recent OT + cost bars + proveedores timeline + OCs Abiertas + Empleados en Campo all wired |
 | 2. Orden de Trabajo          | 7                | 7 (PDF, selector, form, Nueva OT, Flujo de Liberación, Datos Generales save, Presupuestos) | 0 | 0 | **Module complete** — only Horas Estimadas table remains on the "nice-to-have" backlog (separate `HoursEstimate` model, Phase-5 scope) |
-| 3. Cotizaciones y Ventas     | 3                | 3              | 0          | 0         | **Module complete** — table, KPIs, `+ Nueva cotización` modal, XLSX upload + download round-trip against master workbook |
+| 3. Cotizaciones y Ventas     | 3                | 3              | 0          | 0         | **Module complete** — 85-col table (3-level header), KPIs, `+ Nueva cotización` modal, XLSX import (w/ paranoid-restore fix) + export; no mockup data in HTML |
 | 4. Pronóstico del Costo      | 2                | 2              | 0          | 0         | **Module complete (Phase-5 P5.1–P5.3)** — rollup endpoint, KPIs, table, XLSX export, semáforo rules |
 | 5. Costo de Material         | 2                | 2              | 0          | 0         | Module complete (P2.9 + P2.10) |
 | 6. Entregas (5 sub-tabs)     | 12               | 12             | 0          | 0         | **Module complete (Phase-3)** — Proveedores / OCP / Inventario / Facturas / Entregas all wired with live CRUD + KPIs |
@@ -350,7 +366,7 @@ Every gap mentioned above, grouped by recommended fix-before-regression-test pri
 3. ~~**Two parallel conciliación implementations** (`backend/src/` + `asistencia-modulo/`).~~ **Resolved 2026-04-20** — `asistencia-modulo/` deleted.
 4. ~~**No authentication** on the cost API~~ **Resolved 2026-04-20** — `app.use('/api', verificarJWT)` gates every resource route; per-role guards on writes.
 5. ~~**Default JWT secret** in development mode leaks admin role silently.~~ **Resolved 2026-04-20** — `assertJwtSecret()` refuses to boot on unset / default / short secrets.
-6. ~~**Static mockup data baked into HTML** confuses testers — a row in the Recent-OT table might look "wired" but is just HTML.~~ **Mostly resolved** — Phases 2 + 3 swapped out mockup tables for live loaders across modules 1, 2, 3, 5, 6, 7, 9. Remaining hardcoded surfaces: Pronóstico (mod 4), Nómina (mod 8), Costo-MO (mod 10), OT Datos-Generales extras (G-OT-2). All gated on Phase-4/5 work.
+6. ~~**Static mockup data baked into HTML** confuses testers — a row in the Recent-OT table might look "wired" but is just HTML.~~ **Fully resolved** — Phases 2 + 3 swapped out mockup tables for live loaders; 2026-06-12 purged the last 22 KB of hardcoded rows from `#cot-tbody`. Only Costo-MO still shows a hardcoded placeholder message (Phase-5). No other table has static data.
 
 ---
 

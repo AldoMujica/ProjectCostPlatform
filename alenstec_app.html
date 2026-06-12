@@ -181,7 +181,13 @@ select.fi{cursor:pointer}
 .notif-empty{padding:32px 16px;text-align:center;color:var(--text3);font-size:12.5px}
 .notif-panel-foot{padding:10px 16px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;flex-shrink:0}
 
+/* REPSE — indicador visual en tablas */
+.repse-row{background:#fef3c720!important}
+.repse-badge{display:inline-flex;align-items:center;gap:3px;background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;border:1px solid #f59e0b;white-space:nowrap}
+.repse-chk{width:16px;height:16px;accent-color:#dc2626;cursor:pointer;vertical-align:middle}
+
 /* Módulo notificaciones (sidebar) */
+#mod-notificaciones{padding:20px;overflow-y:auto;height:calc(100vh - var(--th));box-sizing:border-box;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
 #mod-notificaciones .notif-filters{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
 #mod-notificaciones .nf-chip{padding:4px 12px;border-radius:20px;font-size:11.5px;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--text2);transition:all .12s}
 #mod-notificaciones .nf-chip.active{background:var(--green);color:#fff;border-color:var(--green)}
@@ -410,11 +416,11 @@ table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
       <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="10" r="7"/><path d="M10 6v4l2.5 2.5" stroke-linecap="round"/></svg>
       <span>Horas de Mano de Obra</span>
     </div>
-    <div class="ni" data-mod="nomina">
+    <div class="ni" data-mod="nomina" style="display:none">
       <svg viewBox="0 0 20 20" fill="currentColor"><path d="M4 4h12v3H4V4zm0 5h12v3H4V9zm0 5h12v3H4v-3z"/></svg>
       <span>Nómina / CFDI</span>
     </div>
-    <div class="ni" data-mod="conciliacion">
+    <div class="ni" data-mod="conciliacion" style="display:none">
       <svg viewBox="0 0 20 20" fill="currentColor"><path d="M4 3h12v2H4V3zm0 5h12v2H4V8zm0 5h12v2H4v-2z"/></svg>
       <span>Conciliación</span>
     </div>
@@ -568,6 +574,13 @@ table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
         <div class="fg"><div class="fgg"><label class="fl"># OC Cliente</label><input class="fi" data-ot-field="customerPO"></div><div class="fgg"><label class="fl">COT Ref. Alenstec</label><input class="fi" data-ot-field="quoteRef"></div></div>
         <div class="fg"><div class="fgg"><label class="fl">Fecha de emisión</label><input class="fi" data-ot-field="startDate" type="date"></div><div class="fgg"><label class="fl">F. Entrega Compromiso</label><input class="fi" data-ot-field="endDate" type="date"></div></div>
         <div class="fg" style="margin-bottom:10px"><div class="fgg"><label class="fl">Tipo de proyecto</label><select class="fi" data-ot-field="type"><option value="">—</option><option value="Nuevo">Nuevo</option><option value="Refurbish">Refurbish</option><option value="Servicio">Servicio</option></select></div><div class="fgg"><label class="fl">Progreso (%)</label><input class="fi" data-ot-field="progress" type="number" min="0" max="100"></div></div>
+        <div class="fg" style="margin-bottom:10px;align-items:center">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:500;user-select:none">
+            <input type="checkbox" class="repse-chk" data-ot-field="esRepse">
+            <span>Esta OT involucra servicios <strong>REPSE</strong></span>
+            <span class="repse-badge">RH involucrado</span>
+          </label>
+        </div>
         <div style="background:var(--surface2);border-radius:7px;padding:10px 12px">
           <div class="fl" style="margin-bottom:5px">Descripción del trabajo</div>
           <div id="ot-description-text" style="font-size:12.5px;font-weight:500;line-height:1.5">—</div>
@@ -740,219 +753,7 @@ table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
         </tr>
       </thead>
       <tbody id="cot-tbody">
-        <!-- MOCKUP — Ventas Totales Q1-2026 · fuente: Control Ventas 2026-03-17 -->
-        <tr>
-          <td>1</td><td>F3</td><td>—</td><td>—</td><td>—</td><td>—</td>
-          <td>007F3-26</td><td>007F3-26</td><td>06/01/2026</td><td style="text-align:right">$3,215.31</td>
-          <td>OC#20</td><td>—</td><td>07/01/2026</td><td style="text-align:right">$3,215.31</td>
-          <td>23/01/2026</td><td style="text-align:right">17.96</td><td>OT-1935</td>
-          <td style="font-size:11px">MANUFACTURA DE 3 MOLDES DE ALUMINIO, 18 PIEZAS POKAYOKE Y 18 GUÍAS DE NYLAMID</td>
-          <td>—</td><td><span class="atag" style="background:#e8f5e920;color:#2e7d32">Cerrada</span></td>
-          <td style="text-align:right">0</td><td>—</td><td>—</td>
-          <td style="text-align:right">0</td><td>—</td><td style="text-align:right">$18.00</td><td>—</td>
-          <td style="text-align:right">0</td><td style="text-align:right">9.5</td><td style="text-align:right">166</td><td style="text-align:right">0</td><td style="text-align:right">3</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td>
-          <td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td>
-          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
-          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
-          <td style="text-align:right">$18.00</td><td style="text-align:right">$3,213.00</td>
-          <td style="text-align:right">0</td><td>—</td><td style="text-align:right">$25.00</td><td>—</td>
-          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td style="text-align:right">26%</td><td>—</td><td>—</td>
-          <td>—</td><td>—</td><td>—</td><td>—</td><td style="text-align:right">$2.31</td>
-          <td>—</td><td>—</td><td>—</td>
-          <td>—</td><td>—</td><td style="text-align:right;font-weight:600">$3,215.31</td>
-          <td style="font-size:10px;color:var(--text3)">SE DESCUENTAN $6,728 DE MATERIAL DE ALUMINIO (21 HRS)</td>
-          <td><button class="btn sm">⋯</button></td>
-        </tr>
-        <tr>
-          <td>2</td><td>AVANZAR</td><td>—</td><td>—</td><td>—</td><td>—</td>
-          <td>058ADA-25C</td><td>004ADA-26</td><td>03/02/2026</td><td style="text-align:right">$15,782.00</td>
-          <td>2310481395</td><td style="font-size:11px">Term. y Cond. 14/08/2023</td><td>08/01/2026</td><td style="text-align:right">$15,782.00</td>
-          <td>18/03/2026</td><td style="text-align:right">17.95</td><td>OT-1936</td>
-          <td style="font-size:11px">MANUFACTURA E INTEGRACIÓN DE 2 BRAZOS NEUMÁTICOS — PROCESO ALTERNO REAR RH</td>
-          <td>—</td><td><span class="atag" style="background:#e8f5e920;color:#2e7d32">Cerrada</span></td>
-          <td style="text-align:right">0</td><td>—</td><td>—</td>
-          <td style="text-align:right">24</td><td>—</td><td style="text-align:right">$23.00</td><td style="text-align:right">$552.00</td>
-          <td style="text-align:right">35</td><td style="text-align:right">25</td><td style="text-align:right">202</td><td style="text-align:right">0</td><td style="text-align:right">100</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td>
-          <td style="text-align:right">13</td><td style="text-align:right">26</td><td style="text-align:right">12</td><td style="text-align:right">0</td><td style="text-align:right">51</td>
-          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
-          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
-          <td style="text-align:right">$20.63</td><td style="text-align:right">$8,518.98</td>
-          <td style="text-align:right">0</td><td>—</td><td style="text-align:right">$25.00</td><td>—</td>
-          <td style="text-align:right">$420.00</td><td style="text-align:right">$160.00</td><td style="text-align:right">$170.00</td><td>—</td><td style="text-align:right">$4,201.59</td><td>—</td><td style="text-align:right">$4,951.59</td><td style="text-align:right">26%</td><td style="text-align:right">$1,287.41</td><td style="text-align:right">$6,239.00</td>
-          <td style="text-align:right">$190.00</td><td>—</td><td style="text-align:right">$137.00</td><td style="text-align:right">$133.00</td><td style="text-align:right">$460.00</td>
-          <td style="text-align:right">$12.02</td><td>—</td><td style="text-align:right">$12.02</td>
-          <td>—</td><td>—</td><td style="text-align:right;font-weight:600">$15,782.00</td>
-          <td>—</td><td><button class="btn sm">⋯</button></td>
-        </tr>
-        <tr>
-          <td>3</td><td>AVANZAR</td><td>—</td><td>—</td><td>—</td><td>—</td>
-          <td>058ADA-25C</td><td>004ADA-26</td><td>03/02/2026</td><td style="text-align:right">$15,782.00</td>
-          <td>2310481395</td><td style="font-size:11px">Term. y Cond. 14/08/2023</td><td>08/01/2026</td><td style="text-align:right">$15,782.00</td>
-          <td>18/03/2026</td><td style="text-align:right">17.95</td><td>OT-1937</td>
-          <td style="font-size:11px">MANUFACTURA E INTEGRACIÓN DE 2 BRAZOS NEUMÁTICOS — PROCESO ALTERNO BACK LH</td>
-          <td>—</td><td><span class="atag" style="background:#e8f5e920;color:#2e7d32">Cerrada</span></td>
-          <td style="text-align:right">0</td><td>—</td><td>—</td>
-          <td style="text-align:right">24</td><td>—</td><td style="text-align:right">$23.00</td><td style="text-align:right">$552.00</td>
-          <td style="text-align:right">35</td><td style="text-align:right">25</td><td style="text-align:right">202</td><td style="text-align:right">0</td><td style="text-align:right">100</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td>
-          <td style="text-align:right">13</td><td style="text-align:right">26</td><td style="text-align:right">12</td><td style="text-align:right">0</td><td style="text-align:right">51</td>
-          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
-          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
-          <td style="text-align:right">$20.63</td><td style="text-align:right">$8,518.98</td>
-          <td style="text-align:right">0</td><td>—</td><td style="text-align:right">$25.00</td><td>—</td>
-          <td style="text-align:right">$420.00</td><td style="text-align:right">$160.00</td><td style="text-align:right">$170.00</td><td>—</td><td style="text-align:right">$4,201.59</td><td>—</td><td style="text-align:right">$4,951.59</td><td style="text-align:right">26%</td><td style="text-align:right">$1,287.41</td><td style="text-align:right">$6,239.00</td>
-          <td style="text-align:right">$190.00</td><td>—</td><td style="text-align:right">$137.00</td><td style="text-align:right">$133.00</td><td style="text-align:right">$460.00</td>
-          <td style="text-align:right">$12.02</td><td>—</td><td style="text-align:right">$12.02</td>
-          <td>—</td><td>—</td><td style="text-align:right;font-weight:600">$15,782.00</td>
-          <td>—</td><td><button class="btn sm">⋯</button></td>
-        </tr>
-        <tr>
-          <td>4</td><td>AVANZAR</td><td>—</td><td>—</td><td>—</td><td>—</td>
-          <td>058ADA-25C</td><td>004ADA-26</td><td>03/02/2026</td><td style="text-align:right">$15,782.00</td>
-          <td>2310481395</td><td style="font-size:11px">Term. y Cond. 14/08/2023</td><td>08/01/2026</td><td style="text-align:right">$15,782.00</td>
-          <td>18/03/2026</td><td style="text-align:right">17.95</td><td>OT-1938</td>
-          <td style="font-size:11px">MANUFACTURA E INTEGRACIÓN DE 2 BRAZOS NEUMÁTICOS — PROCESO ALTERNO BACK RH</td>
-          <td>—</td><td><span class="atag" style="background:#e8f5e920;color:#2e7d32">Cerrada</span></td>
-          <td style="text-align:right">0</td><td>—</td><td>—</td>
-          <td style="text-align:right">24</td><td>—</td><td style="text-align:right">$23.00</td><td style="text-align:right">$552.00</td>
-          <td style="text-align:right">35</td><td style="text-align:right">25</td><td style="text-align:right">202</td><td style="text-align:right">0</td><td style="text-align:right">100</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td>
-          <td style="text-align:right">13</td><td style="text-align:right">26</td><td style="text-align:right">12</td><td style="text-align:right">0</td><td style="text-align:right">51</td>
-          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
-          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
-          <td style="text-align:right">$20.63</td><td style="text-align:right">$8,518.98</td>
-          <td style="text-align:right">0</td><td>—</td><td style="text-align:right">$25.00</td><td>—</td>
-          <td style="text-align:right">$420.00</td><td style="text-align:right">$160.00</td><td style="text-align:right">$170.00</td><td>—</td><td style="text-align:right">$4,201.59</td><td>—</td><td style="text-align:right">$4,951.59</td><td style="text-align:right">26%</td><td style="text-align:right">$1,287.41</td><td style="text-align:right">$6,239.00</td>
-          <td style="text-align:right">$190.00</td><td>—</td><td style="text-align:right">$137.00</td><td style="text-align:right">$133.00</td><td style="text-align:right">$460.00</td>
-          <td style="text-align:right">$12.02</td><td>—</td><td style="text-align:right">$12.02</td>
-          <td>—</td><td>—</td><td style="text-align:right;font-weight:600">$15,782.00</td>
-          <td>—</td><td><button class="btn sm">⋯</button></td>
-        </tr>
-        <tr>
-          <td>5</td><td>AUTOLIV AMX</td><td>—</td><td>—</td><td>—</td><td>—</td>
-          <td>057AMX-24</td><td>057AMX-24</td><td>26/06/2024</td><td style="text-align:right">$1,537.00</td>
-          <td>7569965</td><td>OM GIPU 0817</td><td>14/01/2026</td><td style="text-align:right">$1,537.00</td>
-          <td>11/02/2026</td><td style="text-align:right">18.13</td><td>OT-1939</td>
-          <td style="font-size:11px">FABRICACIÓN DE PIEZAS PARA REFACCIONAMIENTO DE REMACHADO DE PT-COVER (T2363486)</td>
-          <td>—</td><td><span class="atag" style="background:#e8f5e920;color:#2e7d32">Cerrada</span></td>
-          <td style="text-align:right">0</td><td>—</td><td>—</td>
-          <td style="text-align:right">0</td><td>—</td><td style="text-align:right">$23.00</td><td>—</td>
-          <td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">55</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td>
-          <td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td>
-          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
-          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
-          <td style="text-align:right">$23.00</td><td style="text-align:right">$1,265.00</td>
-          <td style="text-align:right">0</td><td>—</td><td style="text-align:right">$25.00</td><td>—</td>
-          <td style="text-align:right">$146.00</td><td>—</td><td>—</td><td>—</td><td style="text-align:right">$69.87</td><td>—</td><td style="text-align:right">$215.87</td><td style="text-align:right">26%</td><td style="text-align:right">$56.13</td><td style="text-align:right">$272.00</td>
-          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
-          <td>—</td><td>—</td><td>—</td>
-          <td>—</td><td>—</td><td style="text-align:right;font-weight:600">$1,537.00</td>
-          <td>—</td><td><button class="btn sm">⋯</button></td>
-        </tr>
-        <tr>
-          <td>6</td><td>AUTOLIV AMX</td><td>—</td><td>—</td><td>—</td><td>—</td>
-          <td>057AMX-24</td><td>057AMX-24</td><td>26/06/2024</td><td style="text-align:right">$1,537.00</td>
-          <td>7569966</td><td>OM GIPU 0817</td><td>14/01/2026</td><td style="text-align:right">$1,537.00</td>
-          <td>11/02/2026</td><td style="text-align:right">18.13</td><td>OT-1940</td>
-          <td style="font-size:11px">FABRICACIÓN DE PIEZAS PARA REFACCIONAMIENTO DE REMACHADO DE PT-COVER (T2363486)</td>
-          <td>—</td><td><span class="atag" style="background:#e8f5e920;color:#2e7d32">Cerrada</span></td>
-          <td style="text-align:right">0</td><td>—</td><td>—</td>
-          <td style="text-align:right">0</td><td>—</td><td style="text-align:right">$23.00</td><td>—</td>
-          <td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">55</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td>
-          <td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td>
-          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
-          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
-          <td style="text-align:right">$23.00</td><td style="text-align:right">$1,265.00</td>
-          <td style="text-align:right">0</td><td>—</td><td style="text-align:right">$25.00</td><td>—</td>
-          <td style="text-align:right">$146.00</td><td>—</td><td>—</td><td>—</td><td style="text-align:right">$69.87</td><td>—</td><td style="text-align:right">$215.87</td><td style="text-align:right">26%</td><td style="text-align:right">$56.13</td><td style="text-align:right">$272.00</td>
-          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
-          <td>—</td><td>—</td><td>—</td>
-          <td>—</td><td>—</td><td style="text-align:right;font-weight:600">$1,537.00</td>
-          <td>—</td><td><button class="btn sm">⋯</button></td>
-        </tr>
-        <tr>
-          <td>7</td><td>AUTOLIV AMX</td><td>—</td><td>—</td><td>—</td><td>—</td>
-          <td>128AMX-24</td><td>128AMX-24</td><td>09/12/2024</td><td style="text-align:right">$1,027.00</td>
-          <td>7569967</td><td>OM GIPU 0817</td><td>14/01/2026</td><td style="text-align:right">$1,027.00</td>
-          <td>11/02/2026</td><td style="text-align:right">20.22</td><td>OT-1941</td>
-          <td style="font-size:11px">FABRICACIÓN DE 1 DADO INF. FERRULE PARA CELDA P02, P07 (C-001279)</td>
-          <td>—</td><td><span class="atag" style="background:#e8f5e920;color:#2e7d32">Cerrada</span></td>
-          <td style="text-align:right">0</td><td>—</td><td>—</td>
-          <td style="text-align:right">0</td><td>—</td><td style="text-align:right">$23.00</td><td>—</td>
-          <td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">40</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td>
-          <td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td>
-          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
-          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
-          <td style="text-align:right">$20.60</td><td style="text-align:right">$824.00</td>
-          <td style="text-align:right">0</td><td>—</td><td style="text-align:right">$25.00</td><td>—</td>
-          <td style="text-align:right">$52.77</td><td>—</td><td style="text-align:right">$65.00</td><td>—</td><td style="text-align:right">$43.34</td><td>—</td><td style="text-align:right">$161.11</td><td style="text-align:right">26%</td><td style="text-align:right">$41.89</td><td style="text-align:right">$203.00</td>
-          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
-          <td>—</td><td>—</td><td>—</td>
-          <td>—</td><td>—</td><td style="text-align:right;font-weight:600">$1,027.00</td>
-          <td>—</td><td><button class="btn sm">⋯</button></td>
-        </tr>
-        <tr>
-          <td>8</td><td>AUTOLIV AMX</td><td>—</td><td>—</td><td>—</td><td>—</td>
-          <td>131AMX-24</td><td>131AMX-24</td><td>09/12/2024</td><td style="text-align:right">$1,048.00</td>
-          <td>7571148</td><td>OM GIPU 0817</td><td>29/01/2026</td><td style="text-align:right">$1,048.00</td>
-          <td>26/02/2026</td><td style="text-align:right">20.22</td><td>OT-1942</td>
-          <td style="font-size:11px">FABRICACIÓN DE 1 DADO SUP. FERRULE, SEGÚN DIBUJOS F-006227 REV. B</td>
-          <td>—</td><td><span class="atag" style="background:#e8f5e920;color:#2e7d32">Cerrada</span></td>
-          <td style="text-align:right">0</td><td>—</td><td>—</td>
-          <td style="text-align:right">0</td><td>—</td><td style="text-align:right">$23.00</td><td>—</td>
-          <td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">40</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td>
-          <td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td>
-          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
-          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
-          <td style="text-align:right">$20.60</td><td style="text-align:right">$824.00</td>
-          <td style="text-align:right">0</td><td>—</td><td style="text-align:right">$25.00</td><td>—</td>
-          <td style="text-align:right">$52.78</td><td>—</td><td style="text-align:right">$65.00</td><td>—</td><td style="text-align:right">$60.00</td><td>—</td><td style="text-align:right">$177.78</td><td style="text-align:right">26%</td><td style="text-align:right">$46.22</td><td style="text-align:right">$224.00</td>
-          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
-          <td>—</td><td>—</td><td>—</td>
-          <td>—</td><td>—</td><td style="text-align:right;font-weight:600">$1,048.00</td>
-          <td>—</td><td><button class="btn sm">⋯</button></td>
-        </tr>
-        <tr>
-          <td>9</td><td>ADIENT LERMA</td><td>—</td><td>—</td><td>—</td><td>—</td>
-          <td>084ADL-25</td><td>009ADL-26</td><td>04/02/2026</td><td style="text-align:right">$22,855.00</td>
-          <td>2301481897</td><td style="font-size:11px">Term. y Cond. 14/08/2023</td><td>15/01/2026</td><td style="text-align:right">$22,855.00</td>
-          <td>01/04/2026</td><td style="text-align:right">17.81</td><td>OT-1943</td>
-          <td style="font-size:11px">REFURBISH E INTEGRACIÓN DE NUEVO MODELO — INSERCIÓN DE BOTÓN ISO FIX (OT-1590)</td>
-          <td>—</td><td><span class="atag" style="background:#e8f5e920;color:#2e7d32">Cerrada</span></td>
-          <td style="text-align:right">0</td><td>—</td><td>—</td>
-          <td style="text-align:right">47</td><td>—</td><td style="text-align:right">$20.55</td><td style="text-align:right">$966.00</td>
-          <td style="text-align:right">5</td><td style="text-align:right">16</td><td style="text-align:right">221</td><td style="text-align:right">0</td><td style="text-align:right">72</td><td style="text-align:right">50</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td><td style="text-align:right">0</td>
-          <td style="text-align:right">33</td><td style="text-align:right">33</td><td style="text-align:right">33</td><td style="text-align:right">0</td><td style="text-align:right">99</td>
-          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
-          <td>—</td><td>—</td><td>—</td><td>—</td><td>—</td>
-          <td style="text-align:right">$20.58</td><td style="text-align:right">$9,530.00</td>
-          <td style="text-align:right">24</td><td>—</td><td style="text-align:right">$31.63</td><td style="text-align:right">$759.00</td>
-          <td style="text-align:right">$95.20</td><td style="text-align:right">$19.00</td><td style="text-align:right">$110.00</td><td>—</td><td style="text-align:right">$9,234.14</td><td>—</td><td style="text-align:right">$9,458.34</td><td style="text-align:right">20%</td><td style="text-align:right">$1,891.67</td><td style="text-align:right">$11,350.00</td>
-          <td style="text-align:right">$150.00</td><td>—</td><td style="text-align:right">$50.00</td><td style="text-align:right">$50.00</td><td style="text-align:right">$250.00</td>
-          <td>—</td><td>—</td><td>—</td>
-          <td>—</td><td>—</td><td style="text-align:right;font-weight:600">$22,855.00</td>
-          <td>—</td><td><button class="btn sm">⋯</button></td>
-        </tr>
-        <!-- TOTALES -->
-        <tr class="cot-totals" style="background:var(--surface2);font-weight:600;border-top:2px solid var(--border)">
-          <td colspan="9" style="text-align:right;font-size:11px;color:var(--text3)">TOTALES Q1-2026</td>
-          <td style="text-align:right">$75,350.00</td>
-          <td colspan="4">—</td>
-          <td style="text-align:right">$75,350.00</td>
-          <td colspan="2">—</td>
-          <td colspan="3">—</td><td>—</td>
-          <td style="text-align:right">0</td><td>—</td><td>—</td>
-          <td style="text-align:right">119</td><td>—</td><td>—</td><td style="text-align:right">$2,622.00</td>
-          <td colspan="10">1,892 hrs COT</td>
-          <td colspan="5">—</td>
-          <td colspan="9">—</td>
-          <td colspan="5">—</td>
-          <td>—</td><td>—</td>
-          <td style="text-align:right">24</td><td>—</td><td>—</td><td style="text-align:right">$759.00</td>
-          <td colspan="6" style="text-align:right">$25,083.73</td><td>—</td><td>—</td><td style="text-align:right">$31,038.00</td>
-          <td colspan="4" style="text-align:right">$1,630.00</td><td>—</td>
-          <td colspan="2" style="text-align:right">$36.06</td><td>—</td>
-          <td>—</td><td>—</td><td style="text-align:right;color:var(--green)">$75,350.00</td>
-          <td colspan="2">—</td>
-        </tr>
+        <tr><td colspan="85" style="text-align:center;color:var(--text3);padding:20px">Cargando…</td></tr>
       </tbody>
     </table></div>
     <!-- BARRA DE CAMBIOS PENDIENTES -->
@@ -1168,9 +969,9 @@ table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
     <div class="card">
       <div class="ch"><div><div class="ct">Horas por Empleado, OT y Actividad</div><div class="cs">Registros de horas desde el ERP</div></div><button class="btn p sm" id="hrs-new-btn">+ Capturar horas</button></div>
       <div class="tw"><table>
-        <thead><tr><th>OT</th><th>Empleado</th><th>Rol</th><th>Horas</th><th>Tarifa</th><th>Total</th><th>Moneda</th><th>Fecha</th><th style="width:60px">Acc.</th></tr></thead>
+        <thead><tr><th>OT</th><th>Empleado</th><th>Rol</th><th>Actividad</th><th>Horas</th><th>Tarifa</th><th>Total</th><th>Moneda</th><th>Fecha</th><th style="width:70px;text-align:center" title="Registrado Prestadora de Servicios Especializados">REPSE</th><th style="width:60px">Acc.</th></tr></thead>
         <tbody id="hrs-tbody">
-          <tr><td colspan="9" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
+          <tr><td colspan="11" style="padding:16px;color:var(--text3);text-align:center">Cargando…</td></tr>
         </tbody>
       </table></div>
     </div>
@@ -1539,6 +1340,7 @@ table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
     <div class="nf-chip" data-tipo="inventario_bajo" onclick="notifFilterClick(this)">🏭 Inventario bajo</div>
     <div class="nf-chip" data-tipo="cfdi_sin_validar" onclick="notifFilterClick(this)">🧾 CFDI</div>
     <div class="nf-chip" data-tipo="empleado_incompleto" onclick="notifFilterClick(this)">👤 Empleados</div>
+    <div class="nf-chip" data-tipo="repse_flagged" onclick="notifFilterClick(this)">🔴 REPSE</div>
   </div>
 
   <div class="notif-list" id="notif-mod-list">
@@ -1742,7 +1544,7 @@ table.mtx td.cell:hover .adm-chk:not(.locked){transform:scale(1.12)}
       <div class="ch">
         <div><div class="ct">Matriz de permisos</div><div class="cs">Filas = usuarios · columnas = acciones por módulo · ✓ = permitido. Checks grises vienen del rol; los azules son <em>overrides</em>.</div></div>
         <div style="display:flex;gap:7px">
-          <button class="btn sm" onclick="alert('Mockup — falta cablear POST /api/auth/users')">+ Agregar usuario</button>
+          <button class="btn sm" onclick="showNewUserModal()">+ Agregar usuario</button>
           <button class="btn sm" onclick="exportPermissionsCsv()">⬇ Exportar matriz</button>
         </div>
       </div>
@@ -2723,15 +2525,6 @@ const PERM_ROLE_DEFAULTS = {
   compras:    [1, 1,0,0,0, 0,0,0,0, 0,0, 1,1,1, 1,1,1,1, 0,0,0, 0,0,0, 0,0,0,0, 0, 0,0],
   ventas:     [1, 1,1,1,0, 1,1,1,1, 1,1, 0,0,0, 0,0,0,0, 0,0,0, 0,0,0, 0,0,0,0, 0, 0,0],
 };
-// Sample users (mockup) — when GET /api/auth/users is wired we'll replace this fetch.
-const PERM_SAMPLE_USERS = [
-  { id:1, nombre:'Admin Demo',       email:'admin@alenstec.mx',     rol:'admin'      },
-  { id:2, nombre:'Jefe de Área',     email:'jefe@alenstec.mx',      rol:'jefe_area'  },
-  { id:3, nombre:'Recursos Humanos', email:'rh@alenstec.mx',        rol:'rh'         },
-  { id:4, nombre:'Supervisor',       email:'supervisor@alenstec.mx',rol:'supervisor' },
-  { id:5, nombre:'Ventas',           email:'ventas@alenstec.mx',    rol:'ventas'     },
-  { id:6, nombre:'Compras',          email:'compras@alenstec.mx',   rol:'compras'    },
-];
 const PERM_AVATAR_COLOR = { admin:'red', rh:'blue', jefe_area:'amber', supervisor:'', compras:'', ventas:'' };
 let _permUsers = null;
 const _permOverrides = {}; // { userId: { colIdx: 1|0 } }
@@ -2746,12 +2539,36 @@ function permRolePill(rol) {
 async function loadAdminPermisos() {
   const tbody = document.getElementById('perm-matrix-body');
   if (!tbody) return;
-  // TODO: replace with `apiFetch('/api/auth/users')` once that endpoint lands.
-  _permUsers = PERM_SAMPLE_USERS;
+  try {
+    const res = await apiFetch(`${API_URL}/admin/users`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    _permUsers = await res.json();
+  } catch (err) {
+    console.warn('loadAdminPermisos:', err);
+    _permUsers = [];
+  }
+
+  // Restore saved overrides into _permOverrides
+  for (const k of Object.keys(_permOverrides)) delete _permOverrides[k];
+  for (const u of _permUsers) {
+    if (!u.permissionOverrides || !Object.keys(u.permissionOverrides).length) continue;
+    _permOverrides[u.id] = {};
+    for (const [permiso, allow] of Object.entries(u.permissionOverrides)) {
+      const idx = PERM_COLS.indexOf(permiso);
+      if (idx === -1) continue;
+      _permOverrides[u.id][idx] = allow ? 1 : 0;
+    }
+    if (Object.keys(_permOverrides[u.id]).length === 0) delete _permOverrides[u.id];
+  }
+
   document.getElementById('perm-kpi-users').textContent = _permUsers.length;
-  document.getElementById('perm-kpi-last').textContent = '—';
-  document.getElementById('perm-kpi-last-by').textContent = '—';
+  const lastChanged = _permUsers
+    .filter((u) => u.permissionOverrides && Object.keys(u.permissionOverrides).length > 0)
+    .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))[0];
+  document.getElementById('perm-kpi-last').textContent = lastChanged ? fmtDateDMY(lastChanged.updatedAt) : '—';
+  document.getElementById('perm-kpi-last-by').textContent = lastChanged ? 'por admin' : '—';
   renderPermMatrix();
+  refreshPermDirty();
 }
 function renderPermMatrix() {
   const tbody = document.getElementById('perm-matrix-body');
@@ -2770,9 +2587,13 @@ function renderPermMatrix() {
     tdU.innerHTML = `
       <div class="adm-user-cell">
         <div class="av ${av}">${permInitials(u.nombre)}</div>
-        <div>
+        <div style="flex:1;min-width:0">
           <div class="adm-user-name">${esc(u.nombre)}</div>
           <div class="adm-user-mail">${esc(u.email)}</div>
+        </div>
+        <div style="display:flex;gap:3px;flex-shrink:0">
+          <button class="btn sm" title="Editar usuario" style="padding:2px 5px;font-size:11px" onclick="showEditUserModal(${u.id})">✏</button>
+          <button class="btn sm" title="${u.activo ? 'Desactivar' : 'Activar'} usuario" style="padding:2px 5px;font-size:11px;${u.activo ? '' : 'opacity:.5'}" onclick="toggleUserActive(${u.id},${u.activo})">⏻</button>
         </div>
       </div>`;
     tr.appendChild(tdU);
@@ -2854,14 +2675,134 @@ function resetAllPermOverrides() {
   renderPermMatrix();
 }
 function discardPermChanges() { resetAllPermOverrides(); }
-function savePermChanges() {
-  // TODO: when endpoint lands → POST /api/admin/permissions/overrides
+async function savePermChanges() {
   const diff = Object.entries(_permOverrides).map(([userId, cols]) => ({
     userId: Number(userId),
     overrides: Object.entries(cols).map(([idx, val]) => ({ permiso: PERM_COLS[idx], allow: val === 1 })),
   }));
-  alert('Mockup — payload que se mandaría al backend:\n\n' + JSON.stringify(diff, null, 2));
+  if (!diff.length) return;
+  const saveBtn = document.querySelector('#perm-savebar .btn.p');
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Guardando…'; }
+  try {
+    const res = await apiFetch(`${API_URL}/admin/permissions/overrides`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(diff),
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
+    await loadAdminPermisos();
+  } catch (err) {
+    alert('Error al guardar permisos: ' + err.message);
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Guardar cambios'; }
+  }
 }
+async function showNewUserModal() {
+  const ROLES_OPTS = ['admin','jefe_area','rh','supervisor','ventas','compras']
+    .map((r) => `<option value="${r}">${r}</option>`).join('');
+  openModal({
+    title: '+ Agregar usuario',
+    bodyHtml: `
+      <form id="new-user-form">
+        <div class="fg"><label>Nombre completo *</label><input name="nombre" required></div>
+        <div class="fg"><label>Email *</label><input name="email" type="email" required></div>
+        <div class="fg"><label>Rol *</label>
+          <select name="rol" required><option value="">Selecciona…</option>${ROLES_OPTS}</select>
+        </div>
+        <div class="fg"><label>Contraseña *</label><input name="password" type="password" required minlength="8"></div>
+        <div class="modal-error" id="new-user-error"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn sm" onclick="closeModal()">Cancelar</button>
+          <button type="submit" class="btn p sm" id="new-user-submit">Crear usuario</button>
+        </div>
+      </form>`,
+  });
+  document.getElementById('new-user-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errEl = document.getElementById('new-user-error');
+    const btn   = document.getElementById('new-user-submit');
+    errEl.textContent = '';
+    btn.disabled = true; btn.textContent = 'Creando…';
+    try {
+      const data = Object.fromEntries(new FormData(e.target).entries());
+      const res  = await apiFetch(`${API_URL}/admin/users`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
+      closeModal();
+      await loadAdminPermisos();
+    } catch (err) {
+      errEl.textContent = err.message;
+      btn.disabled = false; btn.textContent = 'Crear usuario';
+    }
+  });
+}
+
+async function showEditUserModal(userId) {
+  const user = _permUsers.find((u) => u.id === userId);
+  if (!user) return;
+  const ROLES_OPTS = ['admin','jefe_area','rh','supervisor','ventas','compras']
+    .map((r) => `<option value="${r}"${r === user.rol ? ' selected' : ''}>${r}</option>`).join('');
+  openModal({
+    title: `Editar usuario — ${esc(user.nombre)}`,
+    bodyHtml: `
+      <form id="edit-user-form">
+        <div class="fg"><label>Nombre completo *</label><input name="nombre" required value="${esc(user.nombre)}"></div>
+        <div class="fg"><label>Email *</label><input name="email" type="email" required value="${esc(user.email)}"></div>
+        <div class="fg"><label>Rol *</label>
+          <select name="rol" required>${ROLES_OPTS}</select>
+        </div>
+        <div class="fg"><label>Nueva contraseña <span style="color:var(--text2);font-size:11px">(dejar vacío para no cambiar)</span></label>
+          <input name="password" type="password" minlength="8" placeholder="Min. 8 caracteres">
+        </div>
+        <div class="modal-error" id="edit-user-error"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn sm" onclick="closeModal()">Cancelar</button>
+          <button type="submit" class="btn p sm" id="edit-user-submit">Guardar cambios</button>
+        </div>
+      </form>`,
+  });
+  document.getElementById('edit-user-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errEl = document.getElementById('edit-user-error');
+    const btn   = document.getElementById('edit-user-submit');
+    errEl.textContent = '';
+    btn.disabled = true; btn.textContent = 'Guardando…';
+    try {
+      const fd   = new FormData(e.target);
+      const data = Object.fromEntries(fd.entries());
+      if (!data.password) delete data.password;
+      const res  = await apiFetch(`${API_URL}/admin/users/${userId}`, {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
+      closeModal();
+      await loadAdminPermisos();
+    } catch (err) {
+      errEl.textContent = err.message;
+      btn.disabled = false; btn.textContent = 'Guardar cambios';
+    }
+  });
+}
+
+async function toggleUserActive(userId, currentlyActive) {
+  const user = _permUsers.find((u) => u.id === userId);
+  const accion = currentlyActive ? 'desactivar' : 'activar';
+  if (!confirm(`¿${accion.charAt(0).toUpperCase() + accion.slice(1)} al usuario "${user?.nombre || userId}"?`)) return;
+  try {
+    const res  = await apiFetch(`${API_URL}/admin/users/${userId}/toggle-active`, { method: 'PATCH' });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
+    await loadAdminPermisos();
+  } catch (err) {
+    alert('Error: ' + err.message);
+  }
+}
+
 function filterPermUsers() {
   const q   = (document.getElementById('perm-q')?.value || '').toLowerCase();
   const rol = document.getElementById('perm-rol')?.value || '';
@@ -3183,6 +3124,7 @@ async function deleteEntity({ url, entityLabel, itemLabel, onSuccess }) {
 
 // ===== OT module (P2.7 + P2.8) =====
 let _otCache = [];
+let _employeeCache = [];
 let _selectedOtId = null;
 
 async function loadOTSelector(preferId) {
@@ -3246,7 +3188,12 @@ async function loadOTDetail(id) {
     document.querySelectorAll('#mod-ot [data-ot-field]').forEach((el) => {
       const field = el.dataset.otField;
       let val = ot[field];
-      if (val == null) { el.value = ''; return; }
+      if (val == null) {
+        if (el.type === 'checkbox') el.checked = false;
+        else el.value = '';
+        return;
+      }
+      if (el.type === 'checkbox') { el.checked = !!val; return; }
       if (el.type === 'date' && typeof val === 'string') val = val.slice(0, 10);
       el.value = val;
     });
@@ -3273,6 +3220,7 @@ async function saveOTDetail() {
     document.querySelectorAll('#mod-ot [data-ot-field]').forEach((el) => {
       const field = el.dataset.otField;
       if (field === 'otNumber') return; // readonly, server-side unique
+      if (el.type === 'checkbox') { payload[field] = el.checked; return; }
       let v = el.value;
       if (v === '') { payload[field] = null; return; }
       if (OT_NUMBER_FIELDS.has(field)) v = Number(v);
@@ -3684,6 +3632,15 @@ async function ensureSupplierCache() {
   return _phase3State.supplierCache;
 }
 
+async function ensureEmployeeCache() {
+  if (_employeeCache.length) return _employeeCache;
+  try {
+    const res = await apiFetch(`${API_URL}/employees?activo=true`);
+    if (res.ok) { const data = await res.json(); _employeeCache.push(...data); }
+  } catch { /* continue empty */ }
+  return _employeeCache;
+}
+
 function statusBadge(text, map) {
   const cls = map[text] || 'bn';
   return `<span class="badge ${cls}">${esc(text || '—')}</span>`;
@@ -3736,8 +3693,10 @@ async function showNewOCPModal() {
           </div>
         </div>
         <div class="fg"><label>Proveedor *</label>
-          <input name="supplierName" required list="prov-datalist" placeholder="Escribe o selecciona…">
-          <datalist id="prov-datalist">${suppliers.map((s) => `<option value="${esc(s.supplierName)}">`).join('')}</datalist>
+          <select name="supplierId" required>
+            <option value="">Selecciona…</option>
+            ${suppliers.filter((s) => s.status === 'Activo').map((s) => `<option value="${esc(s.id)}">${esc(s.supplierName)}</option>`).join('')}
+          </select>
         </div>
         <div class="fg"><label>OT asociada</label>
           <select name="otNumber">
@@ -4097,7 +4056,12 @@ async function showNewDeliveryModal() {
           <div><label>No. Prov.</label><input name="deliveryNumber"></div>
           <div><label>Estado</label><select name="status"><option value="Entregado" selected>Entregado</option><option value="Pendiente">Pendiente</option><option value="Con incidencia">Con incidencia</option></select></div>
         </div>
-        <div class="fg"><label>Proveedor *</label><input name="supplierName" required list="del-prov"><datalist id="del-prov">${suppliers.map((s) => `<option value="${esc(s.supplierName)}">`).join('')}</datalist></div>
+        <div class="fg"><label>Proveedor *</label>
+          <select name="supplierId" required>
+            <option value="">Selecciona…</option>
+            ${suppliers.filter((s) => s.status === 'Activo').map((s) => `<option value="${esc(s.id)}">${esc(s.supplierName)}</option>`).join('')}
+          </select>
+        </div>
         <div class="fg"><label>Producto *</label><input name="producto" required></div>
         <div class="fg"><label>OT</label>
           <select name="otNumber"><option value="">Sin OT</option>${orders.map((o) => `<option value="${esc(o.otNumber)}">${esc(o.otNumber)}</option>`).join('')}</select>
@@ -4160,7 +4124,12 @@ async function showNewIncidentModal() {
         <div class="fg"><label>OT</label>
           <select name="otNumber"><option value="">Sin OT</option>${orders.map((o) => `<option value="${esc(o.otNumber)}">${esc(o.otNumber)}</option>`).join('')}</select>
         </div>
-        <div class="fg"><label>Proveedor</label><input name="supplierName" list="inc-prov"><datalist id="inc-prov">${suppliers.map((s) => `<option value="${esc(s.supplierName)}">`).join('')}</datalist></div>
+        <div class="fg"><label>Proveedor</label>
+          <select name="supplierId">
+            <option value="">Sin proveedor</option>
+            ${suppliers.filter((s) => s.status === 'Activo').map((s) => `<option value="${esc(s.id)}">${esc(s.supplierName)}</option>`).join('')}
+          </select>
+        </div>
         <div class="fg"><label>Descripción *</label><textarea name="descripcion" required></textarea></div>
         <div class="fg" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
           <div><label>Registrado por</label><input name="registradoPor"></div>
@@ -4376,6 +4345,13 @@ function showNewEmpleadoModal() {
 }
 
 // ===== Horas de Mano de Obra (P2.12 + P2.13) =====
+const LABOR_ACTIVITY_LABELS = {
+  A: 'Levantamiento, Ing. y Diseño', B: 'Corte', C: 'Fabricación (Soldadura)',
+  D: 'Otros (Pavonado, Pintura, Temple)', E: 'Maquinado', F: 'Hiloerosión',
+  G: 'Ensamble', H: 'Labor Eléctrica', I: 'Automatización',
+  J: 'Shopper / Picer', K: 'Certificación Dimensional',
+  L: 'Empaque y Embalaje', M: 'Instalación en Campo',
+};
 async function loadLaborCosts() {
   const tbody = document.getElementById('hrs-tbody');
   if (!tbody) return;
@@ -4384,7 +4360,7 @@ async function loadLaborCosts() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const rows = await res.json();
     if (!rows.length) {
-      tbody.innerHTML = '<tr><td colspan="9" style="padding:16px;color:var(--text3);text-align:center">Sin horas registradas.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="11" style="padding:16px;color:var(--text3);text-align:center">Sin horas registradas.</td></tr>';
       return;
     }
     const canDel = canPerm('labor.delete');
@@ -4393,32 +4369,58 @@ async function loadLaborCosts() {
       const rate = Number(r.hourlyRate) || 0;
       const total = r.totalCost != null ? Number(r.totalCost) : (hrs * rate);
       const cur = r.currency || 'MXN';
-      return `<tr>
-        <td class="mono">${esc(r.otNumber) || '—'}</td>
+      const isRepse = !!r.esRepse;
+      const actLabel = LABOR_ACTIVITY_LABELS[r.activityCode] || '';
+      const actCell = r.activityCode
+        ? `<span class="mono" title="${esc(actLabel)}" style="font-size:11px;background:var(--bg2);padding:1px 5px;border-radius:3px">${esc(r.activityCode)}</span>`
+        : '<span style="color:var(--text3)">—</span>';
+      return `<tr class="${isRepse ? 'repse-row' : ''}">
+        <td class="mono">${esc(r.otNumber) || '—'}${isRepse ? ' <span class="repse-badge">REPSE</span>' : ''}</td>
         <td>${esc(r.employeeName) || '—'}</td>
         <td>${esc(r.role) || '—'}</td>
+        <td style="text-align:center">${actCell}</td>
         <td class="mono">${hrs.toFixed(2)}</td>
         <td class="mono">${fmtCurrency(rate, cur)}</td>
         <td class="mono" style="font-weight:600">${fmtCurrency(total, cur)}</td>
         <td>${moneyBadge(cur)}</td>
         <td>${fmtDateDMY(r.date)}</td>
+        <td style="text-align:center">
+          <input type="checkbox" class="repse-chk" ${isRepse ? 'checked' : ''}
+            title="${isRepse ? 'REPSE activo — desmarcar para quitar' : 'Marcar como REPSE'}"
+            onchange="toggleLaborRepse('${esc(r.id)}', this.checked)">
+        </td>
         <td>${canDel ? `<button class="btn sm" title="Eliminar" onclick="deleteRow_labor('${esc(r.id)}','${esc(r.employeeName || '')}')" style="padding:2px 6px">🗑</button>` : ''}</td>
       </tr>`;
     }).join('');
   } catch (err) {
     console.warn('⚠ loadLaborCosts:', err);
-    tbody.innerHTML = '<tr><td colspan="9" style="padding:16px;color:var(--red);text-align:center">No se pudieron cargar las horas.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="11" style="padding:16px;color:var(--red);text-align:center">No se pudieron cargar las horas.</td></tr>';
+  }
+}
+
+async function toggleLaborRepse(id, checked) {
+  try {
+    const res = await apiFetch(`${API_URL}/costs/labor/${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ esRepse: checked }),
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      toast(body.error || 'No se pudo actualizar REPSE', 'error');
+    } else if (checked) {
+      toast('Línea marcada como REPSE · RH notificado', 'success');
+    }
+    await loadLaborCosts();
+  } catch (err) {
+    toast('Error al actualizar REPSE: ' + err.message, 'error');
+    await loadLaborCosts();
   }
 }
 
 async function showNewHorasModal() {
-  let orders = _otCache;
-  if (!orders.length) {
-    try {
-      const res = await apiFetch(`${API_URL}/work-orders`);
-      if (res.ok) { orders = await res.json(); _otCache = orders; }
-    } catch { /* continue */ }
-  }
+  const [orders, employees] = await Promise.all([ensureOTCache(), ensureEmployeeCache()]);
+
   if (!orders.length) {
     openModal({
       title: '+ Capturar horas',
@@ -4434,7 +4436,24 @@ async function showNewHorasModal() {
     });
     return;
   }
+
+  if (!employees.length) {
+    openModal({
+      title: '+ Capturar horas',
+      bodyHtml: `
+        <div style="padding:12px 0;color:var(--text2);font-size:13px;line-height:1.5">
+          No hay empleados registrados. Agrega primero empleados en el módulo <strong>Horas de Mano de Obra → Control de Empleados</strong>.
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn sm" onclick="closeModal()">Cerrar</button>
+        </div>
+      `,
+    });
+    return;
+  }
+
   const otOptions = orders.map((o) => `<option value="${esc(o.otNumber)}">${esc(o.otNumber)} · ${esc(o.client)}</option>`).join('');
+  const empOptions = employees.map((e) => `<option value="${esc(String(e.id))}">${esc(e.nombre)}${e.puesto ? ' — ' + esc(e.puesto) : ''}</option>`).join('');
 
   openModal({
     title: '+ Capturar horas',
@@ -4447,8 +4466,19 @@ async function showNewHorasModal() {
           </select>
         </div>
         <div class="fg" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div><label>Nombre empleado *</label><input name="employeeName" required></div>
-          <div><label>Rol *</label><input name="role" required placeholder="Técnico, Supervisor…"></div>
+          <div><label>Empleado *</label>
+            <select name="employeeId" id="emp-sel" required>
+              <option value="">Selecciona…</option>
+              ${empOptions}
+            </select>
+          </div>
+          <div><label>Rol / Puesto</label><input name="role" placeholder="Técnico, Supervisor…"></div>
+        </div>
+        <div class="fg"><label>Actividad</label>
+          <select name="activityCode">
+            <option value="">Sin actividad</option>
+            ${Object.entries(LABOR_ACTIVITY_LABELS).map(([c, l]) => `<option value="${c}">${c} — ${esc(l)}</option>`).join('')}
+          </select>
         </div>
         <div class="fg" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
           <div><label>Horas *</label><input name="hoursWorked" type="number" step="0.01" min="0" required></div>
@@ -4474,7 +4504,6 @@ async function showNewHorasModal() {
   const err  = document.getElementById('new-hrs-error');
   const submitBtn = document.getElementById('new-hrs-submit');
 
-  // Auto-compute total = hoursWorked × hourlyRate until user overrides.
   const syncTotal = () => {
     if (form.totalCost.dataset.touched === '1') return;
     const h = Number(form.hoursWorked.value) || 0;
@@ -4485,6 +4514,16 @@ async function showNewHorasModal() {
   form.hourlyRate.addEventListener('input', syncTotal);
   form.totalCost.addEventListener('input', () => { form.totalCost.dataset.touched = '1'; });
 
+  document.getElementById('emp-sel').addEventListener('change', (ev) => {
+    const emp = employees.find((e) => String(e.id) === ev.target.value);
+    if (!emp) return;
+    if (emp.puesto && !form.role.value) form.role.value = emp.puesto;
+    if (emp.salarioDiario && !form.hourlyRate.value) {
+      form.hourlyRate.value = Number(emp.salarioDiario).toFixed(2);
+      syncTotal();
+    }
+  });
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     err.textContent = '';
@@ -4493,6 +4532,7 @@ async function showNewHorasModal() {
     try {
       const data = Object.fromEntries(new FormData(form).entries());
       ['hoursWorked', 'hourlyRate', 'totalCost'].forEach((k) => { if (data[k] !== '') data[k] = Number(data[k]); });
+      if (data.employeeId) data.employeeId = Number(data.employeeId);
       const res = await apiFetch(`${API_URL}/costs/labor`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -6401,19 +6441,13 @@ function handleXMLUpload(event) {
     loadPayrollResumen();
   });
 
-  // P2.17 — Proveedores download; the other Entregas sub-tabs stay disabled
-  // because their tables are still mockup.
+  // Enable proveedores download button (wired separately since it uses event listener)
   const provDlBtn = document.getElementById('btn-dl-prov');
   if (provDlBtn) {
     provDlBtn.disabled = false;
     provDlBtn.style.opacity = '1';
     provDlBtn.addEventListener('click', () => downloadXlsx(`${API_URL}/suppliers/export`, 'proveedores.xlsx'));
   }
-  // Disabled buttons get an explanatory title so the user knows why.
-  ['ocp', 'inv', 'fact', 'entr'].forEach((sub) => {
-    const btn = document.getElementById('btn-dl-' + sub);
-    if (btn) btn.title = 'Pendiente: módulo en mockup (sin modelo backend)';
-  });
 
   // Health check — unauthenticated, so stays as raw fetch
   fetch(`${API_URL}/health`)
@@ -6527,20 +6561,20 @@ function handleXMLUpload(event) {
   // ── Fetch & refresh ─────────────────────────────────────────────────────
   async function fetchAll() {
     try {
-      const data = await apiFetch(`${API_URL}/notifications`);
+      const res  = await apiFetch(`${API_URL}/notifications`);
+      const data = await res.json();
       if (Array.isArray(data)) {
         _all = data;
         const unread = data.filter(n => !n.leida).length;
         updateBadge(unread);
         if (_panelOpen) renderPanel(data);
-        // Refresh module if open
         const modActive = document.querySelector('#mod-notificaciones.active');
         if (modActive) {
           const activeChip = document.querySelector('.nf-chip.active');
           renderModule(data, activeChip?.dataset.tipo || 'all');
         }
       }
-    } catch {}
+    } catch(e) { console.warn('[notif] fetchAll error:', e.message); }
   }
 
   // ── Public API (used by HTML event handlers) ────────────────────────────
@@ -6555,7 +6589,7 @@ function handleXMLUpload(event) {
   window.notifItemClick = async function(id, modulo) {
     // Mark as read
     if (id && !id.startsWith('computed-')) {
-      apiFetch(`${API_URL}/notifications/${id}/read`, { method: 'PUT' }).catch(() => {});
+      apiFetch(`${API_URL}/notifications/${id}/read`, { method: 'PUT' }).then(r => r.json()).catch(() => {});
       const item = _all.find(n => n.id === id);
       if (item) item.leida = true;
     }
@@ -6571,7 +6605,8 @@ function handleXMLUpload(event) {
 
   window.notifMarkAllRead = async function() {
     try {
-      await apiFetch(`${API_URL}/notifications/read-all`, { method: 'PUT' });
+      const r = await apiFetch(`${API_URL}/notifications/read-all`, { method: 'PUT' });
+      await r.json().catch(() => {});
       _all.forEach(n => { if (!n.id?.startsWith('computed-')) n.leida = true; });
       updateBadge(_all.filter(n => !n.leida).length);
       renderPanel(_all);

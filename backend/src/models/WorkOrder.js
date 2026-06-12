@@ -59,6 +59,9 @@ const WorkOrder = sequelize.define('WorkOrder', {
   jefeOtros:         { type: DataTypes.STRING,         allowNull: true, field: 'jefe_otros' },
   pptoMaterialMxn:   { type: DataTypes.DECIMAL(12, 2), allowNull: true, field: 'ppto_material_mxn' },
   pptoMaterialUsd:   { type: DataTypes.DECIMAL(12, 2), allowNull: true, field: 'ppto_material_usd' },
+
+  // REPSE — servicios especializados que requieren atención diferenciada de RH
+  esRepse: { type: DataTypes.BOOLEAN, defaultValue: false, allowNull: false, field: 'es_repse' },
 }, {
   tableName: 'work_orders',
   timestamps: true,

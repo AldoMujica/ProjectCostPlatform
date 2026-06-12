@@ -33,6 +33,7 @@ const TIPOS = {
   CFDI_SIN_VALIDAR:     'cfdi_sin_validar',
   EMPLEADO_INCOMPLETO:  'empleado_incompleto',
   OT_SIN_COSTO_REAL:    'ot_sin_costo_real',
+  REPSE_FLAGGED:        'repse_flagged',
 };
 
 // ── Icono y color por tipo (usado en el frontend) ──────────────────────────
@@ -49,6 +50,7 @@ const TIPO_META = {
   cfdi_sin_validar:     { icono: '🧾', color: '#f59e0b', badge: 'amber' },
   empleado_incompleto:  { icono: '👤', color: '#6b7280', badge: 'gray'  },
   ot_sin_costo_real:    { icono: '💰', color: '#f59e0b', badge: 'amber' },
+  repse_flagged:        { icono: '🔴', color: '#dc2626', badge: 'red'   },
 };
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -73,6 +75,24 @@ async function createApprovalNotif({ tipo, titulo, mensaje, workOrderId, workOrd
 }
 
 // ── Public API ───────────────────────────────────────────────────────────────
+
+/**
+ * Called when an OT or labor-cost line is flagged as REPSE.
+ * Creates a persistent notification targeting the RH role.
+ */
+async function onRepseFlag({ entidad, entidadId, otNumber, actorNombre, linkModulo = 'horas' }) {
+  const label = entidad === 'work_order' ? `OT ${otNumber}` : `línea MO en ${otNumber}`;
+  return Notification.create({
+    targetRole: 'rh',
+    tipo:        TIPOS.REPSE_FLAGGED,
+    titulo:      `REPSE — ${label}`,
+    mensaje:     `${actorNombre || 'Sistema'} marcó ${label} como REPSE. Requiere revisión y tratamiento diferenciado.`,
+    entidad,
+    entidadId,
+    linkModulo,
+    metadatos: { otNumber },
+  });
+}
 
 /**
  * Called after a successful approval transition.
@@ -339,6 +359,30 @@ async function getComputedForUser(user) {
       }
     }
 
+    // 7b. REPSE pendiente de revisión — resumen para RH
+    if (['rh', 'admin'].includes(rol)) {
+      const { LaborCost: LC } = require('../models');
+      const [repseOTs, repseLines] = await Promise.all([
+        WorkOrder.count({ where: { esRepse: true, status: { [Op.notIn]: ['Cerrada'] } } }).catch(() => 0),
+        LC.count({ where: { esRepse: true } }).catch(() => 0),
+      ]);
+      const total = repseOTs + repseLines;
+      if (total > 0) {
+        items.push(enrichTipo({
+          id: 'computed-repse-summary',
+          tipo: TIPOS.REPSE_FLAGGED,
+          titulo: `REPSE — ${total} elemento${total !== 1 ? 's' : ''} pendiente${total !== 1 ? 's' : ''}`,
+          mensaje: `${repseOTs} OT${repseOTs !== 1 ? 's' : ''} y ${repseLines} línea${repseLines !== 1 ? 's' : ''} de MO marcadas como REPSE requieren revisión de RH.`,
+          entidad: 'repse',
+          entidadId: null,
+          linkModulo: 'horas',
+          leida: false,
+          createdAt: now,
+          metadatos: { repseOTs, repseLines },
+        }));
+      }
+    }
+
     // 7. OT liberada sin costo real (supervisor, jefe_area, admin)
     if (['supervisor', 'jefe_area', 'admin'].includes(rol)) {
       const sinCosto = await WorkOrder.findAll({
@@ -424,6 +468,7 @@ module.exports = {
   TIPOS,
   TIPO_META,
   onApprovalTransition,
+  onRepseFlag,
   getAllForUser,
   getPersistentForUser,
   getComputedForUser,

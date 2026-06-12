@@ -8,7 +8,10 @@ const router = express.Router();
 
 async function resolveRefs(body) {
   const out = { ...body };
-  if (!out.supplierId && out.supplierName) {
+  if (out.supplierId && !out.supplierName) {
+    const s = await Supplier.findByPk(out.supplierId);
+    if (s) out.supplierName = s.supplierName;
+  } else if (!out.supplierId && out.supplierName) {
     const s = await Supplier.findOne({ where: { supplierName: out.supplierName } });
     if (s) out.supplierId = s.id;
   }
